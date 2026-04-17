@@ -1,0 +1,179 @@
+{
+    "title": "Java Cheatsheet",
+    "description": "Master Java with clear, memorable concepts — explained like a friend teaching you",
+    "sections": [
+        {
+            "id": "basics",
+            "title": "Java Basics",
+            "concepts": [
+                {
+                    "name": "Your First Java Program",
+                    "explanation": "Think of this as Java's 'handshake ceremony.' Every Java program needs a class (a container for your code) and a main method (the starting gate where Java begins running). It's like a house: the class is the building, and main() is the front door.",
+                    "code": "public class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}",
+                    "keyPoints": [
+                        "public = anyone can access this (like a public park)",
+                        "static = belongs to the class itself, no object needed",
+                        "void = this method doesn't return anything",
+                        "main = Java always looks for this method first",
+                        "String[] args = command line arguments (optional inputs when running)"
+                    ]
+                },
+                {
+                    "name": "Primitive Data Types",
+                    "explanation": "Primitives are Java's building blocks — simple values stored directly in memory. Think of them as different-sized boxes: a byte is a tiny box for small numbers, while a long is a huge box for massive numbers. Use the smallest box that fits your data to save memory.",
+                    "code": "// Whole numbers (pick based on size needed)\nbyte tiny = 127;           // -128 to 127 (1 byte)\nshort small = 32000;       // -32,768 to 32,767 (2 bytes)\nint normal = 2000000000;   // Most common choice (4 bytes)\nlong huge = 9000000000L;   // Add 'L' suffix! (8 bytes)\n\n// Decimal numbers\nfloat price = 19.99f;      // Add 'f' suffix! (4 bytes)\ndouble precise = 3.14159;  // Default for decimals (8 bytes)\n\n// Others\nboolean isReady = true;    // Only true or false\nchar letter = 'A';         // Single character in single quotes",
+                    "keyPoints": [
+                        "int is your go-to for whole numbers — 99% of the time, it's enough",
+                        "double is default for decimals — use float only when memory is tight",
+                        "Don't forget L for long and f for float — compiler needs the hint!",
+                        "boolean is named after George Boole — it's just yes/no, on/off, true/false"
+                    ]
+                },
+                {
+                    "name": "Variables & Constants",
+                    "explanation": "A variable is like a labeled box where you store values. A constant (using final) is a sealed box — once you put something in, it's locked forever. Use constants for values that should never change, like Pi or your app's version number.",
+                    "code": "// Variables — values can change\nint score = 0;\nscore = 100;  // Updated!\n\n// Constants — values are locked forever\nfinal double PI = 3.14159;\nfinal String APP_NAME = \"MyApp\";\n// PI = 3.14;  // ERROR! Can't change a final\n\n// Naming conventions\nint camelCase = 1;           // Variables: camelCase\nfinal int SCREAMING_SNAKE = 2; // Constants: SCREAMING_SNAKE_CASE",
+                    "keyPoints": [
+                        "final = 'this can never be changed' — use for true constants",
+                        "Variable names start lowercase, constants are ALL_CAPS",
+                        "Descriptive names > short names: userAge beats a, even if it's longer",
+                        "Java is strongly typed — once a box is labeled 'int', it only holds ints"
+                    ]
+                },
+                {
+                    "name": "Reading User Input",
+                    "explanation": "Scanner is Java's way of listening to the user. It's like a microphone that captures what they type. Always close it when done — leaving it open is like leaving a water tap running.",
+                    "code": "import java.util.Scanner;  // Import first!\n\nScanner scanner = new Scanner(System.in);\n\nSystem.out.print(\"What's your name? \");\nString name = scanner.nextLine();  // Reads entire line\n\nSystem.out.print(\"How old are you? \");\nint age = scanner.nextInt();        // Reads just the number\n\nSystem.out.println(\"Hi \" + name + \", you're \" + age + \"!\");\n\nscanner.close();  // Always close when done!",
+                    "keyPoints": [
+                        "nextLine() reads everything until Enter — best for text with spaces",
+                        "nextInt(), nextDouble() read just the number — watch out for leftover newlines!",
+                        "Common bug: After nextInt(), call nextLine() to consume the leftover Enter key",
+                        "Scanner can also read from files — just pass File instead of System.in"
+                    ]
+                },
+                {
+                    "name": "Type Casting",
+                    "explanation": "Casting is like pouring liquid between containers. Pouring from a small cup to a big jug is safe (widening). But pouring from a big jug to a small cup might spill (narrowing) — you need to explicitly say 'I know this might lose data.'",
+                    "code": "// Widening (automatic) — small to big is always safe\nint myInt = 100;\ndouble myDouble = myInt;  // 100.0, no cast needed\n\n// Narrowing (manual) — big to small needs explicit cast\ndouble pi = 3.14159;\nint rounded = (int) pi;   // 3 — decimal part is LOST, not rounded!\n\n// Careful! Overflow happens silently\nint big = 130;\nbyte small = (byte) big;  // -126 (wraps around!)",
+                    "keyPoints": [
+                        "Widening is automatic: byte → short → int → long → float → double",
+                        "Narrowing needs (type) cast and can lose data — decimals are truncated, not rounded!",
+                        "Overflow wraps around silently — 128 in a byte becomes -128",
+                        "When in doubt, use the bigger type to avoid surprises"
+                    ]
+                },
+                {
+                    "name": "String Basics",
+                    "explanation": "Strings are sequences of characters wrapped in double quotes. Unlike primitives, they're objects with superpowers (methods). But here's the catch: Strings are immutable — every 'change' actually creates a brand new String.",
+                    "code": "// Creating strings\nString greeting = \"Hello\";              // Preferred way\nString another = new String(\"Hello\");  // Works but wasteful\n\n// Strings are immutable!\nString original = \"Java\";\noriginal.toUpperCase();  // Returns \"JAVA\" but original is still \"Java\"!\nString upper = original.toUpperCase();  // Now upper is \"JAVA\"\n\n// Concatenation\nString full = \"Hello\" + \" \" + \"World\";  // \"Hello World\"\nint age = 25;\nString message = \"Age: \" + age;          // \"Age: 25\" (auto-converts)",
+                    "keyPoints": [
+                        "Always use equals() to compare Strings, never == (compares memory addresses)",
+                        "String methods return NEW Strings — the original never changes",
+                        "Use + for simple concatenation, StringBuilder for loops (much faster)",
+                        "null is not the same as \"\" — null means no string at all"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "operators",
+            "title": "Operators",
+            "concepts": [
+                {
+                    "name": "Arithmetic Operators",
+                    "explanation": "These are your basic math tools. The only tricky one is division: when both numbers are integers, Java throws away the decimal part. It's like asking 'how many whole pizzas can 10 slices make if each pizza needs 3?' — answer is 3, not 3.33.",
+                    "code": "int a = 10, b = 3;\n\nint sum = a + b;        // 13\nint diff = a - b;       // 7\nint product = a * b;    // 30\nint quotient = a / b;   // 3 (not 3.33! Integer division)\nint remainder = a % b;  // 1 (modulo — the leftover)\n\n// To get decimals, make at least one number a double\ndouble accurate = (double) a / b;  // 3.333...\n\n// Shorthand\na++;        // a = a + 1  →  now 11\nb--;        // b = b - 1  →  now 2\na += 5;     // a = a + 5  →  now 16\nb *= 2;     // b = b * 2  →  now 4",
+                    "keyPoints": [
+                        "Integer division truncates — 10/3 is 3, not 3.33 (cast to double if you need decimals)",
+                        "Modulo (%) gives remainder — great for checking even/odd: n % 2 == 0 means even",
+                        "i++ vs ++i: both add 1, but i++ returns OLD value, ++i returns NEW value",
+                        "Shorthand operators (+=, -=, *=, /=) are cleaner and slightly faster"
+                    ]
+                },
+                {
+                    "name": "Comparison Operators",
+                    "explanation": "These compare two values and return true or false. Think of them as yes/no questions: 'Is 5 greater than 3?' → true. Use these in if statements to make decisions.",
+                    "code": "int x = 5, y = 10;\n\nboolean equal = (x == y);      // false (is x equal to y?)\nboolean notEqual = (x != y);   // true (is x different from y?)\nboolean greater = (x > y);     // false\nboolean less = (x < y);        // true\nboolean greaterEq = (x >= 5);  // true (greater OR equal)\nboolean lessEq = (y <= 10);    // true\n\n// DANGER with Strings!\nString a = \"hello\";\nString b = \"hello\";\na == b;       // Might be true or false! (compares memory)\na.equals(b);  // Always correctly checks content → true",
+                    "keyPoints": [
+                        "== checks if two things are IDENTICAL (same memory for objects)",
+                        "equals() checks if two things have the SAME VALUE (use for Strings!)",
+                        "= is assignment, == is comparison — mixing them up is a classic bug",
+                        "Don't compare floating-point numbers with == (use Math.abs(a-b) < 0.0001)"
+                    ]
+                },
+                {
+                    "name": "Logical Operators",
+                    "explanation": "These combine multiple conditions. AND (&&) is strict — both must be true. OR (||) is lenient — just one needs to be true. NOT (!) flips true to false and vice versa.",
+                    "code": "boolean sunny = true;\nboolean warm = false;\n\n// AND — both must be true\nboolean perfectDay = sunny && warm;  // false (warm is false)\n\n// OR — at least one must be true  \nboolean goOutside = sunny || warm;   // true (sunny is true)\n\n// NOT — flips the value\nboolean notSunny = !sunny;           // false\n\n// Combining conditions\nint age = 25;\nboolean hasLicense = true;\nboolean canDrive = (age >= 18) && hasLicense;  // true\n\n// Short-circuit: Java stops early if result is already known\n// In (false && something), Java never checks 'something'",
+                    "keyPoints": [
+                        "&& (AND): True only if BOTH are true — 'You need a ticket AND an ID'",
+                        "|| (OR): True if AT LEAST ONE is true — 'Cash OR card accepted'",
+                        "! (NOT): Flips the value — 'Not closed' means open",
+                        "Short-circuit: && stops at first false, || stops at first true — use for null checks!"
+                    ]
+                },
+                {
+                    "name": "Bitwise Operators",
+                    "explanation": "These work on the individual bits (0s and 1s) inside numbers. Mostly used for low-level programming, flags, and performance tricks. The key insight: shifting left doubles the number, shifting right halves it.",
+                    "code": "int a = 5;   // Binary: 0101\nint b = 3;   // Binary: 0011\n\nint and = a & b;   // 1  (0101 & 0011 = 0001)\nint or = a | b;    // 7  (0101 | 0011 = 0111)\nint xor = a ^ b;   // 6  (0101 ^ 0011 = 0110)\nint not = ~a;      // -6 (flips all bits)\n\n// Bit shifting — super fast multiplication/division by powers of 2\nint doubled = a << 1;   // 10 (shift left = multiply by 2)\nint halved = a >> 1;    // 2  (shift right = divide by 2)\n\n// Common use: Checking if a number is odd\nboolean isOdd = (n & 1) == 1;  // Faster than n % 2 != 0",
+                    "keyPoints": [
+                        "<< n multiplies by 2ⁿ — much faster than *",
+                        ">> n divides by 2ⁿ — much faster than /",
+                        "& with 1 checks if odd — the rightmost bit is 1 only for odd numbers",
+                        "XOR (^) is reversible: a ^ b ^ b = a — used in simple encryption"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "control-flow",
+            "title": "Control Flow",
+            "concepts": [
+                {
+                    "name": "If-Else Statements",
+                    "explanation": "If-else is your basic decision maker. Think of it as a bouncer at a club: 'If you're 21 or older, come in. Else, go home.' Conditions are checked top-to-bottom, and only the first true block runs.",
+                    "code": "int score = 85;\n\nif (score >= 90) {\n    System.out.println(\"A — Excellent!\");\n} else if (score >= 80) {\n    System.out.println(\"B — Good job!\");  // This runs\n} else if (score >= 70) {\n    System.out.println(\"C — Passing\");\n} else {\n    System.out.println(\"F — Keep trying\");\n}\n\n// Single-line if (no braces needed, but be careful)\nif (score == 100) System.out.println(\"Perfect!\");",
+                    "keyPoints": [
+                        "Conditions are checked in order — first true block wins, rest are skipped",
+                        "else is optional — use when you need a 'default' action",
+                        "Always use braces {} even for one-liners — prevents bugs when adding code later",
+                        "Avoid deep nesting — if you have 5+ levels, refactor into methods"
+                    ]
+                },
+                {
+                    "name": "Ternary Operator",
+                    "explanation": "The ternary operator is a one-line if-else. It's like a quick coin flip: 'If heads, do this, else do that.' Great for simple assignments, but don't nest them — it becomes unreadable.",
+                    "code": "int age = 20;\n\n// Ternary: condition ? valueIfTrue : valueIfFalse\nString status = (age >= 18) ? \"Adult\" : \"Minor\";\n\n// Equivalent if-else (more lines)\nString status2;\nif (age >= 18) {\n    status2 = \"Adult\";\n} else {\n    status2 = \"Minor\";\n}\n\n// Great for null checks\nString name = null;\nString display = (name != null) ? name : \"Guest\";",
+                    "keyPoints": [
+                        "Syntax: condition ? resultIfTrue : resultIfFalse",
+                        "Perfect for simple either/or assignments",
+                        "Don't nest ternaries — (a ? (b ? c : d) : e) is unreadable",
+                        "Both branches must return compatible types"
+                    ]
+                },
+                {
+                    "name": "Switch Statement",
+                    "explanation": "Switch is like a vending machine: you put in a value, and it jumps directly to the matching case. Cleaner than long if-else chains when checking one variable against many values.",
+                    "code": "int day = 3;\nString dayName;\n\nswitch (day) {\n    case 1:\n        dayName = \"Monday\";\n        break;  // Don't forget break!\n    case 2:\n        dayName = \"Tuesday\";\n        break;\n    case 3:\n        dayName = \"Wednesday\";\n        break;\n    case 6:\n    case 7:\n        dayName = \"Weekend!\";  // Cases can stack\n        break;\n    default:\n        dayName = \"Invalid day\";\n}\n\n// Java 14+ Enhanced Switch (no break needed!)\nString result = switch (day) {\n    case 1 -> \"Monday\";\n    case 2 -> \"Tuesday\";\n    case 3 -> \"Wednesday\";\n    case 6, 7 -> \"Weekend!\";\n    default -> \"Invalid\";\n};",
+                    "keyPoints": [
+                        "break is crucial — without it, execution 'falls through' to the next case",
+                        "default handles any value not explicitly listed",
+                        "Works with: int, char, String, and enums (not long or boolean)",
+                        "Java 14+ arrow syntax (->) is cleaner and doesn't need break"
+                    ]
+                },
+                {
+                    "name": "Enhanced Switch Expressions",
+                    "explanation": "Java 14 introduced switch as an expression — it returns a value directly. No more break statements, no fall-through bugs. Use arrow (->) for clean, one-liner cases.",
+                    "code": "String dayType = switch (dayOfWeek) {\n    case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY -> \"Weekday\";\n    case SATURDAY, SUNDAY -> \"Weekend\";\n};\n\n// With code blocks (use yield to return value)\nint numLetters = switch (day) {\n    case MONDAY, FRIDAY, SUNDAY -> 6;\n    case TUESDAY -> 7;\n    case THURSDAY, SATURDAY -> 8;\n    case WEDNESDAY -> {\n        System.out.println(\"Mid-week!\");\n        yield 9;  // yield returns value from block\n    }\n};",
+                    "keyPoints": [
+                        "Arrow syntax (->) replaces colon and break",
+                        "Multiple cases can share one outcome with commas",
+                        "Use yield to return a value from a multi-line block",
+                        "Must be exhaustive — cover all possible values or have default"
+                    ]
+                }
+            ]
+        }
+    ]
+}

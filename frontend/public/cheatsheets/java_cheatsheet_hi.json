@@ -1,0 +1,801 @@
+{
+  "title": "Java Cheatsheet - Hinglish",
+  "description": "Java ko samjho bilkul dost ki tarah — simple aur yaadgaar examples ke saath",
+  "sections": [
+    {
+      "id": "basics",
+      "title": "Java Basics",
+      "concepts": [
+        {
+          "name": "Pehla Java Program",
+          "explanation": "Socho ye Java ki 'welcome ceremony' hai. Har program mein ek 'class' chahiye (ye tumhare code ka ghar hai) aur ek 'main method' (ye darwaza hai jahan se Java andar aata hai). Class ek building hai, main() uska main gate hai.",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}",
+          "keyPoints": [
+            "public = koi bhi access kar sakta hai (jaise public park)",
+            "static = ye class ka hai, kisi specific object ka nahi",
+            "void = ye method kuch return nahi karta",
+            "main = Java isi naam ko dhundta hai program start karne ke liye",
+            "String[] args = optional inputs jo program run karte waqt de sakte ho"
+          ]
+        },
+        {
+          "name": "Primitive Data Types",
+          "explanation": "Ye Java ke building blocks hain — simple values jo directly memory mein store hoti hain. Socho jaise alag-alag size ke dabbon ki tarah: byte sabse chhota dabba hai, int medium, long sabse bada. Memory bachane ke liye sabse chhota dabba use karo jo kaam kar jaye.",
+          "code": "// Whole numbers (size ke hisaab se choose karo)\nbyte chhota = 127;          // -128 se 127 (1 byte) - jaise match ki dibbi\nshort medium = 32000;       // -32,768 se 32,767 (2 bytes)\nint aam = 2_000_000;        // Sabse common choice (4 bytes) - daily use\nlong bahut_bada = 9_000_000_000L; // 'L' lagana mat bhoolna! (8 bytes)\n\n// Decimal numbers\nfloat price = 19.99f;       // 'f' lagao! (4 bytes) - approx values\ndouble sahi = 3.14159;      // Default decimal ke liye (8 bytes) - precise\n\n// Others\nboolean ready = true;       // Sirf true ya false - haan ya na\nchar letter = 'A';          // Single character single quotes mein",
+          "keyPoints": [
+            "int tumhara go-to hai whole numbers ke liye — 99% time kaafi hai",
+            "double default hai decimals ke liye — float tab hi use karo jab memory tight ho",
+            "L lagana mat bhoolna long ke liye aur f float ke liye — compiler ko hint chahiye!",
+            "Badi numbers mein underscore use karo readability ke liye: 1_000_000 = 1000000"
+          ]
+        },
+        {
+          "name": "User Input Lena",
+          "explanation": "Scanner tumhare program ka mic hai — ye sunta hai jo user type kare. Import karo, System.in se connect karo (keyboard), aur alag methods use karo based on kya expect kar rahe ho. Kaam hone ke baad band karna mat bhoolna!",
+          "code": "import java.util.Scanner;  // Step 1: Import karo\n\nScanner scanner = new Scanner(System.in);  // Step 2: Banao\n\nSystem.out.print(\"Tumhara naam? \");  // print (same line pe)\nString naam = scanner.nextLine();  // Puri line padho\n\nSystem.out.print(\"Tumhari umar? \");\nint umar = scanner.nextInt();       // Sirf number padho\n\nscanner.close();  // Step 3: Band karo jab ho jaye!",
+          "keyPoints": [
+            "nextLine() = Enter tak sab kuch padho (naam, sentence ke liye best)",
+            "nextInt()/nextDouble() = sirf number padho, Enter chhod deta hai",
+            "Common bug fix: nextInt() ke baad nextLine() lagao leftover Enter ke liye",
+            "print() same line pe rehta hai, println() next line pe jaata hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "operators",
+      "title": "Operators",
+      "concepts": [
+        {
+          "name": "Arithmetic Operators",
+          "explanation": "Ye basic math operations hain — jaise calculator mein hote hain. Plus, minus, multiply, divide, aur modulo (remainder).",
+          "code": "int a = 10, b = 3;\nint jod = a + b;        // 13 (addition)\nint ghata = a - b;      // 7 (subtraction)\nint guna = a * b;       // 30 (multiplication)\nint bhaag = a / b;      // 3 (integer division - decimal kata jaata hai)\nint bacha = a % b;      // 1 (modulo - remainder jo bache)\n\na++; // Increment: a = 11 (1 badh gaya)\nb--; // Decrement: b = 2 (1 kam ho gaya)",
+          "keyPoints": [
+            "/ se integer division hota hai agar dono numbers integer hon — decimal kat jaata hai",
+            "% modulo deta hai (jo bache wo) — even/odd check karne mein helpful",
+            "++ se 1 badhta hai, -- se 1 kam hota hai"
+          ]
+        },
+        {
+          "name": "Comparison Operators",
+          "explanation": "Do values ko compare karo aur true/false lo. Jaise exam mein marks compare karte hain.",
+          "code": "int x = 5, y = 10;\nboolean barabar = (x == y);      // false (kya dono equal hain?)\nboolean alag = (x != y);         // true (kya dono different hain?)\nboolean bada = (x > y);          // false (kya x bada hai?)\nboolean chhota = (x < y);        // true (kya x chhota hai?)\nboolean badaYaBabar = (x >= 5);  // true (bada ya equal)\nboolean chhotaYaBabar = (y <= 10); // true (chhota ya equal)",
+          "keyPoints": [
+            "== equality check karta hai, != inequality check karta hai",
+            "Strings ke liye .equals() use karo, not ==",
+            "Hamesha boolean (true ya false) return hota hai"
+          ]
+        },
+        {
+          "name": "Logical Operators",
+          "explanation": "Multiple conditions ko combine karo — jaise 'agar A bhi true ho AUR B bhi true ho'.",
+          "code": "boolean a = true, b = false;\n\n// AND - dono true hone chahiye\nboolean aur = a && b;  // false (A true hai, B false - isliye false)\n\n// OR - kam se kam ek true ho\nboolean ya = a || b;   // true (A true hai, kaafi hai)\n\n// NOT - ulta kar do\nboolean nahi = !a;     // false (true ka ulta)",
+          "keyPoints": [
+            "&& (AND): Tab hi true jab dono true hon — strict hai boss",
+            "|| (OR): Ek bhi true ho to true — lenient hai",
+            "! (NOT): true ko false, false ko true — ulat deta hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "control-flow",
+      "title": "Control Flow",
+      "concepts": [
+        {
+          "name": "if / else if / else",
+          "explanation": "Conditions check karo aur uske according code run karo. Jaise traffic light — red pe ruko, green pe chalo.",
+          "code": "int marks = 85;\n\nif (marks >= 90) {\n    System.out.println(\"Grade: A - Topper ho!\");\n} else if (marks >= 80) {\n    System.out.println(\"Grade: B - Achha hai!\");\n} else if (marks >= 70) {\n    System.out.println(\"Grade: C - Theek hai\");\n} else {\n    System.out.println(\"Grade: F - Padhai karo bhai\");\n}",
+          "keyPoints": [
+            "Conditions upar se neeche check hoti hain",
+            "Pehli true condition execute hoti hai, baaki skip",
+            "else block optional hai — default case ke liye"
+          ]
+        },
+        {
+          "name": "Ternary Operator",
+          "explanation": "if-else ko ek line mein likho — shortcut hai! Jaise one-liner WhatsApp status.",
+          "code": "int age = 20;\nString status = (age >= 18) ? \"Adult\" : \"Minor\";\n\n// Ye same hai:\nString status;\nif (age >= 18) {\n    status = \"Adult\";\n} else {\n    status = \"Minor\";\n}",
+          "keyPoints": [
+            "Syntax: condition ? valueAgarTrue : valueAgarFalse",
+            "Simple if-else assignments ke liye use karo",
+            "Code chhota aur clean lagta hai"
+          ]
+        },
+        {
+          "name": "switch Statement",
+          "explanation": "Multiple options mein se ek choose karo — jaise restaurant menu mein item select karna.",
+          "code": "int day = 3;\nString dayName;\n\nswitch (day) {\n    case 1:\n        dayName = \"Monday - Kaam shuru\";\n        break;\n    case 2:\n        dayName = \"Tuesday\";\n        break;\n    case 3:\n        dayName = \"Wednesday - Aadha hafta gaya\";\n        break;\n    default:\n        dayName = \"Invalid day - Galat number diya\";\n}",
+          "keyPoints": [
+            "break lagao nahi to neeche wale cases bhi run ho jaayenge",
+            "default case unmatched values handle karta hai",
+            "int, char, String, enum ke saath kaam karta hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loops",
+      "title": "Loops",
+      "concepts": [
+        {
+          "name": "for Loop",
+          "explanation": "Ek kaam baar-baar karo fixed times — jaise subah 10 push-ups roz karte ho.",
+          "code": "// 0 se 4 tak print karo\nfor (int i = 0; i < 5; i++) {\n    System.out.println(\"Push-up number: \" + i);\n}\n\n// Nested loop - Table print karo\nfor (int i = 1; i <= 3; i++) {\n    for (int j = 1; j <= 3; j++) {\n        System.out.print(i * j + \" \");\n    }\n    System.out.println();  // New line\n}",
+          "keyPoints": [
+            "Teen parts: start; condition; update — semicolon se separate",
+            "Har baar pehle condition check hoti hai",
+            "Tab use karo jab pata ho kitni baar karna hai"
+          ]
+        },
+        {
+          "name": "while Loop",
+          "explanation": "Jab tak condition true hai tab tak karo — jaise jab tak bhookh na mite khate raho!",
+          "code": "int count = 0;\nwhile (count < 5) {\n    System.out.println(\"Count: \" + count);\n    count++;  // Ye mat bhoolna, nahi to infinite loop!\n}\n\n// Infinite loop (dhyaan se use karo)\n// while (true) {\n//     // code\n//     if (condition) break;  // Bahar nikalne ka raasta\n// }",
+          "keyPoints": [
+            "Pehle condition check hoti hai — false ho to ek baar bhi nahi chalega",
+            "Agar start mein hi false ho to body skip ho jaayegi",
+            "Jab pata nahi kitni baar karna hai tab use karo"
+          ]
+        },
+        {
+          "name": "do-while Loop",
+          "explanation": "Kam se kam ek baar to chale hi — jaise ATM PIN: pehle enter karo, phir check hoga sahi hai ya nahi.",
+          "code": "int num;\nScanner sc = new Scanner(System.in);\n\ndo {\n    System.out.print(\"Positive number daalo: \");\n    num = sc.nextInt();\n} while (num <= 0);  // Jab tak positive nahi milta, maangta rahega\n\nSystem.out.println(\"Tumne daala: \" + num);",
+          "keyPoints": [
+            "Pehle code chalta hai, phir condition check hoti hai",
+            "Guarantee hai ki kam se kam ek baar chalega",
+            "Input validation ke liye useful — jab tak sahi input na mile"
+          ]
+        },
+        {
+          "name": "for-each Loop",
+          "explanation": "Array ya collection ke har element pe ek-ek karke jaao — jaise class mein har student ka naam lena.",
+          "code": "String[] fruits = {\"Apple\", \"Banana\", \"Orange\"};\n\nfor (String fruit : fruits) {\n    System.out.println(fruit + \" is tasty!\");\n}\n\nList<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);\nfor (int num : numbers) {\n    System.out.println(\"Number: \" + num);\n}",
+          "keyPoints": [
+            "Simple syntax — har element ko automatically mil jaata hai",
+            "Loop ke andar collection change mat karo",
+            "Index nahi milta — sirf element milta hai"
+          ]
+        },
+        {
+          "name": "break aur continue",
+          "explanation": "Loop control karo — break se bahar niklo, continue se ek round skip karo. Jaise cricket mein: break = match chhod do, continue = ye ball chhodo, next ball khelo.",
+          "code": "// break: Turant bahar niklo\nfor (int i = 0; i < 10; i++) {\n    if (i == 5) break;  // 5 pe ruk gaya\n    System.out.println(i); // 0,1,2,3,4 print hoga\n}\n\n// continue: Is round ko skip karo\nfor (int i = 0; i < 5; i++) {\n    if (i == 2) continue;  // 2 skip ho gaya\n    System.out.println(i); // 0,1,3,4 print hoga\n}",
+          "keyPoints": [
+            "break pura loop chhod deta hai — game over",
+            "continue current round skip karke next pe jaata hai",
+            "Dono sirf nearest loop pe kaam karte hain (nested mein dhyaan)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arrays",
+      "title": "Arrays",
+      "concepts": [
+        {
+          "name": "Array Declaration & Initialization",
+          "explanation": "Fixed-size collection jahan same type ke elements rehte hain — jaise train ke numbered seats. Har seat ka fixed number hai aur ek baar train bani to seats badha nahi sakte.",
+          "code": "// Ek saath banao aur bharo\nint[] numbers = {1, 2, 3, 4, 5};\n\n// Pehle banao phir bharo\nString[] names = new String[3];  // 3 seats ki train\nnames[0] = \"Alice\";  // Seat 0 pe\nnames[1] = \"Bob\";    // Seat 1 pe\nnames[2] = \"Charlie\"; // Seat 2 pe\n\n// Element access karo\nint first = numbers[0];  // Pehla element (index 0)\nint length = numbers.length;  // Total kitne hain",
+          "keyPoints": [
+            "Array size fixed hai — ek baar bana to change nahi hoga",
+            "Index 0 se start hota hai — pehla element index 0 pe",
+            ".length property use karo size ke liye (method nahi hai)",
+            "Galat index access karoge to ArrayIndexOutOfBoundsException"
+          ]
+        },
+        {
+          "name": "Multi-dimensional Arrays",
+          "explanation": "Arrays ke andar arrays — jaise Excel sheet jahan rows aur columns hain. 2D array ek table hai.",
+          "code": "// 2D array (matrix/table)\nint[][] matrix = {\n    {1, 2, 3},   // Row 0\n    {4, 5, 6},   // Row 1\n    {7, 8, 9}    // Row 2\n};\n\n// Element access karo\nint value = matrix[1][2];  // Row 1, Column 2 = 6\n\n// 2D array traverse karo\nfor (int i = 0; i < matrix.length; i++) {\n    for (int j = 0; j < matrix[i].length; j++) {\n        System.out.print(matrix[i][j] + \" \");\n    }\n    System.out.println();  // New line after each row\n}",
+          "keyPoints": [
+            "2D array = array of arrays — table samjho",
+            "Access karo [row][column] se",
+            "Jagged arrays bhi ho sakte hain (alag-alag size ki rows)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oop",
+      "title": "Object-Oriented Programming",
+      "concepts": [
+        {
+          "name": "Classes aur Objects",
+          "explanation": "Class ek cookie cutter hai — shape define karta hai. Object actual cookie hai jo uspe banti hai. Ek cutter se bahut saari cookies bana sakte ho, har ek apni color/flavor (data) ke saath. Class = blueprint, Object = real cheez.",
+          "code": "// Class = blueprint/cookie cutter\nclass Car {\n    // Fields = car kya yaad rakhti hai\n    String brand;\n    int year;\n    \n    // Constructor = naya car kaise banao\n    Car(String brand, int year) {\n        this.brand = brand;  // 'this' = jo car abhi ban rahi hai\n        this.year = year;\n    }\n    \n    // Method = car kya kar sakti hai\n    void honk() {\n        System.out.println(brand + \" bole: Peep peep!\");\n    }\n}\n\n// Objects = actual cars blueprint se bani\nCar meriCar = new Car(\"Toyota\", 2024);\nCar teriCar = new Car(\"Honda\", 2023);\nmeriCar.honk();  // \"Toyota bole: Peep peep!\"",
+          "keyPoints": [
+            "Class = blueprint (define karta hai objects mein kya hoga)",
+            "Object = actual instance (real cheez apne data ke saath)",
+            "this = 'jo object abhi use ho raha hai' (confusion bachata hai)",
+            "Constructor = special method jo 'new' keyword pe call hota hai"
+          ]
+        },
+        {
+          "name": "Encapsulation",
+          "explanation": "Bank vault ki tarah socho. Tum seedha vault mein haath nahi daal sakte — teller (methods) ke through jaate ho jo check karta hai tum allowed ho ya nahi. Encapsulation data chhupaata hai (private) aur access control karta hai getters/setters se.",
+          "code": "class BankAccount {\n    private double balance;  // Chhupi hui! Sirf ye class access kar sakti hai\n    \n    // Getter = puchho \"mera balance kya hai?\"\n    public double getBalance() {\n        return balance;\n    }\n    \n    // Setter with validation = \"balance set karna hai\"\n    public void setBalance(double amount) {\n        if (amount >= 0) {  // Validation! Negative nahi ho sakta\n            this.balance = amount;\n        }\n    }\n    \n    // Business method with rules\n    public void withdraw(double amount) {\n        if (amount > 0 && amount <= balance) {\n            balance -= amount;\n            System.out.println(\"Nikal liya: \" + amount);\n        } else {\n            System.out.println(\"Paisa nahi hai boss!\");\n        }\n    }\n}",
+          "keyPoints": [
+            "private = sirf ye class access kar sakti hai (vault door)",
+            "public = koi bhi access kar sakta hai (teller window)",
+            "Getters bahar walo ko data safely READ karne dete hain",
+            "Setters bahar walo ko data safely WRITE karne dete hain with validation"
+          ]
+        },
+        {
+          "name": "Inheritance",
+          "explanation": "Inheritance genetics jaisi hai — baccha parent se traits inherit karta hai. Java mein child class automatically parent ki public/protected cheezein le leti hai, phir apni cheezein add kar sakti hai. Code reuse free mein milta hai!",
+          "code": "// Parent = generic animal\nclass Animal {\n    String name;\n    \n    void eat() {\n        System.out.println(name + \" khana kha raha hai\");\n    }\n}\n\n// Child = specific animal, Animal se inherit\nclass Dog extends Animal {\n    void bark() {\n        System.out.println(name + \" bola: Bhow bhow!\");\n    }\n}\n\nDog tommy = new Dog();\ntommy.name = \"Tommy\";  // Animal se mila!\ntommy.eat();   // Inherited: \"Tommy khana kha raha hai\"\ntommy.bark();  // Apna method: \"Tommy bola: Bhow bhow!\"",
+          "keyPoints": [
+            "extends = 'ye class us class se inherit karti hai'",
+            "Child ko sab public/protected members automatically milte hain",
+            "Java mein single-inheritance hi hai (ek hi parent) — multiple ke liye interfaces use karo",
+            "super.method() parent wala method call karta hai"
+          ]
+        },
+        {
+          "name": "Polymorphism - Method Overriding",
+          "explanation": "Child class parent ke method ko apne tarike se implement karti hai — jaise papa guitar bajate hain, beta bhi guitar bajata hai but apne style mein!",
+          "code": "class Animal {\n    void makeSound() {\n        System.out.println(\"Koi awaaz\");\n    }\n}\n\nclass Dog extends Animal {\n    @Override  // Ye batata hai ki parent wala method override ho raha hai\n    void makeSound() {\n        System.out.println(\"Bhow bhow!\");\n    }\n}\n\nAnimal animal = new Dog();  // Dog hai but Animal type mein\nanimal.makeSound();  // \"Bhow bhow!\" — Dog wala chala",
+          "keyPoints": [
+            "@Override annotation lagao — recommended hai",
+            "Method signature parent wala match hona chahiye",
+            "Konsa method chalega ye runtime pe decide hota hai (dynamic binding)"
+          ]
+        },
+        {
+          "name": "Polymorphism - Method Overloading",
+          "explanation": "Same naam ke multiple methods but alag parameters — jaise chai banane ke tarike: chai(), chai(elaichi), chai(adrak), chai(elaichi, adrak). Same kaam, alag variations.",
+          "code": "class Calculator {\n    int add(int a, int b) {\n        return a + b;\n    }\n    \n    double add(double a, double b) {  // Decimals ke liye\n        return a + b;\n    }\n    \n    int add(int a, int b, int c) {  // Teen numbers ke liye\n        return a + b + c;\n    }\n}\n\nCalculator calc = new Calculator();\ncalc.add(5, 10);        // Pehla method\ncalc.add(5.5, 10.5);    // Doosra method\ncalc.add(1, 2, 3);      // Teesra method",
+          "keyPoints": [
+            "Same method name, alag parameters",
+            "Compile-time polymorphism — compile karte waqt decide hota hai",
+            "Sirf return type different ho to kaam nahi karega"
+          ]
+        },
+        {
+          "name": "Abstract Classes",
+          "explanation": "Abstract class ek incomplete blueprint hai — iska object nahi ban sakta, but dusri classes isse extend karke complete kar sakti hain. Jaise 'Vehicle' abstract hai — asli mein car ya bike hoti hai, 'Vehicle' nahi.",
+          "code": "abstract class Shape {  // Ye direct nahi ban sakti\n    abstract double area();  // Koi implementation nahi — child degi\n    \n    void display() {  // Ye complete hai, use ho sakti hai\n        System.out.println(\"Area: \" + area());\n    }\n}\n\nclass Circle extends Shape {\n    double radius;\n    \n    Circle(double radius) {\n        this.radius = radius;\n    }\n    \n    @Override\n    double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\nShape shape = new Circle(5);  // Circle ka object Shape type mein\nshape.display();  // \"Area: 78.54...\"",
+          "keyPoints": [
+            "Abstract class ka object nahi ban sakta",
+            "Abstract aur concrete dono methods ho sakte hain",
+            "Child class ko sab abstract methods implement karne padte hain",
+            "Tab use karo jab classes mein common behavior ho"
+          ]
+        },
+        {
+          "name": "Interfaces",
+          "explanation": "Interface ek contract hai — batata hai ki class ko kya karna hai, but kaise karna hai ye nahi batata. Jaise government rule: 'Har vehicle mein horn hona chahiye' — kaise implement karo, wo tumpe hai.",
+          "code": "interface Drawable {\n    void draw();  // Ye implement karna padega\n}\n\ninterface Resizable {\n    void resize(int width, int height);\n}\n\n// Ek class multiple interfaces implement kar sakti hai!\nclass Rectangle implements Drawable, Resizable {\n    public void draw() {\n        System.out.println(\"Rectangle draw ho raha hai\");\n    }\n    \n    public void resize(int w, int h) {\n        System.out.println(\"Resize ho raha: \" + w + \"x\" + h);\n    }\n}\n\nRectangle rect = new Rectangle();\nrect.draw();\nrect.resize(100, 200);",
+          "keyPoints": [
+            "Sab methods by default public aur abstract hain",
+            "Ek class multiple interfaces implement kar sakti hai",
+            "Multiple inheritance achieve hoti hai interfaces se",
+            "Java 8+: interfaces mein default methods bhi ho sakte hain"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "collections",
+      "title": "Collections Framework",
+      "concepts": [
+        {
+          "name": "ArrayList",
+          "explanation": "Dynamic array jo grow/shrink ho sakta hai — jaise rubber band. Array fixed hai train ki tarah, ArrayList bus ki tarah hai jo passengers ke hisaab se adjust ho jaaye.",
+          "code": "import java.util.ArrayList;\n\nArrayList<String> list = new ArrayList<>();\n\n// Elements add karo\nlist.add(\"Java\");\nlist.add(\"Python\");\nlist.add(\"JavaScript\");\n\n// Access karo\nString first = list.get(0);  // \"Java\"\n\n// Remove karo\nlist.remove(1);  // \"Python\" nikal gaya\n\n// Size\nint size = list.size();  // Kitne hain abhi\n\n// Iterate karo\nfor (String lang : list) {\n    System.out.println(lang + \" acchi hai!\");\n}",
+          "keyPoints": [
+            "Resizable array — khud adjust ho jaata hai",
+            "Insertion order maintain hota hai",
+            "Duplicates aur null allowed hain",
+            "Random access fast hai O(1) — seedha index se lo"
+          ]
+        },
+        {
+          "name": "HashMap",
+          "explanation": "Key-value pairs store karo fast lookup ke liye — jaise phone book. Naam (key) se number (value) turant mil jaata hai. No need to search through everyone!",
+          "code": "import java.util.HashMap;\n\nHashMap<String, Integer> map = new HashMap<>();\n\n// Key-value pairs daalo\nmap.put(\"Alice\", 25);  // Naam -> Umar\nmap.put(\"Bob\", 30);\nmap.put(\"Charlie\", 35);\n\n// Value lo key se\nint age = map.get(\"Alice\");  // 25 turant mil gaya!\n\n// Check karo key hai ya nahi\nif (map.containsKey(\"Bob\")) {\n    System.out.println(\"Bob mil gaya!\");\n}\n\n// Sab pe jaao\nfor (String key : map.keySet()) {\n    System.out.println(key + \" ki umar: \" + map.get(key));\n}",
+          "keyPoints": [
+            "Key-value pairs store karta hai",
+            "Keys unique honi chahiye — duplicate key pe purani value overwrite",
+            "Lookup bahut fast hai O(1) average",
+            "Order guaranteed nahi hai"
+          ]
+        },
+        {
+          "name": "HashSet",
+          "explanation": "Unique elements ka collection — duplicates allowed nahi. Jaise VIP party guest list — ek naam ek hi baar aa sakta hai!",
+          "code": "import java.util.HashSet;\n\nHashSet<String> set = new HashSet<>();\n\n// Elements add karo\nset.add(\"Apple\");\nset.add(\"Banana\");\nset.add(\"Apple\");  // Duplicate — ignore ho jaayega\n\n// Check karo element hai ya nahi\nboolean has = set.contains(\"Apple\");  // true\n\n// Remove karo\nset.remove(\"Banana\");\n\n// Size\nint size = set.size();  // 1 (sirf Apple bacha)\n\nfor (String item : set) {\n    System.out.println(item);\n}",
+          "keyPoints": [
+            "Duplicate elements nahi — har cheez ek hi baar",
+            "Order guaranteed nahi hai",
+            "add/remove/contains sab fast hain O(1)",
+            "Ek null allowed hai"
+          ]
+        },
+        {
+          "name": "LinkedList",
+          "explanation": "Doubly-linked list — har element apne aage-peeche wale se connected hai. Beech mein insert/delete fast hai (sirf links change karo), but random access slow.",
+          "code": "import java.util.LinkedList;\n\nLinkedList<String> list = new LinkedList<>();\n\n// Add karo\nlist.add(\"First\");\nlist.add(\"Second\");\nlist.addFirst(\"Start\");  // Sabse aage daalo\nlist.addLast(\"End\");      // Sabse peeche daalo\n\n// Remove karo\nString first = list.removeFirst();  // Aage se nikalo\nString last = list.removeLast();    // Peeche se nikalo\n\n// Dekho without removing\nString head = list.peekFirst();  // Sirf dekho, nikalo mat",
+          "keyPoints": [
+            "Ends pe insert/delete efficient hai",
+            "Random access ArrayList se slow hai",
+            "Stack ya Queue ki tarah bhi use ho sakti hai",
+            "Har element ke liye extra memory lagti hai (links ke liye)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exceptions",
+      "title": "Exception Handling",
+      "concepts": [
+        {
+          "name": "try-catch-finally",
+          "explanation": "Errors handle karo bina crash hue — jaise agar kuch toot jaaye to plan B ready rakho! try mein risky code, catch mein backup plan, finally mein cleanup.",
+          "code": "try {\n    int result = 10 / 0;  // Ye crash karega! (Division by zero)\n} catch (ArithmeticException e) {\n    System.out.println(\"Bhai zero se divide nahi hota!\");\n    e.printStackTrace();  // Error details\n} finally {\n    System.out.println(\"Ye hamesha chalega — cleanup ke liye\");\n}\n\n// Multiple catch blocks\ntry {\n    int[] arr = {1, 2, 3};\n    System.out.println(arr[5]);  // Index out of bounds!\n} catch (ArrayIndexOutOfBoundsException e) {\n    System.out.println(\"Bhai itna bada array nahi hai!\");\n} catch (Exception e) {\n    System.out.println(\"Kuch aur gadbad ho gayi\");\n}",
+          "keyPoints": [
+            "try: Risky code jo exception throw kar sakta hai",
+            "catch: Specific exception handle karo",
+            "finally: Hamesha chalta hai (cleanup code ke liye)",
+            "Multiple catch blocks se alag-alag exceptions handle karo"
+          ]
+        },
+        {
+          "name": "throw aur throws",
+          "explanation": "throw se manually exception fenko, throws se batao ki method exception throw kar sakta hai. Jaise — throw: bomb phenko, throws: warning label lagao.",
+          "code": "// throw: Manually exception fenko\nvoid checkAge(int age) {\n    if (age < 18) {\n        throw new IllegalArgumentException(\"Bhai underage hai!\");\n    }\n}\n\n// throws: Batao method exception throw kar sakta hai\nvoid readFile() throws IOException {\n    FileReader fr = new FileReader(\"file.txt\");\n}\n\n// Caller ko handle karna padega\ntry {\n    readFile();\n} catch (IOException e) {\n    System.out.println(\"File nahi mili bhai!\");\n}",
+          "keyPoints": [
+            "throw: Actually exception fenkta hai",
+            "throws: Method signature mein declare karta hai",
+            "Checked exceptions ko ya to handle karo ya declare karo",
+            "RuntimeException ke liye throws lagana zaroori nahi"
+          ]
+        },
+        {
+          "name": "Custom Exceptions",
+          "explanation": "Apne exceptions banao specific errors ke liye — jaise InvalidAgeException, InsufficientFundsException. Isse code readable hota hai.",
+          "code": "// Custom exception define karo\nclass InvalidAgeException extends Exception {\n    public InvalidAgeException(String message) {\n        super(message);\n    }\n}\n\n// Use karo\nclass Person {\n    void setAge(int age) throws InvalidAgeException {\n        if (age < 0 || age > 150) {\n            throw new InvalidAgeException(\"Galat umar: \" + age);\n        }\n    }\n}\n\n// Handle karo\ntry {\n    Person p = new Person();\n    p.setAge(-5);  // Ye exception throw karega\n} catch (InvalidAgeException e) {\n    System.out.println(e.getMessage());  // \"Galat umar: -5\"\n}",
+          "keyPoints": [
+            "Exception extend karo checked exceptions ke liye",
+            "RuntimeException extend karo unchecked ke liye",
+            "Meaningful error messages do",
+            "Domain-specific errors ke liye use karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "strings",
+      "title": "Strings",
+      "concepts": [
+        {
+          "name": "String Methods",
+          "explanation": "String pe common operations — length, trim, uppercase, lowercase, substring, replace, split, contains. String immutable hai yani ek baar bani to change nahi hoti, har operation new string banata hai.",
+          "code": "String str = \"  Hello World  \";\n\n// Length\nint len = str.length();  // 15\n\n// Trim whitespace\nString trimmed = str.trim();  // \"Hello World\"\n\n// Uppercase/Lowercase\nString upper = str.toUpperCase();  // \"  HELLO WORLD  \"\nString lower = str.toLowerCase();  // \"  hello world  \"\n\n// Substring nikalo\nString sub = trimmed.substring(0, 5);  // \"Hello\"\n\n// Replace karo\nString replaced = trimmed.replace(\"World\", \"Java\");\n\n// Split karo\nString[] words = trimmed.split(\" \");  // [\"Hello\", \"World\"]\n\n// Contains check karo\nboolean has = trimmed.contains(\"Hello\");  // true",
+          "keyPoints": [
+            "Strings immutable hain — change nahi hoti",
+            "Methods new String object return karte hain",
+            "Comparison ke liye .equals() use karo, == nahi",
+            "Bahut saari concatenation ke liye StringBuilder use karo"
+          ]
+        },
+        {
+          "name": "StringBuilder",
+          "explanation": "Mutable string jo modify ho sakti hai efficiently — jab bahut saari string operations karne hon tab use karo. Naya object nahi banta, same object modify hota hai.",
+          "code": "StringBuilder sb = new StringBuilder(\"Hello\");\n\n// Append karo\nsb.append(\" World\");  // \"Hello World\"\nsb.append(\"!\");       // \"Hello World!\"\n\n// Insert karo\nsb.insert(6, \"Java \");  // \"Hello Java World!\"\n\n// Delete karo\nsb.delete(6, 11);       // \"Hello World!\"\n\n// Reverse karo\nsb.reverse();           // \"!dlroW olleH\"\n\n// String mein convert karo\nString result = sb.toString();",
+          "keyPoints": [
+            "Mutable hai — modify ho sakta hai",
+            "Loops mein concatenation ke liye efficient",
+            "Thread-safe nahi (StringBuffer thread-safe hai)",
+            "Methods same object modify karte hain in-place"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "streams",
+      "title": "Streams API (Java 8+)",
+      "concepts": [
+        {
+          "name": "Stream Operations",
+          "explanation": "Functional-style operations collections pe — filter, map, reduce. Conveyor belt ki tarah socho: data aata hai, process hota hai, result nikalta hai. Code bahut clean aur readable hota hai.",
+          "code": "import java.util.Arrays;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nList<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);\n\n// Filter - condition se match karne wale rakho\nList<Integer> evens = numbers.stream()\n    .filter(n -> n % 2 == 0)\n    .collect(Collectors.toList());  // [2, 4, 6]\n\n// Map - har element transform karo\nList<Integer> squares = numbers.stream()\n    .map(n -> n * n)\n    .collect(Collectors.toList());  // [1, 4, 9, 16, 25, 36]\n\n// Reduce - sab combine karke ek value\nint sum = numbers.stream()\n    .reduce(0, (a, b) -> a + b);  // 21\n\n// ForEach - har pe action karo\nnumbers.stream()\n    .forEach(System.out::println);",
+          "keyPoints": [
+            "filter: Condition match karne wale select karo",
+            "map: Har element transform karo",
+            "reduce: Sab combine karke ek value banao",
+            "Streams lazy hain aur chain ho sakte hain"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lambda",
+      "title": "Lambda Expressions",
+      "concepts": [
+        {
+          "name": "Lambda Syntax",
+          "explanation": "Anonymous functions ka short form — inline function likho bina pura class banaye. Arrow (=>) notation use hota hai. Bahut kam code mein bahut kaam!",
+          "code": "// Old way: Anonymous class\nRunnable r1 = new Runnable() {\n    public void run() {\n        System.out.println(\"Hello\");\n    }\n};\n\n// New way: Lambda expression — ek line mein!\nRunnable r2 = () -> System.out.println(\"Hello\");\n\n// Parameters ke saath\nComparator<String> comp = (s1, s2) -> s1.compareTo(s2);\n\n// Multiple statements ke liye curly braces\nComparator<String> comp2 = (s1, s2) -> {\n    System.out.println(\"Compare ho raha hai\");\n    return s1.compareTo(s2);\n};",
+          "keyPoints": [
+            "Syntax: (parameters) -> expression",
+            "Multiple statements ke liye {} use karo",
+            "Parameter types ka inference automatic hota hai",
+            "Functional interfaces ke saath kaam karta hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generics",
+      "title": "Generics",
+      "concepts": [
+        {
+          "name": "Generic Classes",
+          "explanation": "Type-safe classes banao jo kisi bhi type ke saath kaam karein — jaise ek dabba jo integers bhi rakh sake aur strings bhi. Type compile time pe decide hota hai, runtime pe nahi.",
+          "code": "// Generic class banao\npublic class Box<T> {  // T = Type parameter\n    private T value;\n    \n    public void set(T value) {\n        this.value = value;\n    }\n    \n    public T get() {\n        return value;\n    }\n}\n\n// Use karo\nBox<String> stringBox = new Box<>();\nstringBox.set(\"Hello\");\nString value = stringBox.get();  // No casting needed!\n\nBox<Integer> intBox = new Box<>();\nintBox.set(42);\nint number = intBox.get();",
+          "keyPoints": [
+            "T type parameter hai (koi bhi naam ho sakta hai)",
+            "Compile time pe type safety deta hai",
+            "Casting ki zaroorat nahi",
+            "Common conventions: T (Type), E (Element), K (Key), V (Value)"
+          ]
+        },
+        {
+          "name": "Generic Methods",
+          "explanation": "Methods jo alag-alag types ke saath kaam karein — same logic, different types.",
+          "code": "public class Utils {\n    // Generic method\n    public static <T> void printArray(T[] array) {\n        for (T element : array) {\n            System.out.print(element + \" \");\n        }\n        System.out.println();\n    }\n    \n    // Multiple type parameters\n    public static <K, V> void printPair(K key, V value) {\n        System.out.println(key + \" = \" + value);\n    }\n}\n\n// Use karo\nInteger[] intArray = {1, 2, 3};\nString[] strArray = {\"A\", \"B\", \"C\"};\nUtils.printArray(intArray);  // Works!\nUtils.printArray(strArray);  // Works!\nUtils.printPair(\"Name\", \"John\");  // Works!",
+          "keyPoints": [
+            "Type parameter return type se pehle aata hai",
+            "Type arguments se infer hota hai",
+            "Multiple type parameters ho sakte hain",
+            "Code reusability badhti hai"
+          ]
+        },
+        {
+          "name": "Bounded Type Parameters",
+          "explanation": "Generic types ko restrict karo — sirf specific types allowed hongi. extends keyword se upper bound lagao, jaise sirf Numbers accept karo Strings nahi.",
+          "code": "// Upper bound (extends)\npublic class NumberBox<T extends Number> {\n    private T value;\n    public double doubleValue() {\n        return value.doubleValue();\n    }\n}\n\n// Ye chalega\nNumberBox<Integer> intBox = new NumberBox<>();   // OK\nNumberBox<Double> doubleBox = new NumberBox<>();  // OK\n// NumberBox<String> strBox = new NumberBox<>();  // ERROR!\n\n// Multiple bounds bhi laga sakte ho\npublic <T extends Number & Comparable<T>> T max(T a, T b) {\n    return a.compareTo(b) > 0 ? a : b;\n}\n\nint bigger = max(10, 20);         // 20\ndouble bigger2 = max(3.14, 2.71); // 3.14",
+          "keyPoints": [
+            "extends bound type ko ek specific class/interface tak limit karta hai",
+            "Bound type ke methods access kar sakte ho",
+            "Multiple bounds: T extends Class & Interface1 & Interface2",
+            "Generic types pe specific operations enable karta hai"
+          ]
+        },
+        {
+          "name": "Wildcards",
+          "explanation": "Flexible type parameters — exact type jaane bina kaam karo. ? extends Number matlab koi bhi Number ka subtype le lo, chahe Integer ho ya Double.",
+          "code": "import java.util.List;\n\n// Unbounded wildcard — koi bhi type\npublic static void printList(List<?> list) {\n    for (Object item : list) {\n        System.out.println(item);\n    }\n}\n\n// Upper bounded wildcard — Number ya uske subtypes\npublic static double sumList(List<? extends Number> list) {\n    double sum = 0.0;\n    for (Number num : list) {\n        sum += num.doubleValue();\n    }\n    return sum;\n}\n\n// Lower bounded wildcard — Integer ya uske supertypes\npublic static void addNumbers(List<? super Integer> list) {\n    list.add(1);\n    list.add(2);\n}\n\nList<Integer> ints = List.of(1, 2, 3);\nList<Double> doubles = List.of(1.1, 2.2);\nsumList(ints);    // OK!\nsumList(doubles); // OK!",
+          "keyPoints": [
+            "? unknown type represent karta hai",
+            "? extends T: upper bounded — read karo, write mat karo",
+            "? super T: lower bounded — write karo, read careful se karo",
+            "Jab exact type jaanna zaroori na ho tab use karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multithreading",
+      "title": "Multithreading & Concurrency",
+      "concepts": [
+        {
+          "name": "Threads Banana",
+          "explanation": "Java mein threads banane ke do tarike hain — Thread extend karo ya Runnable implement karo. Thread ek alag execution path hai — multiple kaam simultaneously kar sakte ho.",
+          "code": "// Way 1: Thread class extend karo\nclass MyThread extends Thread {\n    public void run() {\n        System.out.println(\"Thread chal rahi hai: \" + Thread.currentThread().getName());\n    }\n}\n\nMyThread t = new MyThread();\nt.start();  // start() se naya thread banta hai\n\n// Way 2: Runnable implement karo (preferred)\nclass MyRunnable implements Runnable {\n    public void run() {\n        System.out.println(\"Runnable chal rahi hai\");\n    }\n}\n\nThread t2 = new Thread(new MyRunnable());\nt2.start();\n\n// Lambda way (Java 8+) — sabse simple\nThread t3 = new Thread(() -> {\n    System.out.println(\"Lambda thread chal rahi hai\");\n});\nt3.start();",
+          "keyPoints": [
+            "Runnable interface preferred hai Thread extend karne se",
+            "start() call karo, run() nahi — run() se naya thread nahi banta",
+            "start() naya thread create karta hai, run() current mein hi chalta hai",
+            "Lambda se concise thread creation"
+          ]
+        },
+        {
+          "name": "Thread Synchronization",
+          "explanation": "Race conditions rokne ke liye synchronized use karo — jab multiple threads same data access karein. Jaise bathroom ka lock — ek time pe ek hi jaaye!",
+          "code": "class Counter {\n    private int count = 0;\n    \n    // Synchronized method — ek time pe ek thread\n    public synchronized void increment() {\n        count++;\n    }\n    \n    // Synchronized block\n    public void decrement() {\n        synchronized(this) {\n            count--;\n        }\n    }\n    \n    public int getCount() {\n        return count;\n    }\n}\n\n// Use karo\nCounter counter = new Counter();\n\nThread t1 = new Thread(() -> {\n    for (int i = 0; i < 1000; i++) {\n        counter.increment();\n    }\n});\n\nThread t2 = new Thread(() -> {\n    for (int i = 0; i < 1000; i++) {\n        counter.increment();\n    }\n});\n\nt1.start();\nt2.start();\nt1.join();  // t1 khatam hone ka wait karo\nt2.join();  // t2 khatam hone ka wait karo\n\nSystem.out.println(\"Count: \" + counter.getCount());  // 2000 — correct!",
+          "keyPoints": [
+            "synchronized concurrent access rokta hai",
+            "Methods ya blocks dono pe laga sakte ho",
+            "Object ke monitor pe synchronize hota hai",
+            "join() thread complete hone ka wait karta hai"
+          ]
+        },
+        {
+          "name": "ExecutorService",
+          "explanation": "Thread pool manage karo efficiently. ExecutorService ek pool maintain karta hai threads ka — har baar naya thread banane ki zaroorat nahi. Callable se result bhi wapas le sakte ho!",
+          "code": "import java.util.concurrent.*;\n\n// 5 threads ka fixed pool\nExecutorService executor = Executors.newFixedThreadPool(5);\n\nfor (int i = 0; i < 10; i++) {\n    final int taskId = i;\n    executor.submit(() -> {\n        System.out.println(\"Task \" + taskId + \" by \" +\n            Thread.currentThread().getName());\n    });\n}\n\nexecutor.shutdown();\ntry {\n    executor.awaitTermination(1, TimeUnit.MINUTES);\n} catch (InterruptedException e) { e.printStackTrace(); }\n\n// Callable — result return karta hai\nExecutorService exec = Executors.newSingleThreadExecutor();\nFuture<Integer> future = exec.submit(() -> {\n    Thread.sleep(1000);\n    return 42;\n});\n\ntry {\n    Integer result = future.get(); // Result aane tak block karta hai\n    System.out.println(\"Result: \" + result);\n} catch (Exception e) { e.printStackTrace(); }\nexec.shutdown();",
+          "keyPoints": [
+            "ExecutorService thread pool manage karta hai",
+            "newFixedThreadPool(n): Fixed n threads",
+            "newCachedThreadPool(): Zaroorat ke hisaab se threads badhte hain",
+            "Callable result return karta hai, Runnable nahi karta",
+            "Future.get() result retrieve karta hai (blocking)"
+          ]
+        },
+        {
+          "name": "CompletableFuture",
+          "explanation": "Modern async programming! Chain operations banao, multiple futures combine karo — sab non-blocking. Jaise pizza order — wait mat karo, callback pe kaam karo!",
+          "code": "import java.util.concurrent.CompletableFuture;\n\n// Async task chalao\nCompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {\n    try { Thread.sleep(1000); } catch (InterruptedException e) {}\n    return \"Hello\";\n});\n\n// Operations chain karo\nfuture.thenApply(s -> s + \" World\")\n      .thenApply(String::toUpperCase)\n      .thenAccept(System.out::println); // Prints: HELLO WORLD\n\n// Futures combine karo\nCompletableFuture<String> f1 = CompletableFuture.supplyAsync(() -> \"Hello\");\nCompletableFuture<String> f2 = CompletableFuture.supplyAsync(() -> \"World\");\nCompletableFuture<String> combined = f1.thenCombine(f2,\n    (s1, s2) -> s1 + \" \" + s2);\nSystem.out.println(combined.get()); // \"Hello World\"\n\n// Exceptions handle karo\nCompletableFuture.supplyAsync(() -> {\n    if (true) throw new RuntimeException(\"Error!\");\n    return \"Success\";\n}).exceptionally(ex -> {\n    System.out.println(\"Pakda: \" + ex.getMessage());\n    return \"Default Value\";\n}).thenAccept(System.out::println);",
+          "keyPoints": [
+            "supplyAsync(): Task async mein chalao",
+            "thenApply(): Result transform karo",
+            "thenAccept(): Result consume karo (void return)",
+            "thenCombine(): Multiple futures combine karo",
+            "exceptionally(): Exceptions handle karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced-collections",
+      "title": "Advanced Collections",
+      "concepts": [
+        {
+          "name": "TreeMap",
+          "explanation": "HashMap ki tarah hai, but keys automatically sorted rehti hain! Red-Black tree use karta hai internaly. Jab alphabetically ya numerically sorted data chahiye tab perfect.",
+          "code": "import java.util.TreeMap;\n\nTreeMap<String, Integer> map = new TreeMap<>();\n\nmap.put(\"Charlie\", 30);\nmap.put(\"Alice\", 25);\nmap.put(\"Bob\", 28);\n\n// Iterate (sorted order mein)\nfor (String key : map.keySet()) {\n    System.out.println(key + \" = \" + map.get(key));\n}  // Output: Alice, Bob, Charlie\n\n// Pehla aur aakhri\nString first = map.firstKey();  // \"Alice\"\nString last = map.lastKey();    // \"Charlie\"\n\n// Range operations\nTreeMap<String, Integer> sub = new TreeMap<>(map.subMap(\"B\", \"D\"));\n// sub mein sirf Bob hai\n\n// Lower/higher keys\nString lower = map.lowerKey(\"Bob\");   // \"Alice\"\nString higher = map.higherKey(\"Bob\"); // \"Charlie\"",
+          "keyPoints": [
+            "Keys natural order ya Comparator se sort hoti hain",
+            "O(log n) for add, remove, contains",
+            "firstKey(), lastKey(), subMap() jaise NavigableMap operations",
+            "Null keys allowed nahi"
+          ]
+        },
+        {
+          "name": "TreeSet",
+          "explanation": "HashSet ki tarah hai but elements sorted rehte hain aur duplicates allowed nahi. Sorted unique collection chahiye? TreeSet perfect choice hai!",
+          "code": "import java.util.TreeSet;\n\nTreeSet<Integer> set = new TreeSet<>();\n\nset.add(5);\nset.add(1);\nset.add(3);\nset.add(1);  // Duplicate ignore hoga\n\nSystem.out.println(set);  // [1, 3, 5]\n\n// Navigation\nint first = set.first();    // 1\nint last = set.last();      // 5\nInteger lower = set.lower(3);   // 1\nInteger higher = set.higher(3); // 5\n\n// Subset (2 inclusive, 6 exclusive)\nTreeSet<Integer> sub = new TreeSet<>(set.subSet(2, 6));\n// sub: [3, 5]\n\n// Descending\nSystem.out.println(set.descendingSet()); // [5, 3, 1]",
+          "keyPoints": [
+            "Elements natural order mein sorted rehte hain",
+            "Duplicates allowed nahi",
+            "O(log n) operations",
+            "NavigableSet methods milte hain"
+          ]
+        },
+        {
+          "name": "Queue aur Deque",
+          "explanation": "Queue FIFO hai — jaise line mein khade hona, pehle aaya pehle jaayega. Deque double-ended hai — dono taraf se add/remove. Stack aur Queue dono ki tarah use ho sakta hai!",
+          "code": "import java.util.Queue;\nimport java.util.LinkedList;\nimport java.util.Deque;\nimport java.util.ArrayDeque;\n\n// Queue (FIFO)\nQueue<String> queue = new LinkedList<>();\nqueue.offer(\"Pehla\");\nqueue.offer(\"Doosra\");\nqueue.offer(\"Teesra\");\n\nString head = queue.peek();    // \"Pehla\" (dekho, hato mat)\nString removed = queue.poll(); // \"Pehla\" (nikalo)\n\n// Deque (double-ended)\nDeque<String> deque = new ArrayDeque<>();\ndeque.addFirst(\"Start\");  // Front mein add karo\ndeque.addLast(\"End\");     // Back mein add karo\ndeque.removeFirst();       // Front se nikalo\ndeque.removeLast();        // Back se nikalo\n\n// Stack ki tarah use karo\ndeque.push(\"A\");  // Front mein add\ndeque.push(\"B\");\nString top = deque.pop();  // \"B\" — Front se nikalo",
+          "keyPoints": [
+            "Queue: FIFO (First In First Out)",
+            "offer/poll safe hain — exception nahi dete",
+            "Deque: Dono ends se insert/remove kar sakte ho",
+            "Stack ya Queue dono ki tarah use ho sakta hai"
+          ]
+        },
+        {
+          "name": "PriorityQueue",
+          "explanation": "Priority ke hisaab se elements nikalta hai, insertion order se nahi! Default min-heap hai. Algorithms mein bahut use hota hai — Dijkstra, task scheduling, etc.",
+          "code": "import java.util.PriorityQueue;\nimport java.util.Comparator;\n\n// Min heap (default)\nPriorityQueue<Integer> minHeap = new PriorityQueue<>();\nminHeap.offer(5);\nminHeap.offer(1);\nminHeap.offer(3);\n\nSystem.out.println(minHeap.poll()); // 1 (sabse chota)\nSystem.out.println(minHeap.poll()); // 3\n\n// Max heap\nPriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());\nmaxHeap.offer(5);\nmaxHeap.offer(1);\nmaxHeap.offer(3);\n\nSystem.out.println(maxHeap.poll()); // 5 (sabse bada)\n\n// Custom objects\nrecord Task(String name, int priority) {}\nPriorityQueue<Task> tasks = new PriorityQueue<>(\n    Comparator.comparingInt(Task::priority)\n);\ntasks.offer(new Task(\"Bug fix\", 1));\ntasks.offer(new Task(\"Meeting\", 3));\ntasks.offer(new Task(\"Code review\", 2));\nSystem.out.println(tasks.poll().name()); // \"Bug fix\"",
+          "keyPoints": [
+            "Elements natural order ya Comparator ke hisaab se ordered",
+            "offer aur poll O(log n)",
+            "peek O(1) — bina nikale dekho",
+            "Thread-safe nahi — concurrent use mein PriorityBlockingQueue use karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "file-io",
+      "title": "File I/O",
+      "concepts": [
+        {
+          "name": "File Padhna",
+          "explanation": "Text files padhne ke multiple tarike hain. Chhoti files ke liye Files.readAllLines, badi files ke liye BufferedReader. Try-with-resources se file auto-close hoti hai!",
+          "code": "import java.io.*;\nimport java.nio.file.*;\nimport java.util.List;\n\n// Method 1: Files.readAllLines (Java 8+) — sabse simple\ntry {\n    List<String> lines = Files.readAllLines(Paths.get(\"file.txt\"));\n    for (String line : lines) {\n        System.out.println(line);\n    }\n} catch (IOException e) { e.printStackTrace(); }\n\n// Method 2: BufferedReader — badi files ke liye\ntry (BufferedReader br = new BufferedReader(new FileReader(\"file.txt\"))) {\n    String line;\n    while ((line = br.readLine()) != null) {\n        System.out.println(line);\n    }\n} catch (IOException e) { e.printStackTrace(); }\n\n// Method 3: Scanner — flexible parsing\ntry (Scanner scanner = new Scanner(new File(\"file.txt\"))) {\n    while (scanner.hasNextLine()) {\n        System.out.println(scanner.nextLine());\n    }\n} catch (FileNotFoundException e) { e.printStackTrace(); }",
+          "keyPoints": [
+            "Files.readAllLines: Simple, ek baar mein sab padhta hai",
+            "BufferedReader: Badi files ke liye efficient",
+            "Scanner: Flexible parsing ke liye",
+            "Try-with-resources se file auto-close hoti hai"
+          ]
+        },
+        {
+          "name": "File Likhna",
+          "explanation": "Text files mein likhne ke tarike. Append mode true karne se existing file mein data add hota hai bina purania delete kiye.",
+          "code": "import java.io.*;\nimport java.nio.file.*;\nimport java.util.Arrays;\n\n// Method 1: Files.write (Java 8+)\ntry {\n    List<String> lines = Arrays.asList(\"Line 1\", \"Line 2\", \"Line 3\");\n    Files.write(Paths.get(\"output.txt\"), lines);\n} catch (IOException e) { e.printStackTrace(); }\n\n// Method 2: BufferedWriter — badi files ke liye\ntry (BufferedWriter writer = new BufferedWriter(new FileWriter(\"output.txt\"))) {\n    writer.write(\"Namaste Duniya!\");\n    writer.newLine();\n    writer.write(\"Doosri line\");\n} catch (IOException e) { e.printStackTrace(); }\n\n// Append mode — existing mein add karo\ntry (BufferedWriter writer = new BufferedWriter(\n    new FileWriter(\"output.txt\", true))) {  // true = append\n    writer.write(\"Naya data add kiya\");\n    writer.newLine();\n} catch (IOException e) { e.printStackTrace(); }",
+          "keyPoints": [
+            "Files.write: Chhoti files ke liye simple",
+            "BufferedWriter: Badi files ke liye better performance",
+            "Append mode (true) se existing file mein data add hota hai",
+            "Try-with-resources use karo writer band karne ke liye"
+          ]
+        },
+        {
+          "name": "File Operations",
+          "explanation": "Files aur directories ke saath kaam — check karo, banao, mita do, copy karo, move karo. Modern NIO Files class use karna better hai.",
+          "code": "import java.io.File;\nimport java.nio.file.*;\n\n// File info\nFile file = new File(\"meri_file.txt\");\nboolean exists = file.exists();\nboolean isFile = file.isFile();\nboolean isDir = file.isDirectory();\nlong size = file.length();  // bytes mein\n\n// Create/delete\ntry {\n    boolean banaya = file.createNewFile();\n    boolean mita = file.delete();\n} catch (IOException e) { e.printStackTrace(); }\n\n// Directory operations\nFile dir = new File(\"mera_folder\");\ndir.mkdir();   // Ek folder banao\ndir.mkdirs();  // Nested folders banao\n\n// Files list karo\nFile[] files = dir.listFiles();\nif (files != null) {\n    for (File f : files) System.out.println(f.getName());\n}\n\n// Copy/move (Java 7+ NIO)\ntry {\n    Files.copy(Paths.get(\"source.txt\"), Paths.get(\"dest.txt\"));\n    Files.move(Paths.get(\"old.txt\"), Paths.get(\"new.txt\"));\n} catch (IOException e) { e.printStackTrace(); }",
+          "keyPoints": [
+            "File class se file/directory operations karo",
+            "exists(), isFile(), isDirectory() se checks",
+            "Files class modern NIO operations ke liye",
+            "mkdir() ek folder, mkdirs() nested folders banata hai"
+          ]
+        },
+        {
+          "name": "Serialization",
+          "explanation": "Java objects ko file mein save karo aur baad mein wapas le aao! Serializable implement karo. transient keyword sensitive fields ko exclude karta hai.",
+          "code": "import java.io.*;\n\nclass Person implements Serializable {\n    private static final long serialVersionUID = 1L;\n    private String name;\n    private int age;\n    private transient String password; // Serialize nahi hoga!\n    \n    Person(String name, int age, String password) {\n        this.name = name;\n        this.age = age;\n        this.password = password;\n    }\n}\n\n// Serialize — object ko file mein likhna\ntry (ObjectOutputStream out = new ObjectOutputStream(\n    new FileOutputStream(\"person.ser\"))) {\n    out.writeObject(new Person(\"Alice\", 30, \"secret\"));\n} catch (IOException e) { e.printStackTrace(); }\n\n// Deserialize — file se object wapas lena\ntry (ObjectInputStream in = new ObjectInputStream(\n    new FileInputStream(\"person.ser\"))) {\n    Person p = (Person) in.readObject();\n    System.out.println(p.name);     // \"Alice\"\n    System.out.println(p.password); // null (transient tha!)\n} catch (IOException | ClassNotFoundException e) { e.printStackTrace(); }",
+          "keyPoints": [
+            "Serializable interface implement karo",
+            "serialVersionUID version control ke liye zaroori hai",
+            "transient keyword field ko exclude karta hai",
+            "ObjectOutputStream/ObjectInputStream use karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datetime",
+      "title": "Date & Time API (Java 8+)",
+      "concepts": [
+        {
+          "name": "LocalDate, LocalTime, LocalDateTime",
+          "explanation": "Java 8 ne puri date-time API naya likh di — pehli wali buggy thi! LocalDate sirf date, LocalTime sirf time, LocalDateTime dono. Sab immutable hain — operations naya object return karte hain.",
+          "code": "import java.time.*;\n\n// Aaj ki date\nLocalDate aaj = LocalDate.now();               // 2024-02-05\nLocalDate khas = LocalDate.of(2024, 12, 25);   // Christmas!\nLocalDate parsed = LocalDate.parse(\"2024-12-25\");\n\n// Date operations (naya object milta hai)\nLocalDate kal = aaj.plusDays(1);\nLocalDate agla = aaj.plusMonths(1);\nLocalDate pichla = aaj.minusYears(1);\n\n// Components nikalo\nint year = aaj.getYear();\nMonth month = aaj.getMonth();        // FEBRUARY\nint day = aaj.getDayOfMonth();\nDayOfWeek din = aaj.getDayOfWeek();  // MONDAY etc.\n\n// LocalTime\nLocalTime time = LocalTime.now();        // 14:30:45\nLocalTime meeting = LocalTime.of(14, 30); // 14:30\n\n// LocalDateTime — date + time dono\nLocalDateTime dt = LocalDateTime.now();\nLocalDateTime meeting2 = LocalDateTime.of(2024, 12, 25, 10, 30);",
+          "keyPoints": [
+            "LocalDate: Sirf date",
+            "LocalTime: Sirf time",
+            "LocalDateTime: Date + time, but timezone nahi",
+            "Immutable — operations naya object return karta hai",
+            "plusDays(), minusDays() se date arithmetic"
+          ]
+        },
+        {
+          "name": "ZonedDateTime aur Formatting",
+          "explanation": "Global apps mein timezone handle karna zaroori hai! ZoneId se timezone specify karo. DateTimeFormatter se date format aur parse karo apne hisaab se.",
+          "code": "import java.time.*;\nimport java.time.format.DateTimeFormatter;\n\n// Specific timezone mein time\nZonedDateTime india = ZonedDateTime.now(ZoneId.of(\"Asia/Kolkata\"));\nZonedDateTime usa   = ZonedDateTime.now(ZoneId.of(\"America/New_York\"));\nZonedDateTime japan = ZonedDateTime.now(ZoneId.of(\"Asia/Tokyo\"));\n\n// Timezone convert karo\nZonedDateTime utc = ZonedDateTime.now(ZoneId.of(\"UTC\"));\nZonedDateTime london = utc.withZoneSameInstant(ZoneId.of(\"Europe/London\"));\n\n// Format karo\nDateTimeFormatter fmt = DateTimeFormatter.ofPattern(\"dd/MM/yyyy HH:mm:ss\");\nString formatted = india.format(fmt);  // \"05/02/2024 14:30:00\"\n\n// Parse karo\nLocalDate date = LocalDate.parse(\"05/02/2024\",\n    DateTimeFormatter.ofPattern(\"dd/MM/yyyy\"));\n\n// ISO format\nString iso = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);",
+          "keyPoints": [
+            "ZonedDateTime: Date + time + timezone",
+            "withZoneSameInstant(): Timezone convert karo",
+            "DateTimeFormatter: Format aur parse karo",
+            "Global apps ke liye timezone handling zaroori hai"
+          ]
+        },
+        {
+          "name": "Period aur Duration",
+          "explanation": "Do timepoints ke beech ka difference nikalo. Period date-based hai (din, mahine, saal), Duration time-based hai (ghante, minute, second).",
+          "code": "import java.time.*;\nimport java.time.temporal.ChronoUnit;\n\n// Period — date ke beech ka difference\nLocalDate start = LocalDate.of(2024, 1, 1);\nLocalDate end   = LocalDate.of(2024, 12, 31);\n\nPeriod period = Period.between(start, end);\nint mahine = period.getMonths(); // 11\nint din    = period.getDays();   // 30\n\n// Total days seedha\nlong totalDays = ChronoUnit.DAYS.between(start, end); // 365\n\n// Duration — time ke beech ka difference\nLocalTime kaamShuru  = LocalTime.of(9, 0);\nLocalTime kaamKhatam = LocalTime.of(17, 30);\n\nDuration duration = Duration.between(kaamShuru, kaamKhatam);\nlong ghante  = duration.toHours();   // 8\nlong minutes = duration.toMinutes(); // 510\n\n// Dates mein add karo\nLocalDate deadline = LocalDate.now().plus(Period.ofMonths(3));\nLocalDateTime later = LocalDateTime.now().plus(Duration.ofHours(2));",
+          "keyPoints": [
+            "Period: Date-based (din, mahine, saal)",
+            "Duration: Time-based (ghante, minute, second)",
+            "between() se difference nikalo",
+            "ChronoUnit.DAYS.between() se total days directly"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wrappers",
+      "title": "Wrapper Classes",
+      "concepts": [
+        {
+          "name": "Wrapper Classes aur Autoboxing",
+          "explanation": "Har primitive type ka ek Wrapper class hai. Collections mein primitives directly nahi jaate, Wrappers jaate hain. Java automatically convert karta hai dono direction mein.",
+          "code": "// Wrapper classes\nInteger intObj = Integer.valueOf(10);\nDouble dblObj  = Double.valueOf(3.14);\nBoolean boolObj = Boolean.valueOf(true);\n\n// Autoboxing — primitive se wrapper (compiler karta hai)\nInteger auto = 10;  // Actually: Integer.valueOf(10)\n\n// Unboxing — wrapper se primitive (compiler karta hai)\nint primitive = auto;  // Actually: auto.intValue()\n\n// String parse karo\nint num  = Integer.parseInt(\"123\");\ndouble d = Double.parseDouble(\"3.14\");\nboolean b = Boolean.parseBoolean(\"true\");\n\n// Useful constants\nint maxInt = Integer.MAX_VALUE;  // 2147483647\nint minInt = Integer.MIN_VALUE;  // -2147483648\n\n// IMPORTANT: Wrappers compare karne ke liye equals() use karo!\nInteger a = 100, b2 = 100;\nSystem.out.println(a == b2);       // true (caching -128 to 127)\n\nInteger c = 200, d2 = 200;\nSystem.out.println(c == d2);       // false! (alag objects)\nSystem.out.println(c.equals(d2));  // true — ye use karo!",
+          "keyPoints": [
+            "int->Integer, double->Double, char->Character, boolean->Boolean, etc.",
+            "Autoboxing: primitive se wrapper automatic convert",
+            "Unboxing: wrapper se primitive automatic convert",
+            "Comparison ke liye == mat use karo, equals() use karo!",
+            "parseInt() String ko primitive mein convert karta hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "optional",
+      "title": "Optional Class",
+      "concepts": [
+        {
+          "name": "Optional se Null Safety",
+          "explanation": "NullPointerException Java developers ka sabse bada dushman! Optional ek container hai jo value hai ya nahi clearly communicate karta hai. null check bhoolne ki problem khatam.",
+          "code": "import java.util.Optional;\n\n// Optional banao\nOptional<String> present  = Optional.of(\"Hello\");           // Null nahi\nOptional<String> nullable = Optional.ofNullable(getName()); // Null ho sakta hai\nOptional<String> empty    = Optional.empty();\n\n// Check karo\nif (present.isPresent()) {\n    System.out.println(present.get());\n}\n\n// Aur accha — ifPresent\npresent.ifPresent(v -> System.out.println(v));\n\n// Default value\nString name  = nullable.orElse(\"Anonymous\");             // Direct value\nString name2 = nullable.orElseGet(() -> getDefault());   // Lazy\n\n// Exception throw karo agar empty\nString name3 = nullable.orElseThrow(\n    () -> new IllegalStateException(\"Name nahi mila!\"));\n\n// Transform karo chain mein\nString email = findUser(id)\n    .map(User::getEmail)\n    .map(String::toLowerCase)\n    .orElse(\"no-email@example.com\");",
+          "keyPoints": [
+            "Optional.of(): Value null nahi ho sakti",
+            "Optional.ofNullable(): Value null ho sakti hai",
+            "orElse(): Empty hone pe default value",
+            "orElseThrow(): Empty hone pe exception",
+            "map(), filter(): Optional mein hi transform karo",
+            "NullPointerException se bachata hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "math-random",
+      "title": "Math & Random",
+      "concepts": [
+        {
+          "name": "Math Class",
+          "explanation": "Mathematical operations ke liye Math class — sab static methods. PI, E constants, trig functions, power, roots — sab kuch. Math.random() basic ke liye, Random class advanced ke liye.",
+          "code": "// Constants\ndouble pi = Math.PI;   // 3.141592653589793\ndouble e  = Math.E;    // 2.718281828459045\n\n// Basic operations\nint abs      = Math.abs(-5);         // 5\ndouble ceil  = Math.ceil(4.1);       // 5.0\ndouble floor = Math.floor(4.9);      // 4.0\nlong round   = Math.round(4.6);      // 5\n\n// Power aur roots\ndouble pow  = Math.pow(2, 3);        // 8.0\ndouble sqrt = Math.sqrt(16);         // 4.0\ndouble cbrt = Math.cbrt(27);         // 3.0\n\n// Min aur max\nint min = Math.min(5, 10);  // 5\nint max = Math.max(5, 10);  // 10\n\n// Trigonometry (radians mein!)\ndouble sin = Math.sin(Math.PI / 2); // 1.0\ndouble cos = Math.cos(0);           // 1.0\n\n// Random number 0.0 to 1.0\ndouble r = Math.random();\n\n// 1 se 100 tak random\nint dice = (int)(Math.random() * 100) + 1;",
+          "keyPoints": [
+            "Sab methods static hain — object banane ki zaroorat nahi",
+            "Trig functions radians mein hain, degrees mein nahi",
+            "Math.random() return karta hai [0.0, 1.0)",
+            "1-N range: (int)(Math.random() * N) + 1"
+          ]
+        },
+        {
+          "name": "Random Class",
+          "explanation": "Math.random() se zyada control chahiye? Random class use karo! Bounded integers, boolean, different distributions — sab milta hai. Seed se reproducible sequences banao.",
+          "code": "import java.util.Random;\n\nRandom random = new Random();\n\n// Integers\nint anyInt  = random.nextInt();        // Koi bhi int\nint bounded = random.nextInt(100);     // 0 to 99\nint range   = random.nextInt(50) + 50; // 50 to 99\n\n// Doubles\ndouble d = random.nextDouble(); // 0.0 to 1.0\n\n// Boolean\nboolean flip = random.nextBoolean();\n\n// Seed set karo reproducibility ke liye\nRandom seeded = new Random(42);\nint val1 = seeded.nextInt(); // Hamesha same result\n\n// Java 17+ mein aur bhi achha syntax\nimport java.util.random.RandomGenerator;\nRandomGenerator rng = RandomGenerator.getDefault();\nint n = rng.nextInt(1, 101); // 1 se 100 (inclusive dono!)\n\n// Collections shuffle\nimport java.util.Collections;\nCollections.shuffle(myList, random);",
+          "keyPoints": [
+            "nextInt(bound): 0 se bound-1 tak",
+            "Seed se reproducible sequences — testing ke liye perfect",
+            "Multithreading mein ThreadLocalRandom use karo",
+            "Collections.shuffle() list ko random order mein karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modern-java",
+      "title": "Modern Java Features (11+)",
+      "concepts": [
+        {
+          "name": "var Keyword (Java 10+)",
+          "explanation": "Java ko type figure out karne do — tumhe likhna nahi padta. Dynamic typing nahi hai — type compile time pe pata hai, sirf infer hota hai. Lambi generic types ke liye bahut helpful!",
+          "code": "// Pehle: Repetitive type likhna padta tha\nArrayList<Map<String, List<Integer>>> data = new ArrayList<>();\n\n// Ab: var se type infer ho jaata hai\nvar data = new ArrayList<Map<String, List<Integer>>>();\nvar name = \"John\";      // String\nvar count = 42;         // int\nvar users = getUsers(); // Jo bhi getUsers() return kare\n\n// var sirf LOCAL variables ke liye — fields ya parameters ke liye nahi!\nvar list = List.of(1, 2, 3);  // List<Integer>\nfor (var item : list) {\n    System.out.println(item);\n}",
+          "keyPoints": [
+            "Type compile time pe decide hota hai — strongly typed hai!",
+            "Sirf local variables ke liye jinka initializer ho",
+            "Code clean lagta hai jab type right side se obvious ho",
+            "Avoid karo jab type clear na ho: var x = getValue(); // x kya hai?"
+          ]
+        },
+        {
+          "name": "Records (Java 16+)",
+          "explanation": "Data classes ke liye boilerplate likhne se tang aa gaye? Records Java ka shortcut hai 'bas ye data hold karo' ke liye. Constructor, getters, equals(), hashCode(), toString() sab FREE mein milte hain!",
+          "code": "// Old way: 50+ lines boilerplate\nclass PersonOld {\n    private final String name;\n    private final int age;\n    // Constructor, getters, equals, hashCode, toString...\n}\n\n// New way: Ek line!\nrecord Person(String name, int age) {}\n\n// Use karo\nPerson p = new Person(\"Alice\", 30);\np.name();     // \"Alice\" (get prefix nahi)\np.age();      // 30\np.toString(); // \"Person[name=Alice, age=30]\"\n\n// Custom methods aur validation bhi add ho sakti hai\nrecord Email(String address) {\n    // Compact constructor validation ke liye\n    public Email {\n        if (!address.contains(\"@\")) {\n            throw new IllegalArgumentException(\"Invalid email bhai!\");\n        }\n    }\n}",
+          "keyPoints": [
+            "Records immutable hain — fields final hain, setters nahi hote",
+            "Auto-generate: constructor, getters, equals(), hashCode(), toString()",
+            "Getters field name use karte hain (getField() nahi) — e.g., person.name()",
+            "DTOs, API responses, value objects ke liye perfect"
+          ]
+        },
+        {
+          "name": "Text Blocks (Java 15+)",
+          "explanation": "Multi-line strings bina escape character ke nightmare ke! Finally JSON, SQL, ya HTML likhte waqt readable code milta hai! Opening \"\"\" ke baad new line honi chahiye.",
+          "code": "// Pehle: Escape quotes ka jhanjhat\nString json = \"{\\n\" +\n              \"  \\\"name\\\": \\\"John\\\",\\n\" +\n              \"  \\\"age\\\": 30\\n\" +\n              \"}\";\n\n// Ab: Seedha paste karo\nString json = \"\"\"\n    {\n        \"name\": \"John\",\n        \"age\": 30\n    }\n    \"\"\";\n\n// SQL bhi readable!\nString sql = \"\"\"\n    SELECT u.name, u.email\n    FROM users u\n    WHERE u.active = true\n    ORDER BY u.created_at DESC\n    \"\"\";\n\n// HTML templates\nString html = \"\"\"\n    <html>\n        <body>\n            <h1>Hello, %s!</h1>\n        </body>\n    </html>\n    \"\"\".formatted(userName);",
+          "keyPoints": [
+            "Opening \"\"\" ke baad newline honi chahiye",
+            "Indentation closing \"\"\" ke relative hoti hai",
+            "Andar quotes escape karne ki zaroorat nahi",
+            ".formatted() se string interpolation karo"
+          ]
+        },
+        {
+          "name": "Pattern Matching instanceof (Java 16+)",
+          "explanation": "Pehle instanceof check karo, phir cast karo — ye double kaam tha. Ab Java ek step mein karta hai! Variable automatically cast ho jaata hai. Boilerplate zero!",
+          "code": "// Pehle wala tarika — repetitive\nif (obj instanceof String) {\n    String s = (String) obj; // Alag se cast zaroori tha\n    System.out.println(s.length());\n}\n\n// Naya tarika — Pattern Matching (Java 16+)\nif (obj instanceof String s) {\n    // s already String mein cast ho gaya!\n    System.out.println(s.length());\n}\n\n// Negation ke saath bhi kaam karta hai\nif (!(obj instanceof String s)) {\n    return;\n}\n// s yahan bhi available hai!\nSystem.out.println(s.toUpperCase());\n\n// && ke saath combine karo\nif (obj instanceof String s && s.length() > 5) {\n    System.out.println(\"Lambi string: \" + s);\n}",
+          "keyPoints": [
+            "Variable automatically cast aur available ho jaata hai",
+            "Boilerplate aur ClassCastException risk dono khatam",
+            "&& conditions ke saath kaam karta hai, || se nahi",
+            "Future Java mein aur bhi pattern matching features aayenge"
+          ]
+        },
+        {
+          "name": "Sealed Classes (Java 17+)",
+          "explanation": "Exactly kitni subclasses hongi ye control karo. Invite-only inheritance! Compiler ko sab subtypes pata hain toh exhaustive switch bhi kara sako — default ki zaroorat nahi.",
+          "code": "// Sirf yahi teen Shape extend kar sakte hain\nsealed abstract class Shape permits Circle, Rectangle, Triangle {\n    abstract double area();\n}\n\nfinal class Circle extends Shape {\n    double radius;\n    double area() { return Math.PI * radius * radius; }\n}\n\nfinal class Rectangle extends Shape {\n    double width, height;\n    double area() { return width * height; }\n}\n\nfinal class Triangle extends Shape {\n    double base, height;\n    double area() { return 0.5 * base * height; }\n}\n\n// Compiler sab subtypes jaanta hai!\nString describe(Shape shape) {\n    return switch (shape) {\n        case Circle c    -> \"Circle radius: \" + c.radius;\n        case Rectangle r -> \"Rectangle \" + r.width + \"x\" + r.height;\n        case Triangle t  -> \"Triangle base: \" + t.base;\n        // default ki zaroorat nahi!\n    };\n}",
+          "keyPoints": [
+            "sealed = sirf ye specific classes extend kar sakti hain",
+            "Permitted subclasses final, sealed ya non-sealed honi chahiye",
+            "Exhaustive pattern matching switch mein enable karta hai",
+            "Fixed types ke sets ke liye best (jaise AST nodes)"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,701 @@
+{
+  "title": "Spring Boot Cheatsheet",
+  "description": "Master Spring Boot with clear, practical guides — build production apps faster",
+  "sections": [
+    {
+      "id": "fundamentals",
+      "title": "Spring Boot Fundamentals",
+      "concepts": [
+        {
+          "name": "@SpringBootApplication",
+          "explanation": "This is your app's 'power button.' It's actually three annotations in one disguise: it sets up configuration, enables Spring's magic auto-configuration, and tells Spring where to scan for your components. One annotation does it all!",
+          "code": "@SpringBootApplication  // The magic 3-in-1 annotation\npublic class MyApplication {\n    public static void main(String[] args) {\n        // This single line boots up your ENTIRE app\n        SpringApplication.run(MyApplication.class, args);\n    }\n}",
+          "keyPoints": [
+            "Combines @Configuration + @EnableAutoConfiguration + @ComponentScan",
+            "Put it on your main class — the one with main() method",
+            "Spring scans this package and all sub-packages for components",
+            "You should only have ONE @SpringBootApplication in your project"
+          ]
+        },
+        {
+          "name": "Application Properties",
+          "explanation": "Configure Spring Boot application using application.properties or application.yml.",
+          "code": "# application.properties\nserver.port=8080\nspring.application.name=my-app\n\n# Database\nspring.datasource.url=jdbc:mysql://localhost:3306/mydb\nspring.datasource.username=root\nspring.datasource.password=secret\n\n# JPA\nspring.jpa.hibernate.ddl-auto=update\nspring.jpa.show-sql=true",
+          "keyPoints": [
+            "application.properties for key-value config",
+            "application.yml for hierarchical config",
+            "Override with environment variables",
+            "Use @Value to inject properties"
+          ]
+        },
+        {
+          "name": "Profiles",
+          "explanation": "Environment-specific configurations (dev, test, prod).",
+          "code": "// application-dev.properties\nspring.datasource.url=jdbc:h2:mem:testdb\n\n// application-prod.properties\nspring.datasource.url=jdbc:mysql://prod-server/db\n\n// Activate profile\n@Profile(\"dev\")\n@Configuration\npublic class DevConfig {\n    // Dev-specific beans\n}\n\n// Run with profile\n// java -jar app.jar --spring.profiles.active=prod",
+          "keyPoints": [
+            "Separate configs per environment",
+            "File naming: application-{profile}.properties",
+            "Activate via command line or env variable",
+            "Use @Profile on beans for conditional loading"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "core-annotations",
+      "title": "Core Annotations",
+      "concepts": [
+        {
+          "name": "Component Stereotypes",
+          "explanation": "Annotations to define Spring-managed beans.",
+          "code": "@Component  // Generic component\npublic class MyComponent { }\n\n@Service  // Business logic layer\npublic class UserService { }\n\n@Repository  // Data access layer\npublic class UserRepository { }\n\n@Controller  // Web controller (returns views)\npublic class HomeController { }\n\n@RestController  // REST API controller (returns data)\npublic class UserController { }",
+          "keyPoints": [
+            "@Component: Generic Spring bean",
+            "@Service: Business logic layer",
+            "@Repository: Data access + exception translation",
+            "@Controller: Web MVC controller",
+            "@RestController: @Controller + @ResponseBody"
+          ]
+        },
+        {
+          "name": "Dependency Injection",
+          "explanation": "Instead of your class going out to find its helpers, Spring delivers them to your door. It's like ordering food delivery vs cooking yourself. You just say 'I need a UserRepository' and Spring hands you one. Constructor injection is the recommended way — it makes dependencies obvious and your class easier to test.",
+          "code": "@Service\npublic class UserService {\n    \n    // Constructor injection (recommended!)\n    private final UserRepository repository;  // final = cannot be changed\n    \n    // Spring auto-injects UserRepository here\n    public UserService(UserRepository repository) {\n        this.repository = repository;\n    }\n    // @Autowired is optional with single constructor!\n}\n\n// When you have multiple beans of same type:\n@Autowired\n@Qualifier(\"mongoUserRepo\")  // Specify which one you want\nprivate UserRepository repository;",
+          "keyPoints": [
+            "Constructor injection is best — makes dependencies explicit and class immutable",
+            "@Autowired is optional when you have only one constructor (Spring 4.3+)",
+            "Use @Qualifier(\"beanName\") when multiple beans of same type exist",
+            "Field injection (@Autowired on fields) works but makes testing harder"
+          ]
+        },
+        {
+          "name": "@Bean and @Configuration",
+          "explanation": "Manually define beans in configuration classes.",
+          "code": "@Configuration\npublic class AppConfig {\n    \n    @Bean\n    public DataSource dataSource() {\n        HikariDataSource ds = new HikariDataSource();\n        ds.setJdbcUrl(\"jdbc:mysql://localhost/db\");\n        return ds;\n    }\n    \n    @Bean\n    @Primary  // Default bean if multiple exist\n    public UserService primaryUserService() {\n        return new UserServiceImpl();\n    }\n    \n    @Bean(initMethod = \"init\", destroyMethod = \"cleanup\")\n    public MyService myService() {\n        return new MyService();\n    }\n}",
+          "keyPoints": [
+            "@Configuration: Declares config class",
+            "@Bean: Defines bean in Java code",
+            "@Primary: Default when multiple candidates",
+            "Can specify init/destroy methods"
+          ]
+        },
+        {
+          "name": "@Value and @ConfigurationProperties",
+          "explanation": "Inject configuration values into beans.",
+          "code": "// @Value for simple properties\n@Component\npublic class MyService {\n    @Value(\"${app.name}\")\n    private String appName;\n    \n    @Value(\"${app.timeout:30}\")  // Default value: 30\n    private int timeout;\n}\n\n// @ConfigurationProperties for grouped properties\n@ConfigurationProperties(prefix = \"app\")\n@Component\npublic class AppProperties {\n    private String name;\n    private int timeout;\n    private Database database;\n    \n    // Getters and setters\n    \n    public static class Database {\n        private String url;\n        private String username;\n        // Getters and setters\n    }\n}",
+          "keyPoints": [
+            "@Value: Single property injection",
+            "${property:default} for default values",
+            "@ConfigurationProperties: Type-safe config",
+            "Prefix binds nested properties"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rest-api",
+      "title": "REST API Development",
+      "concepts": [
+        {
+          "name": "REST Controller Basics",
+          "explanation": "A REST controller is like a waiter in a restaurant. It takes orders (HTTP requests), talks to the kitchen (service layer), and brings back food (JSON responses). Each HTTP verb has a job: GET fetches, POST creates, PUT updates, DELETE removes.",
+          "code": "@RestController  // Automatic JSON conversion!\n@RequestMapping(\"/api/users\")  // Base URL for all endpoints\npublic class UserController {\n    \n    private final UserService userService;\n    \n    // GET /api/users → get all users\n    @GetMapping\n    public List<User> getAllUsers() {\n        return userService.findAll();\n    }\n    \n    // GET /api/users/5 → get user with id=5\n    @GetMapping(\"/{id}\")\n    public User getUserById(@PathVariable Long id) {\n        return userService.findById(id);\n    }\n    \n    // POST /api/users → create new user (send JSON in body)\n    @PostMapping\n    public User createUser(@RequestBody User user) {\n        return userService.save(user);\n    }\n    \n    // DELETE /api/users/5 → delete user with id=5\n    @DeleteMapping(\"/{id}\")\n    public void deleteUser(@PathVariable Long id) {\n        userService.delete(id);\n    }\n}",
+          "keyPoints": [
+            "@RestController = 'I return data (JSON), not web pages'",
+            "@GetMapping = 'when someone asks for data (HTTP GET)'",
+            "@PostMapping = 'when someone sends new data (HTTP POST)'",
+            "@PathVariable = 'grab the {id} from the URL'",
+            "@RequestBody = 'parse the JSON body into a Java object'"
+          ]
+        },
+        {
+          "name": "Request Parameters & Headers",
+          "explanation": "Handle query parameters and HTTP headers.",
+          "code": "@RestController\n@RequestMapping(\"/api/search\")\npublic class SearchController {\n    \n    // Query parameters\n    @GetMapping\n    public List<User> search(\n        @RequestParam String keyword,\n        @RequestParam(defaultValue = \"0\") int page,\n        @RequestParam(defaultValue = \"10\") int size\n    ) {\n        return searchService.search(keyword, page, size);\n    }\n    \n    // Optional parameter\n    @GetMapping(\"/filter\")\n    public List<User> filter(\n        @RequestParam Optional<String> status\n    ) {\n        return status.map(s -> filterByStatus(s))\n                    .orElse(getAll());\n    }\n    \n    // Request header\n    @GetMapping(\"/info\")\n    public String info(@RequestHeader(\"User-Agent\") String userAgent) {\n        return \"User agent: \" + userAgent;\n    }\n}",
+          "keyPoints": [
+            "@RequestParam: Query parameters (?key=value)",
+            "Use defaultValue for optional params",
+            "@RequestHeader: Access HTTP headers",
+            "Can use Optional<T> for nullable params"
+          ]
+        },
+        {
+          "name": "Response Status & ResponseEntity",
+          "explanation": "Control HTTP response status and headers.",
+          "code": "@RestController\n@RequestMapping(\"/api/users\")\npublic class UserController {\n    \n    // Return 201 Created\n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)\n    public User createUser(@RequestBody User user) {\n        return userService.save(user);\n    }\n    \n    // ResponseEntity for full control\n    @GetMapping(\"/{id}\")\n    public ResponseEntity<User> getUser(@PathVariable Long id) {\n        Optional<User> user = userService.findById(id);\n        return user.map(ResponseEntity::ok)\n                   .orElse(ResponseEntity.notFound().build());\n    }\n    \n    // Custom headers\n    @PostMapping(\"/with-header\")\n    public ResponseEntity<User> create(@RequestBody User user) {\n        User saved = userService.save(user);\n        return ResponseEntity\n            .status(HttpStatus.CREATED)\n            .header(\"Custom-Header\", \"value\")\n            .body(saved);\n    }\n}",
+          "keyPoints": [
+            "@ResponseStatus: Set HTTP status code",
+            "ResponseEntity: Full control over response",
+            "Common statuses: 200 OK, 201 Created, 404 Not Found",
+            "Can add custom headers"
+          ]
+        },
+        {
+          "name": "Validation",
+          "explanation": "Validate request data using Bean Validation.",
+          "code": "// Entity with validation\npublic class User {\n    @NotNull(message = \"Name is required\")\n    @Size(min = 2, max = 50)\n    private String name;\n    \n    @Email(message = \"Invalid email\")\n    private String email;\n    \n    @Min(18)\n    @Max(100)\n    private int age;\n    \n    @Pattern(regexp = \"^[0-9]{10}$\")\n    private String phone;\n}\n\n// Controller with validation\n@PostMapping\npublic ResponseEntity<?> createUser(@Valid @RequestBody User user) {\n    User saved = userService.save(user);\n    return ResponseEntity.ok(saved);\n}\n\n// Handle validation errors\n@ExceptionHandler(MethodArgumentNotValidException.class)\npublic ResponseEntity<Map<String, String>> handleValidation(\n    MethodArgumentNotValidException ex\n) {\n    Map<String, String> errors = new HashMap<>();\n    ex.getBindingResult().getFieldErrors().forEach(error ->\n        errors.put(error.getField(), error.getDefaultMessage())\n    );\n    return ResponseEntity.badRequest().body(errors);\n}",
+          "keyPoints": [
+            "@Valid triggers validation",
+            "@NotNull, @Size, @Email, @Min, @Max",
+            "@Pattern for regex validation",
+            "Handle MethodArgumentNotValidException"
+          ]
+        },
+        {
+          "name": "Exception Handling",
+          "explanation": "Global exception handling with @ControllerAdvice.",
+          "code": "// Custom exception\npublic class ResourceNotFoundException extends RuntimeException {\n    public ResourceNotFoundException(String message) {\n        super(message);\n    }\n}\n\n// Global exception handler\n@ControllerAdvice\npublic class GlobalExceptionHandler {\n    \n    @ExceptionHandler(ResourceNotFoundException.class)\n    public ResponseEntity<ErrorResponse> handleNotFound(\n        ResourceNotFoundException ex\n    ) {\n        ErrorResponse error = new ErrorResponse(\n            HttpStatus.NOT_FOUND.value(),\n            ex.getMessage(),\n            System.currentTimeMillis()\n        );\n        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);\n    }\n    \n    @ExceptionHandler(Exception.class)\n    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {\n        ErrorResponse error = new ErrorResponse(\n            HttpStatus.INTERNAL_SERVER_ERROR.value(),\n            \"Internal server error\",\n            System.currentTimeMillis()\n        );\n        return ResponseEntity.status(500).body(error);\n    }\n}\n\nclass ErrorResponse {\n    private int status;\n    private String message;\n    private long timestamp;\n    // Constructor, getters, setters\n}",
+          "keyPoints": [
+            "@ControllerAdvice: Global exception handling",
+            "@ExceptionHandler: Handle specific exceptions",
+            "Return consistent error responses",
+            "Can handle multiple exception types"
+          ]
+        },
+        {
+          "name": "CORS Configuration",
+          "explanation": "Enable Cross-Origin Resource Sharing.",
+          "code": "// Method-level CORS\n@RestController\n@CrossOrigin(origins = \"http://localhost:3000\")\npublic class UserController {\n    // endpoints\n}\n\n// Global CORS configuration\n@Configuration\npublic class WebConfig implements WebMvcConfigurer {\n    \n    @Override\n    public void addCorsMappings(CorsRegistry registry) {\n        registry.addMapping(\"/api/**\")\n            .allowedOrigins(\"http://localhost:3000\")\n            .allowedMethods(\"GET\", \"POST\", \"PUT\", \"DELETE\")\n            .allowedHeaders(\"*\")\n            .allowCredentials(true)\n            .maxAge(3600);\n    }\n}",
+          "keyPoints": [
+            "@CrossOrigin: Enable CORS per controller/method",
+            "WebMvcConfigurer: Global CORS config",
+            "Specify allowed origins, methods, headers",
+            "allowCredentials for cookies/auth"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jpa",
+      "title": "Spring Data JPA",
+      "concepts": [
+        {
+          "name": "Entity Mapping",
+          "explanation": "Map Java classes to database tables.",
+          "code": "@Entity\n@Table(name = \"users\")\npublic class User {\n    \n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n    \n    @Column(name = \"user_name\", nullable = false, length = 100)\n    private String name;\n    \n    @Column(unique = true)\n    private String email;\n    \n    @Temporal(TemporalType.TIMESTAMP)\n    @Column(name = \"created_at\")\n    private Date createdAt;\n    \n    @Enumerated(EnumType.STRING)\n    private Status status;\n    \n    @Transient  // Not persisted\n    private String fullName;\n    \n    // Getters and setters\n}\n\nenum Status { ACTIVE, INACTIVE, PENDING }",
+          "keyPoints": [
+            "@Entity: Marks as JPA entity",
+            "@Table: Specify table name",
+            "@Id: Primary key",
+            "@GeneratedValue: Auto-generate ID",
+            "@Column: Column properties",
+            "@Transient: Exclude from persistence"
+          ]
+        },
+        {
+          "name": "Relationships",
+          "explanation": "Define associations between entities.",
+          "code": "// One-to-Many\n@Entity\npublic class User {\n    @Id\n    @GeneratedValue\n    private Long id;\n    \n    @OneToMany(mappedBy = \"user\", cascade = CascadeType.ALL)\n    private List<Post> posts;\n}\n\n@Entity\npublic class Post {\n    @Id\n    @GeneratedValue\n    private Long id;\n    \n    @ManyToOne\n    @JoinColumn(name = \"user_id\")\n    private User user;\n}\n\n// Many-to-Many\n@Entity\npublic class Student {\n    @Id\n    private Long id;\n    \n    @ManyToMany\n    @JoinTable(\n        name = \"student_course\",\n        joinColumns = @JoinColumn(name = \"student_id\"),\n        inverseJoinColumns = @JoinColumn(name = \"course_id\")\n    )\n    private Set<Course> courses;\n}",
+          "keyPoints": [
+            "@OneToMany / @ManyToOne: 1-to-N relationship",
+            "@ManyToMany: N-to-N relationship",
+            "@OneToOne: 1-to-1 relationship",
+            "mappedBy: Defines owning side",
+            "CascadeType: Propagate operations",
+            "@JoinTable: Customize join table"
+          ]
+        },
+        {
+          "name": "JPA Repository",
+          "explanation": "CRUD operations without writing SQL.",
+          "code": "@Repository\npublic interface UserRepository extends JpaRepository<User, Long> {\n    \n    // Built-in methods:\n    // save(), findById(), findAll(), deleteById(), count()\n    \n    // Query methods (auto-implemented)\n    List<User> findByName(String name);\n    List<User> findByEmailContaining(String email);\n    List<User> findByAgeGreaterThan(int age);\n    List<User> findByStatusAndAgeGreaterThan(Status status, int age);\n    \n    // Custom query\n    @Query(\"SELECT u FROM User u WHERE u.email = ?1\")\n    Optional<User> findByEmail(String email);\n    \n    // Native query\n    @Query(value = \"SELECT * FROM users WHERE status = ?1\", \n           nativeQuery = true)\n    List<User> findByStatusNative(String status);\n    \n    // Update query\n    @Modifying\n    @Query(\"UPDATE User u SET u.status = ?2 WHERE u.id = ?1\")\n    void updateStatus(Long id, Status status);\n}",
+          "keyPoints": [
+            "Extend JpaRepository for CRUD methods",
+            "Method names follow naming convention",
+            "@Query for custom JPQL",
+            "nativeQuery=true for native SQL",
+            "@Modifying for UPDATE/DELETE"
+          ]
+        },
+        {
+          "name": "Pagination and Sorting",
+          "explanation": "Handle large datasets efficiently.",
+          "code": "@Repository\npublic interface UserRepository extends JpaRepository<User, Long> {\n    Page<User> findByStatus(Status status, Pageable pageable);\n}\n\n@Service\npublic class UserService {\n    \n    @Autowired\n    private UserRepository repository;\n    \n    public Page<User> getUsers(int page, int size, String sortBy) {\n        Pageable pageable = PageRequest.of(page, size, \n            Sort.by(sortBy).descending());\n        return repository.findAll(pageable);\n    }\n}\n\n@RestController\npublic class UserController {\n    \n    @GetMapping(\"/api/users\")\n    public Page<User> getUsers(\n        @RequestParam(defaultValue = \"0\") int page,\n        @RequestParam(defaultValue = \"10\") int size,\n        @RequestParam(defaultValue = \"id\") String sort\n    ) {\n        return userService.getUsers(page, size, sort);\n    }\n}",
+          "keyPoints": [
+            "Pageable: Pagination parameters",
+            "Page<T>: Contains results + metadata",
+            "PageRequest.of(page, size, sort)",
+            "Sort.by(field).ascending()/descending()"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Spring Security",
+      "concepts": [
+        {
+          "name": "Basic Security Configuration",
+          "explanation": "Secure your application with authentication.",
+          "code": "@Configuration\n@EnableWebSecurity\npublic class SecurityConfig {\n    \n    @Bean\n    public SecurityFilterChain filterChain(HttpSecurity http) \n        throws Exception {\n        \n        http\n            .csrf().disable()\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/public/**\").permitAll()\n                .requestMatchers(\"/api/admin/**\").hasRole(\"ADMIN\")\n                .anyRequest().authenticated()\n            )\n            .httpBasic();\n        \n        return http.build();\n    }\n    \n    @Bean\n    public PasswordEncoder passwordEncoder() {\n        return new BCryptPasswordEncoder();\n    }\n}",
+          "keyPoints": [
+            "@EnableWebSecurity: Enable security",
+            "SecurityFilterChain: Configure security rules",
+            "permitAll(): Public access",
+            "authenticated(): Requires login",
+            "hasRole(): Role-based access",
+            "BCryptPasswordEncoder: Hash passwords"
+          ]
+        },
+        {
+          "name": "UserDetailsService",
+          "explanation": "Load user data for authentication.",
+          "code": "@Service\npublic class CustomUserDetailsService \n    implements UserDetailsService {\n    \n    @Autowired\n    private UserRepository userRepository;\n    \n    @Override\n    public UserDetails loadUserByUsername(String username) \n        throws UsernameNotFoundException {\n        \n        User user = userRepository.findByUsername(username)\n            .orElseThrow(() -> new UsernameNotFoundException(\n                \"User not found: \" + username));\n        \n        return org.springframework.security.core.userdetails.User\n            .builder()\n            .username(user.getUsername())\n            .password(user.getPassword())\n            .roles(user.getRole())\n            .build();\n    }\n}",
+          "keyPoints": [
+            "UserDetailsService: Load user by username",
+            "Return UserDetails object",
+            "Password must be encoded",
+            "Throw UsernameNotFoundException if not found"
+          ]
+        },
+        {
+          "name": "JWT Authentication",
+          "explanation": "Stateless authentication with JSON Web Tokens.",
+          "code": "// JWT utility class\n@Component\npublic class JwtUtil {\n    \n    private String secret = \"mySecretKey\";\n    \n    public String generateToken(String username) {\n        return Jwts.builder()\n            .setSubject(username)\n            .setIssuedAt(new Date())\n            .setExpiration(new Date(System.currentTimeMillis() + 86400000))\n            .signWith(SignatureAlgorithm.HS256, secret)\n            .compact();\n    }\n    \n    public String extractUsername(String token) {\n        return Jwts.parser()\n            .setSigningKey(secret)\n            .parseClaimsJws(token)\n            .getBody()\n            .getSubject();\n    }\n    \n    public boolean validateToken(String token, String username) {\n        return extractUsername(token).equals(username) && !isTokenExpired(token);\n    }\n}\n\n// Login endpoint\n@PostMapping(\"/login\")\npublic ResponseEntity<?> login(@RequestBody LoginRequest request) {\n    authenticationManager.authenticate(\n        new UsernamePasswordAuthenticationToken(\n            request.getUsername(), request.getPassword()\n        )\n    );\n    \n    String token = jwtUtil.generateToken(request.getUsername());\n    return ResponseEntity.ok(new JwtResponse(token));\n}",
+          "keyPoints": [
+            "JWT: Stateless authentication",
+            "Token contains user info + signature",
+            "Set expiration time",
+            "Validate token on each request",
+            "Add filter to extract token from header"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "Testing",
+      "concepts": [
+        {
+          "name": "@SpringBootTest",
+          "explanation": "Integration testing with full application context.",
+          "code": "@SpringBootTest\nclass UserServiceTest {\n    \n    @Autowired\n    private UserService userService;\n    \n    @Test\n    void testCreateUser() {\n        User user = new User(\"John\", \"john@example.com\");\n        User saved = userService.save(user);\n        \n        assertNotNull(saved.getId());\n        assertEquals(\"John\", saved.getName());\n    }\n}",
+          "keyPoints": [
+            "@SpringBootTest: Full application context",
+            "All beans available",
+            "Slower than unit tests",
+            "Use for integration testing"
+          ]
+        },
+        {
+          "name": "@WebMvcTest",
+          "explanation": "Test web layer (controllers) only.",
+          "code": "@WebMvcTest(UserController.class)\nclass UserControllerTest {\n    \n    @Autowired\n    private MockMvc mockMvc;\n    \n    @MockBean\n    private UserService userService;\n    \n    @Test\n    void testGetUser() throws Exception {\n        User user = new User(1L, \"John\");\n        when(userService.findById(1L)).thenReturn(user);\n        \n        mockMvc.perform(get(\"/api/users/1\"))\n            .andExpect(status().isOk())\n            .andExpect(jsonPath(\"$.name\").value(\"John\"));\n    }\n    \n    @Test\n    void testCreateUser() throws Exception {\n        User user = new User(\"John\", \"john@test.com\");\n        \n        mockMvc.perform(post(\"/api/users\")\n            .contentType(MediaType.APPLICATION_JSON)\n            .content(\"{\\\"name\\\":\\\"John\\\"}\"))\n            .andExpect(status().isCreated());\n    }\n}",
+          "keyPoints": [
+            "@WebMvcTest: Test controllers only",
+            "MockMvc: Simulate HTTP requests",
+            "@MockBean: Mock dependencies",
+            "Fast tests, isolated from other layers"
+          ]
+        },
+        {
+          "name": "@DataJpaTest",
+          "explanation": "Test JPA repositories with embedded database.",
+          "code": "@DataJpaTest\nclass UserRepositoryTest {\n    \n    @Autowired\n    private UserRepository repository;\n    \n    @Autowired\n    private TestEntityManager entityManager;\n    \n    @Test\n    void testFindByEmail() {\n        User user = new User(\"John\", \"john@test.com\");\n        entityManager.persist(user);\n        entityManager.flush();\n        \n        Optional<User> found = repository.findByEmail(\"john@test.com\");\n        \n        assertTrue(found.isPresent());\n        assertEquals(\"John\", found.get().getName());\n    }\n}",
+          "keyPoints": [
+            "@DataJpaTest: Test repository layer",
+            "Uses in-memory database (H2)",
+            "TestEntityManager: Manage test data",
+            "Transactions rolled back after test"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "title": "Database Configuration",
+      "concepts": [
+        {
+          "name": "H2 Database (In-Memory)",
+          "explanation": "Embedded database for development and testing.",
+          "code": "# application.properties\nspring.datasource.url=jdbc:h2:mem:testdb\nspring.datasource.driverClassName=org.h2.Driver\nspring.datasource.username=sa\nspring.datasource.password=\n\n# Enable H2 console\nspring.h2.console.enabled=true\nspring.h2.console.path=/h2-console\n\n# JPA settings\nspring.jpa.database-platform=org.hibernate.dialect.H2Dialect\nspring.jpa.hibernate.ddl-auto=create-drop\nspring.jpa.show-sql=true\n\n# Access H2 console at: http://localhost:8080/h2-console\n# JDBC URL: jdbc:h2:mem:testdb",
+          "keyPoints": [
+            "In-memory: data lost on restart",
+            "Perfect for development and testing",
+            "H2 console for viewing data",
+            "No installation required"
+          ]
+        },
+        {
+          "name": "MySQL Configuration",
+          "explanation": "Connect to MySQL database.",
+          "code": "# pom.xml dependency\n<dependency>\n    <groupId>mysql</groupId>\n    <artifactId>mysql-connector-java</artifactId>\n</dependency>\n\n# application.properties\nspring.datasource.url=jdbc:mysql://localhost:3306/mydb\nspring.datasource.username=root\nspring.datasource.password=password\nspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver\n\n# JPA/Hibernate\nspring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect\nspring.jpa.hibernate.ddl-auto=update\nspring.jpa.show-sql=true\nspring.jpa.properties.hibernate.format_sql=true\n\n# Connection pool settings\nspring.datasource.hikari.maximum-pool-size=10\nspring.datasource.hikari.minimum-idle=5\nspring.datasource.hikari.connection-timeout=20000",
+          "keyPoints": [
+            "Add MySQL connector dependency",
+            "Update URL with host, port, database name",
+            "ddl-auto=update: Update schema automatically",
+            "HikariCP pool configured via spring.datasource.hikari"
+          ]
+        },
+        {
+          "name": "PostgreSQL Configuration",
+          "explanation": "Connect to PostgreSQL database.",
+          "code": "# pom.xml dependency\n<dependency>\n    <groupId>org.postgresql</groupId>\n    <artifactId>postgresql</artifactId>\n</dependency>\n\n# application.properties\nspring.datasource.url=jdbc:postgresql://localhost:5432/mydb\nspring.datasource.username=postgres\nspring.datasource.password=password\nspring.datasource.driver-class-name=org.postgresql.Driver\n\n# JPA/Hibernate\nspring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect\nspring.jpa.hibernate.ddl-auto=update\nspring.jpa.show-sql=true\n\n# PostgreSQL-specific settings\nspring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true",
+          "keyPoints": [
+            "Add PostgreSQL driver dependency",
+            "Default port: 5432",
+            "Use PostgreSQLDialect for Hibernate",
+            "non_contextual_creation fixes LOB issues"
+          ]
+        },
+        {
+          "name": "HikariCP Connection Pool",
+          "explanation": "High-performance JDBC connection pool (default in Spring Boot).",
+          "code": "# application.properties\n# HikariCP is default, but you can configure it\n\n# Pool size\nspring.datasource.hikari.maximum-pool-size=10\nspring.datasource.hikari.minimum-idle=5\n\n# Connection timeout (ms)\nspring.datasource.hikari.connection-timeout=20000\n\n# Maximum lifetime (ms) - 30 minutes\nspring.datasource.hikari.max-lifetime=1800000\n\n# Idle timeout (ms) - 10 minutes\nspring.datasource.hikari.idle-timeout=600000\n\n# Connection test query\nspring.datasource.hikari.connection-test-query=SELECT 1\n\n# Pool name\nspring.datasource.hikari.pool-name=MyHikariPool\n\n// Java Configuration\n@Configuration\npublic class DataSourceConfig {\n    \n    @Bean\n    public DataSource dataSource() {\n        HikariConfig config = new HikariConfig();\n        config.setJdbcUrl(\"jdbc:mysql://localhost:3306/mydb\");\n        config.setUsername(\"root\");\n        config.setPassword(\"password\");\n        config.setMaximumPoolSize(10);\n        config.setMinimumIdle(5);\n        return new HikariDataSource(config);\n    }\n}",
+          "keyPoints": [
+            "HikariCP is Spring Boot's default pool",
+            "maximum-pool-size: Max active connections",
+            "minimum-idle: Minimum idle connections",
+            "connection-timeout: Max wait time for connection",
+            "Excellent performance and reliability"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "migrations",
+      "title": "Database Migrations",
+      "concepts": [
+        {
+          "name": "Flyway Migration",
+          "explanation": "Version control for database schema.",
+          "code": "# pom.xml dependency\n<dependency>\n    <groupId>org.flywaydb</groupId>\n    <artifactId>flyway-core</artifactId>\n</dependency>\n\n# application.properties\nspring.flyway.enabled=true\nspring.flyway.baseline-on-migrate=true\nspring.flyway.locations=classpath:db/migration\n\n# Create migration files in src/main/resources/db/migration/\n# Naming: V1__Initial_schema.sql, V2__Add_users_table.sql\n\n-- V1__Initial_schema.sql\nCREATE TABLE users (\n    id BIGINT AUTO_INCREMENT PRIMARY KEY,\n    username VARCHAR(50) NOT NULL UNIQUE,\n    email VARCHAR(100) NOT NULL,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);\n\n-- V2__Add_roles_table.sql\nCREATE TABLE roles (\n    id BIGINT AUTO_INCREMENT PRIMARY KEY,\n    name VARCHAR(50) NOT NULL\n);\n\nALTER TABLE users ADD COLUMN role_id BIGINT;\nALTER TABLE users ADD FOREIGN KEY (role_id) REFERENCES roles(id);",
+          "keyPoints": [
+            "Flyway tracks database version",
+            "Naming: V{version}__{description}.sql",
+            "Migrations run on application startup",
+            "Never modify executed migrations",
+            "Rollback via versioned down migrations"
+          ]
+        },
+        {
+          "name": "Liquibase Migration",
+          "explanation": "Alternative to Flyway with more features.",
+          "code": "# pom.xml dependency\n<dependency>\n    <groupId>org.liquibase</groupId>\n    <artifactId>liquibase-core</artifactId>\n</dependency>\n\n# application.properties\nspring.liquibase.change-log=classpath:db/changelog/db.changelog-master.xml\nspring.liquibase.enabled=true\n\n<!-- db/changelog/db.changelog-master.xml -->\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<databaseChangeLog\n    xmlns=\"http://www.liquibase.org/xml/ns/dbchangelog\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xsi:schemaLocation=\"http://www.liquibase.org/xml/ns/dbchangelog\n                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd\">\n    \n    <changeSet id=\"1\" author=\"developer\">\n        <createTable tableName=\"users\">\n            <column name=\"id\" type=\"BIGINT\" autoIncrement=\"true\">\n                <constraints primaryKey=\"true\"/>\n            </column>\n            <column name=\"username\" type=\"VARCHAR(50)\">\n                <constraints nullable=\"false\" unique=\"true\"/>\n            </column>\n            <column name=\"email\" type=\"VARCHAR(100)\">\n                <constraints nullable=\"false\"/>\n            </column>\n        </createTable>\n    </changeSet>\n    \n    <changeSet id=\"2\" author=\"developer\">\n        <addColumn tableName=\"users\">\n            <column name=\"phone\" type=\"VARCHAR(20)\"/>\n        </addColumn>\n    </changeSet>\n</databaseChangeLog>",
+          "keyPoints": [
+            "Supports XML, YAML, JSON, SQL formats",
+            "More features than Flyway",
+            "Automatic rollback generation",
+            "Database-independent changesets",
+            "Enterprise features available"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "security-advanced",
+      "title": "Advanced Security",
+      "concepts": [
+        {
+          "name": "Method-Level Security",
+          "explanation": "Secure individual methods with annotations.",
+          "code": "@Configuration\n@EnableGlobalMethodSecurity(\n    prePostEnabled = true,\n    securedEnabled = true,\n    jsr250Enabled = true\n)\npublic class MethodSecurityConfig {\n}\n\n@Service\npublic class UserService {\n    \n    // @PreAuthorize: Check before execution\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    public void deleteUser(Long id) {\n        userRepository.deleteById(id);\n    }\n    \n    // Check ownership\n    @PreAuthorize(\"#username == authentication.principal.username\")\n    public User getUserByUsername(String username) {\n        return userRepository.findByUsername(username);\n    }\n    \n    // @PostAuthorize: Check after execution\n    @PostAuthorize(\"returnObject.username == authentication.principal.username\")\n    public User getUser(Long id) {\n        return userRepository.findById(id).orElseThrow();\n    }\n    \n    // @Secured: Simple role check\n    @Secured({\"ROLE_ADMIN\", \"ROLE_MANAGER\"})\n    public List<User> getAllUsers() {\n        return userRepository.findAll();\n    }\n    \n    // JSR-250 annotations\n    @RolesAllowed(\"ADMIN\")\n    public void updateUser(User user) {\n        userRepository.save(user);\n    }\n}",
+          "keyPoints": [
+            "@PreAuthorize: Check before method execution",
+            "@PostAuthorize: Check after method execution",
+            "@Secured: Simple role-based check",
+            "SpEL expressions for complex logic",
+            "Can access method parameters and return value"
+          ]
+        },
+        {
+          "name": "OAuth2 & Social Login",
+          "explanation": "Integrate OAuth2 providers (Google, GitHub, etc.).",
+          "code": "# pom.xml\n<dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-starter-oauth2-client</artifactId>\n</dependency>\n\n# application.yml\nspring:\n  security:\n    oauth2:\n      client:\n        registration:\n          google:\n            client-id: YOUR_GOOGLE_CLIENT_ID\n            client-secret: YOUR_GOOGLE_CLIENT_SECRET\n            scope:\n              - email\n              - profile\n          github:\n            client-id: YOUR_GITHUB_CLIENT_ID\n            client-secret: YOUR_GITHUB_CLIENT_SECRET\n            scope:\n              - read:user\n\n// Security Configuration\n@Configuration\n@EnableWebSecurity\npublic class OAuth2SecurityConfig {\n    \n    @Bean\n    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        http\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/\", \"/login\").permitAll()\n                .anyRequest().authenticated()\n            )\n            .oauth2Login();\n        \n        return http.build();\n    }\n}\n\n// Access user info\n@GetMapping(\"/user\")\npublic Map<String, Object> user(@AuthenticationPrincipal OAuth2User principal) {\n    return principal.getAttributes();\n}",
+          "keyPoints": [
+            "Spring Boot auto-configures OAuth2 clients",
+            "Support for Google, GitHub, Facebook, etc.",
+            "oauth2Login() enables OAuth2 login",
+            "@AuthenticationPrincipal for user info",
+            "Configure client-id and client-secret"
+          ]
+        },
+        {
+          "name": "Password Encoding",
+          "explanation": "Securely hash and verify passwords.",
+          "code": "@Configuration\npublic class SecurityConfig {\n    \n    @Bean\n    public PasswordEncoder passwordEncoder() {\n        return new BCryptPasswordEncoder();\n    }\n}\n\n@Service\npublic class UserService {\n    \n    @Autowired\n    private PasswordEncoder passwordEncoder;\n    \n    @Autowired\n    private UserRepository userRepository;\n    \n    public User registerUser(String username, String password) {\n        User user = new User();\n        user.setUsername(username);\n        \n        // Encode password before saving\n        String encodedPassword = passwordEncoder.encode(password);\n        user.setPassword(encodedPassword);\n        \n        return userRepository.save(user);\n    }\n    \n    public boolean verifyPassword(String rawPassword, String encodedPassword) {\n        return passwordEncoder.matches(rawPassword, encodedPassword);\n    }\n}\n\n// UserDetailsService implementation\n@Service\npublic class CustomUserDetailsService implements UserDetailsService {\n    \n    @Autowired\n    private UserRepository userRepository;\n    \n    @Override\n    public UserDetails loadUserByUsername(String username) {\n        User user = userRepository.findByUsername(username)\n            .orElseThrow(() -> new UsernameNotFoundException(\"User not found\"));\n        \n        return org.springframework.security.core.userdetails.User\n            .builder()\n            .username(user.getUsername())\n            .password(user.getPassword())  // Already encoded\n            .roles(user.getRole())\n            .build();\n    }\n}",
+          "keyPoints": [
+            "BCryptPasswordEncoder recommended",
+            "Always encode passwords before saving",
+            "matches() verifies raw password against encoded",
+            "Never store plain-text passwords",
+            "UserDetailsService loads encoded password"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "devtools",
+      "title": "Spring Boot DevTools",
+      "concepts": [
+        {
+          "name": "DevTools Features",
+          "explanation": "Fast iteration during development.",
+          "code": "# pom.xml\n<dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-devtools</artifactId>\n    <optional>true</optional>\n</dependency>\n\n# application.properties\n# Automatic restart on file changes\nspring.devtools.restart.enabled=true\n\n# Exclude certain files from triggering restart\nspring.devtools.restart.exclude=static/**,public/**\n\n# LiveReload for browser refresh\nspring.devtools.livereload.enabled=true\n\n# Disable caching for templates\nspring.thymeleaf.cache=false\nspring.freemarker.cache=false\n\n# Remote debugging\nspring.devtools.remote.secret=mysecret",
+          "keyPoints": [
+            "Auto-restart on classpath changes",
+            "LiveReload refreshes browser automatically",
+            "Disables template caching in development",
+            "Excluded from production builds",
+            "Faster than full restart"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "testing-advanced",
+      "title": "Advanced Testing",
+      "concepts": [
+        {
+          "name": "MockMvc Advanced",
+          "explanation": "Comprehensive API testing with MockMvc.",
+          "code": "@WebMvcTest(UserController.class)\nclass UserControllerAdvancedTest {\n    \n    @Autowired\n    private MockMvc mockMvc;\n    \n    @MockBean\n    private UserService userService;\n    \n    @Test\n    void testPaginatedUsers() throws Exception {\n        Page<User> page = new PageImpl<>(Arrays.asList(\n            new User(\"John\"), new User(\"Alice\")\n        ));\n        \n        when(userService.getUsers(any(Pageable.class))).thenReturn(page);\n        \n        mockMvc.perform(get(\"/api/users\")\n                .param(\"page\", \"0\")\n                .param(\"size\", \"10\"))\n            .andExpect(status().isOk())\n            .andExpect(jsonPath(\"$.content\").isArray())\n            .andExpect(jsonPath(\"$.content.length()\").value(2))\n            .andExpect(jsonPath(\"$.content[0].name\").value(\"John\"));\n    }\n    \n    @Test\n    void testValidationError() throws Exception {\n        mockMvc.perform(post(\"/api/users\")\n                .contentType(MediaType.APPLICATION_JSON)\n                .content(\"{\\\"name\\\":\\\"\\\"}\")\n            )\n            .andExpect(status().isBadRequest())\n            .andExpect(jsonPath(\"$.name\").value(\"Name is required\"));\n    }\n    \n    @Test\n    void testUploadFile() throws Exception {\n        MockMultipartFile file = new MockMultipartFile(\n            \"file\",\n            \"test.txt\",\n            MediaType.TEXT_PLAIN_VALUE,\n            \"Hello World\".getBytes()\n        );\n        \n        mockMvc.perform(multipart(\"/api/upload\")\n                .file(file))\n            .andExpect(status().isOk());\n    }\n}",
+          "keyPoints": [
+            "jsonPath(): Verify JSON response structure",
+            "param(): Add query parameters",
+            "MockMultipartFile: Test file uploads",
+            "Test pagination, validation, errors"
+          ]
+        },
+        {
+          "name": "Integration Testing with TestContainers",
+          "explanation": "Test with real database using Docker containers.",
+          "code": "# pom.xml\n<dependency>\n    <groupId>org.testcontainers</groupId>\n    <artifactId>postgresql</artifactId>\n    <scope>test</scope>\n</dependency>\n\n@SpringBootTest\n@Testcontainers\nclass UserServiceIntegrationTest {\n    \n    @Container\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:15\")\n        .withDatabaseName(\"testdb\")\n        .withUsername(\"test\")\n        .withPassword(\"test\");\n    \n    @DynamicPropertySource\n    static void configureProperties(DynamicPropertyRegistry registry) {\n        registry.add(\"spring.datasource.url\", postgres::getJdbcUrl);\n        registry.add(\"spring.datasource.username\", postgres::getUsername);\n        registry.add(\"spring.datasource.password\", postgres::getPassword);\n    }\n    \n    @Autowired\n    private UserRepository userRepository;\n    \n    @Autowired\n    private UserService userService;\n    \n    @Test\n    void testSaveUser() {\n        User user = new User(\"John\", \"john@example.com\");\n        User saved = userService.save(user);\n        \n        assertNotNull(saved.getId());\n        \n        Optional<User> found = userRepository.findById(saved.getId());\n        assertTrue(found.isPresent());\n        assertEquals(\"John\", found.get().getName());\n    }\n}",
+          "keyPoints": [
+            "TestContainers spins up Docker containers",
+            "Tests with real database, not H2",
+            "@DynamicPropertySource configures DB connection",
+            "Containers cleaned up after tests",
+            "More realistic integration tests"
+          ]
+        },
+        {
+          "name": "Testing Security",
+          "explanation": "Test secured endpoints.",
+          "code": "@WebMvcTest(UserController.class)\nclass SecurityTest {\n    \n    @Autowired\n    private MockMvc mockMvc;\n    \n    @MockBean\n    private UserService userService;\n    \n    // Test without authentication\n    @Test\n    void testUnauthorized() throws Exception {\n        mockMvc.perform(get(\"/api/users\"))\n            .andExpect(status().isUnauthorized());\n    }\n    \n    // Test with mock user\n    @Test\n    @WithMockUser(username = \"user\", roles = {\"USER\"})\n    void testWithUser() throws Exception {\n        mockMvc.perform(get(\"/api/users\"))\n            .andExpect(status().isOk());\n    }\n    \n    // Test with admin role\n    @Test\n    @WithMockUser(username = \"admin\", roles = {\"ADMIN\"})\n    void testWithAdmin() throws Exception {\n        mockMvc.perform(delete(\"/api/users/1\"))\n            .andExpect(status().isOk());\n    }\n    \n    // Custom user\n    @Test\n    @WithUserDetails(\"customUser\")\n    void testWithCustomUser() throws Exception {\n        mockMvc.perform(get(\"/api/profile\"))\n            .andExpect(status().isOk());\n    }\n}",
+          "keyPoints": [
+            "@WithMockUser: Mock authenticated user",
+            "@WithUserDetails: Use UserDetailsService",
+            "Test different roles and permissions",
+            "Verify unauthorized access blocked"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "events",
+      "title": "Event Handling",
+      "concepts": [
+        {
+          "name": "Application Events",
+          "explanation": "Publish and listen to custom events.",
+          "code": "// Custom event\npublic class UserRegisteredEvent extends ApplicationEvent {\n    private final String username;\n    private final String email;\n    \n    public UserRegisteredEvent(Object source, String username, String email) {\n        super(source);\n        this.username = username;\n        this.email = email;\n    }\n    \n    // Getters\n}\n\n// Publisher\n@Service\npublic class UserService {\n    \n    @Autowired\n    private ApplicationEventPublisher eventPublisher;\n    \n    @Autowired\n    private UserRepository userRepository;\n    \n    public User registerUser(User user) {\n        User saved = userRepository.save(user);\n        \n        // Publish event\n        UserRegisteredEvent event = new UserRegisteredEvent(\n            this,\n            saved.getUsername(),\n            saved.getEmail()\n        );\n        eventPublisher.publishEvent(event);\n        \n        return saved;\n    }\n}\n\n// Listener\n@Component\npublic class UserEventListener {\n    \n    @EventListener\n    public void handleUserRegistered(UserRegisteredEvent event) {\n        System.out.println(\"User registered: \" + event.getUsername());\n        // Send welcome email, create profile, etc.\n    }\n    \n    // Async listener\n    @EventListener\n    @Async\n    public void sendWelcomeEmail(UserRegisteredEvent event) {\n        emailService.sendWelcome(event.getEmail());\n    }\n    \n    // Conditional listener\n    @EventListener(condition = \"#event.username.startsWith('admin')\")\n    public void handleAdminRegistration(UserRegisteredEvent event) {\n        // Special handling for admin users\n    }\n}",
+          "keyPoints": [
+            "ApplicationEvent: Base class for custom events",
+            "ApplicationEventPublisher: Publish events",
+            "@EventListener: Handle events",
+            "Can use @Async for async processing",
+            "Condition with SpEL for filtering",
+            "Decouples components"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deployment",
+      "title": "Packaging & Deployment",
+      "concepts": [
+        {
+          "name": "Building JAR",
+          "explanation": "Package application as executable JAR.",
+          "code": "# Build with Maven\nmvn clean package\n\n# Build with Gradle\n./gradlew build\n\n# Run JAR\njava -jar target/myapp-1.0.0.jar\n\n# With profile\njava -jar -Dspring.profiles.active=prod target/myapp-1.0.0.jar\n\n# With custom port\njava -jar -Dserver.port=9090 target/myapp-1.0.0.jar\n\n# pom.xml - Spring Boot Maven Plugin\n<build>\n    <plugins>\n        <plugin>\n            <groupId>org.springframework.boot</groupId>\n            <artifactId>spring-boot-maven-plugin</artifactId>\n            <configuration>\n                <executable>true</executable>\n            </configuration>\n        </plugin>\n    </plugins>\n</build>",
+          "keyPoints": [
+            "spring-boot-maven-plugin creates executable JAR",
+            "Includes all dependencies (fat JAR)",
+            "Can run directly: java -jar app.jar",
+            "Set profile with -Dspring.profiles.active",
+            "Standalone - no app server needed"
+          ]
+        },
+        {
+          "name": "Building WAR",
+          "explanation": "Package for traditional servlet container.",
+          "code": "# pom.xml - Change packaging\n<packaging>war</packaging>\n\n<dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-starter-tomcat</artifactId>\n    <scope>provided</scope>\n</dependency>\n\n// Main class extends SpringBootServletInitializer\n@SpringBootApplication\npublic class MyApplication extends SpringBootServletInitializer {\n    \n    @Override\n    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {\n        return builder.sources(MyApplication.class);\n    }\n    \n    public static void main(String[] args) {\n        SpringApplication.run(MyApplication.class, args);\n    }\n}\n\n# Build\nmvn clean package\n\n# Deploy to Tomcat/WildFly/WebSphere\n# Copy target/myapp.war to webapps/ folder",
+          "keyPoints": [
+            "WAR for traditional app servers",
+            "Extend SpringBootServletInitializer",
+            "Tomcat dependency marked as provided",
+            "Can still run standalone during development",
+            "Deploy to Tomcat, JBoss, WebSphere"
+          ]
+        },
+        {
+          "name": "Docker Deployment",
+          "explanation": "Containerize Spring Boot application.",
+          "code": "# Dockerfile\nFROM openjdk:17-jdk-slim\nWORKDIR /app\nCOPY target/myapp-1.0.0.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]\n\n# Build image\ndocker build -t myapp:1.0.0 .\n\n# Run container\ndocker run -p 8080:8080 myapp:1.0.0\n\n# With environment variables\ndocker run -p 8080:8080 \\\n  -e SPRING_PROFILES_ACTIVE=prod \\\n  -e SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/mydb \\\n  myapp:1.0.0\n\n# docker-compose.yml\nversion: '3.8'\nservices:\n  app:\n    build: .\n    ports:\n      - \"8080:8080\"\n    environment:\n      - SPRING_PROFILES_ACTIVE=prod\n      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/mydb\n    depends_on:\n      - db\n  \n  db:\n    image: mysql:8\n    environment:\n      - MYSQL_ROOT_PASSWORD=password\n      - MYSQL_DATABASE=mydb\n    ports:\n      - \"3306:3306\"",
+          "keyPoints": [
+            "Use official OpenJDK image",
+            "COPY JAR into container",
+            "EXPOSE port application uses",
+            "Pass config via environment variables",
+            "docker-compose for multi-container setup"
+          ]
+        },
+        {
+          "name": "Production Configuration",
+          "explanation": "Best practices for production deployment.",
+          "code": "# application-prod.properties\n# Server\nserver.port=8080\nserver.shutdown=graceful\nspring.lifecycle.timeout-per-shutdown-phase=20s\n\n# Logging\nlogging.level.root=WARN\nlogging.level.com.myapp=INFO\nlogging.file.name=/var/log/myapp.log\nlogging.pattern.file=%d{yyyy-MM-dd HH:mm:ss} - %msg%n\n\n# Database\nspring.datasource.hikari.maximum-pool-size=20\nspring.datasource.hikari.minimum-idle=10\n\n# JPA - NEVER use create-drop or create in production!\nspring.jpa.hibernate.ddl-auto=validate\nspring.jpa.show-sql=false\n\n# Actuator\nmanagement.endpoints.web.exposure.include=health,info,metrics\nmanagement.endpoint.health.show-details=when-authorized\n\n# Security\nmanagement.endpoints.web.base-path=/actuator\nmanagement.security.enabled=true\n\n# Compression\nserver.compression.enabled=true\nserver.compression.mime-types=text/html,text/xml,text/plain,application/json",
+          "keyPoints": [
+            "Graceful shutdown enabled",
+            "Appropriate log levels",
+            "ddl-auto=validate (never create/update)",
+            "Secure actuator endpoints",
+            "Enable compression",
+            "Connection pool tuning"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "actuator",
+      "title": "Spring Boot Actuator",
+      "concepts": [
+        {
+          "name": "Actuator Endpoints",
+          "explanation": "Monitor and manage application in production.",
+          "code": "# application.properties\nmanagement.endpoints.web.exposure.include=health,info,metrics\nmanagement.endpoint.health.show-details=always\n\n# Custom info\ninfo.app.name=My Application\ninfo.app.version=1.0.0\n\n// Access endpoints:\n// GET /actuator/health - Health status\n// GET /actuator/info - App information\n// GET /actuator/metrics - Metrics\n// GET /actuator/metrics/http.server.requests - HTTP metrics",
+          "keyPoints": [
+            "Actuator provides production-ready features",
+            "Health checks, metrics, app info",
+            "Expose specific endpoints in properties",
+            "Secure endpoints in production"
+          ]
+        },
+        {
+          "name": "Custom Health Indicators",
+          "explanation": "Add custom health checks.",
+          "code": "@Component\npublic class CustomHealthIndicator implements HealthIndicator {\n    \n    @Override\n    public Health health() {\n        boolean serviceUp = checkExternalService();\n        \n        if (serviceUp) {\n            return Health.up()\n                .withDetail(\"service\", \"Available\")\n                .withDetail(\"version\", \"1.2.3\")\n                .build();\n        } else {\n            return Health.down()\n                .withDetail(\"service\", \"Unavailable\")\n                .withDetail(\"error\", \"Connection timeout\")\n                .build();\n        }\n    }\n    \n    private boolean checkExternalService() {\n        // Check external service connectivity\n        return true;\n    }\n}",
+          "keyPoints": [
+            "Implement HealthIndicator interface",
+            "Return Health.up() or Health.down()",
+            "Add custom details with withDetail()",
+            "Automatically included in /actuator/health"
+          ]
+        },
+        {
+          "name": "Custom Metrics",
+          "explanation": "Track application-specific metrics.",
+          "code": "@Service\npublic class UserService {\n    \n    private final MeterRegistry meterRegistry;\n    private final Counter userCreatedCounter;\n    private final Timer loginTimer;\n    \n    public UserService(MeterRegistry meterRegistry) {\n        this.meterRegistry = meterRegistry;\n        \n        // Counter\n        this.userCreatedCounter = Counter.builder(\"users.created\")\n            .description(\"Number of users created\")\n            .tag(\"type\", \"registration\")\n            .register(meterRegistry);\n        \n        // Timer\n        this.loginTimer = Timer.builder(\"user.login\")\n            .description(\"User login time\")\n            .register(meterRegistry);\n    }\n    \n    public User registerUser(User user) {\n        User saved = userRepository.save(user);\n        userCreatedCounter.increment();\n        return saved;\n    }\n    \n    public void login(String username, String password) {\n        loginTimer.record(() -> {\n            // Login logic\n            authenticate(username, password);\n        });\n    }\n    \n    // Gauge example\n    @PostConstruct\n    public void init() {\n        Gauge.builder(\"users.active\", userRepository, UserRepository::countActive)\n            .description(\"Number of active users\")\n            .register(meterRegistry);\n    }\n}",
+          "keyPoints": [
+            "MeterRegistry for creating metrics",
+            "Counter: Increment-only value",
+            "Timer: Measure duration",
+            "Gauge: Current value",
+            "View at /actuator/metrics/{metric.name}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "Advanced Topics",
+      "concepts": [
+        {
+          "name": "@Async",
+          "explanation": "Execute methods asynchronously.",
+          "code": "@Configuration\n@EnableAsync\npublic class AsyncConfig { }\n\n@Service\npublic class EmailService {\n    \n    @Async\n    public CompletableFuture<String> sendEmail(String to) {\n        // Simulate slow operation\n        Thread.sleep(5000);\n        System.out.println(\"Email sent to \" + to);\n        return CompletableFuture.completedFuture(\"Success\");\n    }\n}\n\n// Usage\nemailService.sendEmail(\"user@example.com\");\n// Returns immediately, email sent in background",
+          "keyPoints": [
+            "@EnableAsync: Enable async support",
+            "@Async: Mark method as asynchronous",
+            "Returns CompletableFuture<T>",
+            "Runs in separate thread pool"
+          ]
+        },
+        {
+          "name": "@Scheduled",
+          "explanation": "Schedule tasks to run periodically.",
+          "code": "@Configuration\n@EnableScheduling\npublic class SchedulingConfig { }\n\n@Component\npublic class ScheduledTasks {\n    \n    // Run every 5 seconds\n    @Scheduled(fixedRate = 5000)\n    public void reportStatus() {\n        System.out.println(\"Status: Running\");\n    }\n    \n    // Run 2 seconds after previous completion\n    @Scheduled(fixedDelay = 2000)\n    public void processQueue() {\n        System.out.println(\"Processing queue\");\n    }\n    \n    // Cron expression (every day at 2 AM)\n    @Scheduled(cron = \"0 0 2 * * ?\")\n    public void cleanupDatabase() {\n        System.out.println(\"Cleanup task\");\n    }\n}",
+          "keyPoints": [
+            "@EnableScheduling: Enable scheduling",
+            "fixedRate: Fixed interval from start",
+            "fixedDelay: Fixed delay after completion",
+            "cron: Cron expression for complex schedules"
+          ]
+        },
+        {
+          "name": "@Cacheable",
+          "explanation": "Cache method results for better performance.",
+          "code": "@Configuration\n@EnableCaching\npublic class CacheConfig { }\n\n@Service\npublic class UserService {\n    \n    @Cacheable(\"users\")\n    public User findById(Long id) {\n        // Expensive database query\n        return userRepository.findById(id);\n    }\n    \n    @CachePut(value = \"users\", key = \"#user.id\")\n    public User update(User user) {\n        return userRepository.save(user);\n    }\n    \n    @CacheEvict(value = \"users\", key = \"#id\")\n    public void delete(Long id) {\n        userRepository.deleteById(id);\n    }\n    \n    @CacheEvict(value = \"users\", allEntries = true)\n    public void clearCache() {\n        // Clear all cache entries\n    }\n}",
+          "keyPoints": [
+            "@EnableCaching: Enable caching",
+            "@Cacheable: Cache method result",
+            "@CachePut: Update cache",
+            "@CacheEvict: Remove from cache",
+            "Supports multiple cache providers (Caffeine, Redis)"
+          ]
+        },
+        {
+          "name": "Logging",
+          "explanation": "Logging is your app's black box recorder. Use different levels for different audiences: DEBUG for developers, INFO for operations, WARN for 'hmm, that's odd', and ERROR for 'something broke.' Always use {} placeholders — they're lazy-evaluated!",
+          "code": "import org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;\n\n@Service\npublic class UserService {\n    \n    // One logger per class, named after the class\n    private static final Logger log = \n        LoggerFactory.getLogger(UserService.class);\n    \n    public User createUser(User user) {\n        log.debug(\"Creating user: {}\", user);  // Dev details\n        log.info(\"New user signup: {}\", user.getEmail());  // Business event\n        \n        try {\n            User saved = repository.save(user);\n            return saved;\n        } catch (Exception e) {\n            log.error(\"Failed to create user {}: {}\", user.getEmail(), e.getMessage(), e);\n            throw e;\n        }\n    }\n}\n\n# application.properties\nlogging.level.root=INFO\nlogging.level.com.myapp=DEBUG      # Your code: more verbose\nlogging.level.org.hibernate=WARN   # Hibernate: less noise",
+          "keyPoints": [
+            "DEBUG = dev details (hidden in prod), INFO = business events",
+            "WARN = 'something's off but we recovered', ERROR = 'something broke'",
+            "Use {} placeholders — they skip string building if log level is off",
+            "Pass exception as LAST argument: log.error(\"msg\", e) — stack trace included"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common-patterns",
+      "title": "Common Patterns",
+      "concepts": [
+        {
+          "name": "DTO Pattern",
+          "explanation": "Don't expose your database entities directly! DTOs (Data Transfer Objects) are like a public-facing filter — they hide sensitive fields and structure your API responses exactly how you want them.",
+          "code": "// Entity (internal, has everything)\n@Entity\npublic class User {\n    private Long id;\n    private String email;\n    private String passwordHash;  // Never expose!\n    private LocalDateTime lastLogin;\n    private boolean active;\n}\n\n// DTO (public-facing, curated)\npublic record UserDTO(\n    Long id,\n    String email,\n    boolean active\n) {\n    // Convert from entity\n    public static UserDTO from(User user) {\n        return new UserDTO(user.getId(), user.getEmail(), user.isActive());\n    }\n}\n\n// In controller\n@GetMapping(\"/{id}\")\npublic UserDTO getUser(@PathVariable Long id) {\n    User user = userService.findById(id);\n    return UserDTO.from(user);  // Never expose raw entity!\n}",
+          "keyPoints": [
+            "Entity = database structure, DTO = API structure",
+            "DTOs hide sensitive fields (password, internal IDs)",
+            "Use Java Records (16+) for DTOs — free equals/hashCode/toString",
+            "MapStruct can auto-generate entity↔DTO conversions"
+          ]
+        },
+        {
+          "name": "Builder Pattern with Lombok",
+          "explanation": "Creating objects with many fields? Constructors become unreadable. Builder pattern lets you set only what you need, in any order. Lombok's @Builder generates it all for you!",
+          "code": "// Add Lombok to dependencies\n@Data  // Getters, setters, equals, hashCode, toString\n@Builder  // Builder pattern\n@AllArgsConstructor\n@NoArgsConstructor\npublic class CreateUserRequest {\n    private String name;\n    private String email;\n    private String phone;\n    private String address;\n    private Integer age;\n}\n\n// Usage: Clean, readable object creation\nvar request = CreateUserRequest.builder()\n    .name(\"Alice\")\n    .email(\"alice@example.com\")\n    .age(25)\n    // phone and address are optional!\n    .build();\n\n// Much better than:\n// new CreateUserRequest(\"Alice\", \"alice@example.com\", null, null, 25)",
+          "keyPoints": [
+            "@Builder generates .builder() and .build() methods",
+            "@Data = @Getter + @Setter + @ToString + @EqualsAndHashCode",
+            "Builder lets you skip optional fields easily",
+            "Add @Builder.Default for default values"
+          ]
+        },
+        {
+          "name": "Repository Pattern",
+          "explanation": "JpaRepository gives you CRUD for free, but real apps need custom queries. Learn the three ways: method name magic, @Query for custom JPQL, and native SQL when you need it.",
+          "code": "@Repository\npublic interface UserRepository extends JpaRepository<User, Long> {\n    \n    // Method name → query (magic!)\n    Optional<User> findByEmail(String email);\n    List<User> findByActiveTrue();\n    List<User> findByNameContainingIgnoreCase(String name);\n    \n    // Custom JPQL query\n    @Query(\"SELECT u FROM User u WHERE u.createdAt > :date\")\n    List<User> findUsersCreatedAfter(@Param(\"date\") LocalDateTime date);\n    \n    // Native SQL when you need database-specific features\n    @Query(value = \"SELECT * FROM users WHERE YEAR(created_at) = ?1\", \n           nativeQuery = true)\n    List<User> findByCreationYear(int year);\n    \n    // Modifying query (UPDATE/DELETE)\n    @Modifying\n    @Transactional\n    @Query(\"UPDATE User u SET u.active = false WHERE u.lastLogin < :date\")\n    int deactivateInactiveUsers(@Param(\"date\") LocalDateTime date);\n}",
+          "keyPoints": [
+            "Method naming convention: findBy, countBy, deleteBy + field names",
+            "Supports And, Or, Between, Like, In, OrderBy in method names",
+            "@Query for complex queries that method names can't express",
+            "@Modifying required for UPDATE/DELETE queries"
+          ]
+        },
+        {
+          "name": "Service Layer Best Practices",
+          "explanation": "Services contain your business logic — the rules that make your app unique. Keep controllers thin (just routing) and services fat (all the logic). Use @Transactional to group database operations.",
+          "code": "@Service\n@Transactional  // All public methods are transactional\n@RequiredArgsConstructor  // Lombok: constructor injection\npublic class OrderService {\n    \n    private final OrderRepository orderRepo;\n    private final InventoryService inventoryService;\n    private final PaymentService paymentService;\n    \n    public Order placeOrder(CreateOrderRequest request) {\n        // 1. Validate\n        if (request.getItems().isEmpty()) {\n            throw new BadRequestException(\"Order must have items\");\n        }\n        \n        // 2. Check inventory (business rule)\n        for (var item : request.getItems()) {\n            if (!inventoryService.isAvailable(item.getProductId(), item.getQuantity())) {\n                throw new OutOfStockException(item.getProductId());\n            }\n        }\n        \n        // 3. Process payment\n        paymentService.charge(request.getPaymentDetails());\n        \n        // 4. Create order\n        Order order = Order.from(request);\n        return orderRepo.save(order);\n        \n        // If anything fails, @Transactional rolls back everything!\n    }\n}",
+          "keyPoints": [
+            "@Transactional on class = all public methods are transactional",
+            "If any exception is thrown, database changes are rolled back",
+            "Keep controllers dumb, services smart",
+            "Services can call other services for complex operations"
+          ]
+        }
+      ]
+    }
+  ]
+}

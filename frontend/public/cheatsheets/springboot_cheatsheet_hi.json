@@ -1,0 +1,637 @@
+{
+  "title": "Spring Boot Cheatsheet - Hinglish",
+  "description": "Spring Boot ko samjho asaan Hinglish mein — production-ready apps banao bina boilerplate ke",
+  "sections": [
+    {
+      "id": "fundamentals",
+      "title": "Spring Boot Fundamentals",
+      "concepts": [
+        {
+          "name": "Spring Boot Kya Hai",
+          "explanation": "Spring Boot ek framework hai jo Spring applications banana asaan banata hai. IoC (Inversion of Control) ka matlab hai ki Spring tumhare objects create karke manage karta hai — tum sirf batao kya chahiye, baaki Spring dekh lega. Socho jaise tum restaurant mein jaake sirf order dete ho, kitchen ka kaam tum nahi karte.",
+          "code": "import org.springframework.boot.SpringApplication;\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\n\n@SpringBootApplication  // Ye teen cheezein ek mein: @Configuration + @EnableAutoConfiguration + @ComponentScan\npublic class MyApplication {\n    public static void main(String[] args) {\n        SpringApplication.run(MyApplication.class, args);\n        // Bas! Embedded Tomcat start ho jaayega\n    }\n}",
+          "keyPoints": [
+            "@SpringBootApplication = teen annotations ek mein",
+            "Auto-configuration automatically dependencies detect karke configure karta hai",
+            "Embedded server (Tomcat) built-in aata hai — alag server install nahi karna",
+            "spring-boot-starter-* dependencies group karke deta hai — ek daalo, sab aaye",
+            "Convention over Configuration — zyaadatar defaults sahi hote hain"
+          ]
+        },
+        {
+          "name": "Application Properties",
+          "explanation": "application.properties ya application.yml mein apni app ki settings likho. Jaise phone ki settings — port, database, logging sab yahan set karo.",
+          "code": "# application.properties\nserver.port=8080\nspring.application.name=my-app\n\n# Database Connection\nspring.datasource.url=jdbc:mysql://localhost:3306/mydb\nspring.datasource.username=root\nspring.datasource.password=password\n\n# JPA Settings\nspring.jpa.hibernate.ddl-auto=update\nspring.jpa.show-sql=true\n\n# Logging\nlogging.level.root=INFO\nlogging.level.com.myapp=DEBUG\n\n# Custom Properties\napp.name=My Application\napp.version=1.0",
+          "keyPoints": [
+            "application.properties ya application.yml use karo",
+            "@Value(\"${app.name}\") se custom property inject karo",
+            "server.port se port change karo",
+            "Profile-specific: application-dev.properties, application-prod.properties",
+            "spring.profiles.active=dev se active profile set karo"
+          ]
+        },
+        {
+          "name": "Dependency Injection",
+          "explanation": "DI ka matlab hai ki Spring tumhare objects ke dependencies khud provide karke deta hai. Tum sirf declare karo ki kya chahiye, Spring dhoondh ke de dega. Jaise tum office mein 'mujhe printer chahiye' bolo aur IT department de de — tum khud printer setup nahi karte.",
+          "code": "// Service Layer\n@Service\npublic class UserService {\n    \n    private final UserRepository userRepository;\n    \n    // Constructor Injection — SABSE RECOMMENDED TARIKA!\n    // Spring automatically UserRepository ka bean provide karega\n    @Autowired  // Spring Boot mein optional hai single constructor ke liye\n    public UserService(UserRepository userRepository) {\n        this.userRepository = userRepository;\n    }\n    \n    public User findById(Long id) {\n        return userRepository.findById(id)\n            .orElseThrow(() -> new RuntimeException(\"User nahi mila!\"));\n    }\n}\n\n// Controller Layer\n@RestController\npublic class UserController {\n    \n    private final UserService userService;\n    \n    public UserController(UserService userService) {\n        this.userService = userService;\n    }\n    \n    @GetMapping(\"/users/{id}\")\n    public User getUser(@PathVariable Long id) {\n        return userService.findById(id);\n    }\n}",
+          "keyPoints": [
+            "Constructor Injection sabse best practice hai — final fields, testable code",
+            "@Autowired single constructor ke liye optional hai",
+            "Field Injection (@Autowired field pe) avoid karo — testing mein mushkil hoti hai",
+            "@Service, @Repository, @Component, @Controller sab spring beans banate hain",
+            "Spring IoC Container beans create, manage aur inject karta hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "core-annotations",
+      "title": "Core Annotations",
+      "concepts": [
+        {
+          "name": "Stereotype Annotations",
+          "explanation": "Spring mein @Component, @Service, @Repository, @Controller — ye annotations Spring ko batate hain ki 'is class ka object bana ke manage karo'. Har ek ka specific role hai, lekin ultimately sab @Component hi hain. Jaise school mein sab teachers hain, lekin koi math ka, koi science ka.",
+          "code": "// @Component — generic spring bean\n@Component\npublic class EmailSender {\n    public void send(String to, String msg) {\n        // Email bhejo\n    }\n}\n\n// @Service — business logic ke liye\n@Service\npublic class OrderService {\n    public Order createOrder(OrderRequest request) {\n        // Business logic yahan\n        return new Order();\n    }\n}\n\n// @Repository — database operations ke liye\n@Repository\npublic interface UserRepository extends JpaRepository<User, Long> {\n    // Spring automatically implementation banata hai!\n    List<User> findByName(String name);\n    Optional<User> findByEmail(String email);\n}\n\n// @Controller / @RestController — HTTP requests handle karo\n@RestController  // = @Controller + @ResponseBody\n@RequestMapping(\"/api\")\npublic class ApiController {\n    @GetMapping(\"/hello\")\n    public String hello() {\n        return \"Namaste!\";  // Automatically JSON mein jaayega\n    }\n}",
+          "keyPoints": [
+            "@Component = generic bean, @Service = business logic, @Repository = data access",
+            "@Controller = web MVC, @RestController = REST API (JSON return karta hai)",
+            "@Repository automatically database exceptions translate karta hai",
+            "@ComponentScan in sab ko detect karta hai — @SpringBootApplication mein already hai",
+            "Best practice: sahi annotation use karo — code padh ke role clear hona chahiye"
+          ]
+        },
+        {
+          "name": "Bean Scope & Lifecycle",
+          "explanation": "Bean scope define karta hai ki Spring ek bean ka kitne objects banayega. Default mein sirf EK object banta hai poori application mein (Singleton). Lifecycle callbacks se bean banne aur hatne pe kuch kaam kar sakte ho.",
+          "code": "// Singleton (Default) — poori app mein sirf EK instance\n@Service\npublic class CacheService {\n    // Sab jagah same object milega!\n}\n\n// Prototype — har baar NAYA instance\n@Component\n@Scope(\"prototype\")\npublic class ShoppingCart {\n    // Har request ko naya cart milega\n}\n\n// Lifecycle Callbacks\n@Component\npublic class DatabaseService {\n    \n    @PostConstruct  // Bean banne ke BAAD chale\n    public void init() {\n        System.out.println(\"Database connection ready!\");\n    }\n    \n    @PreDestroy  // Bean destroy hone se PEHLE chale\n    public void cleanup() {\n        System.out.println(\"Connection band karna!\");\n    }\n}",
+          "keyPoints": [
+            "Singleton (default): poori app mein ek hi instance",
+            "Prototype: har injection pe naya instance",
+            "Request/Session: web apps mein per-request/per-session",
+            "@PostConstruct: bean ready hone ke baad initialization",
+            "@PreDestroy: bean destroy hone se pehle cleanup"
+          ]
+        },
+        {
+          "name": "Dependency Injection",
+          "explanation": "Spring ek object factory hai — tumhe objects banana nahi padta, Spring de deta hai. Constructor injection best practice hai — dependencies explicit rehti hain aur testing easy hoti hai!",
+          "code": "@Service\npublic class UserService {\n    \n    // Constructor injection (recommended!)\n    private final UserRepository repository;\n    \n    public UserService(UserRepository repository) {\n        this.repository = repository;\n        // Spring auto-inject karega\n    }\n    // Single constructor pe @Autowired optional hai!\n}\n\n// Multiple beans same type ki — @Qualifier se specify karo\n@Service\npublic class OrderService {\n    \n    @Autowired\n    @Qualifier(\"sqlUserRepo\")  // Kaunsi bean chahiye?\n    private UserRepository repository;\n}",
+          "keyPoints": [
+            "Constructor injection best hai — dependencies explicit aur immutable",
+            "@Autowired single constructor pe optional hai (Spring 4.3+)",
+            "@Qualifier(\"beanName\") — same type ki multiple beans mein se choose karo",
+            "Field injection (@Autowired on field) kaam karta hai but testing mushkil hoti hai"
+          ]
+        },
+        {
+          "name": "@Bean, @Configuration aur @Value",
+          "explanation": "Manually beans define karo @Configuration class mein. Properties inject karo @Value se ya @ConfigurationProperties se. Complex third-party objects configure karne ke liye perfect!",
+          "code": "@Configuration\npublic class AppConfig {\n    \n    @Bean\n    public DataSource dataSource() {\n        HikariDataSource ds = new HikariDataSource();\n        ds.setJdbcUrl(\"jdbc:mysql://localhost/mydb\");\n        return ds;\n    }\n    \n    @Bean\n    @Primary  // Multiple beans mein se default\n    public UserService primaryUserService() {\n        return new UserServiceImpl();\n    }\n}\n\n// Properties inject karo seedha\n@Component\npublic class EmailService {\n    @Value(\"${app.email.host}\")       // application.properties se\n    private String emailHost;\n    \n    @Value(\"${app.email.port:587}\")  // Default value 587\n    private int emailPort;\n}\n\n// Ya type-safe way\n@ConfigurationProperties(prefix = \"app.email\")\npublic class EmailProps {\n    private String host;\n    private int port;  // app.email.port se inject\n}",
+          "keyPoints": [
+            "@Configuration class mein @Bean methods se beans define karo",
+            "@Primary — multiple beans mein se default select hoti hai",
+            "@Value(\"${property.key}\") — application.properties se value inject karo",
+            "@Value(\"${key:default}\") — default value bhi de sakte ho",
+            "@ConfigurationProperties type-safe property binding ke liye"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rest-api",
+      "title": "REST API Development",
+      "concepts": [
+        {
+          "name": "REST Controller Basics",
+          "explanation": "REST API banane ke liye @RestController use karo. Ye HTTP methods (GET, POST, PUT, DELETE) ko Java methods se map karta hai. Socho jaise waiter (controller) order leta hai aur kitchen (service) se khana mangta hai.",
+          "code": "@RestController\n@RequestMapping(\"/api/users\")\npublic class UserController {\n    \n    private final UserService userService;\n    \n    public UserController(UserService userService) {\n        this.userService = userService;\n    }\n    \n    // GET /api/users — saare users lao\n    @GetMapping\n    public List<User> getAllUsers() {\n        return userService.findAll();\n    }\n    \n    // GET /api/users/5 — ek user lao\n    @GetMapping(\"/{id}\")\n    public User getUserById(@PathVariable Long id) {\n        return userService.findById(id);\n    }\n    \n    // POST /api/users — naya user banao\n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)  // 201 status\n    public User createUser(@RequestBody @Valid UserRequest request) {\n        return userService.create(request);\n    }\n    \n    // PUT /api/users/5 — user update karo\n    @PutMapping(\"/{id}\")\n    public User updateUser(@PathVariable Long id, \n                           @RequestBody @Valid UserRequest request) {\n        return userService.update(id, request);\n    }\n    \n    // DELETE /api/users/5 — user delete karo\n    @DeleteMapping(\"/{id}\")\n    @ResponseStatus(HttpStatus.NO_CONTENT)  // 204 status\n    public void deleteUser(@PathVariable Long id) {\n        userService.delete(id);\n    }\n}",
+          "keyPoints": [
+            "@RestController = @Controller + @ResponseBody (JSON automatically)",
+            "@GetMapping, @PostMapping, @PutMapping, @DeleteMapping — HTTP methods",
+            "@PathVariable URL se value nikalta hai: /users/{id} → id = 5",
+            "@RequestBody JSON body ko Java object mein convert karta hai",
+            "@RequestParam query parameters ke liye: /users?name=raj → name = 'raj'"
+          ]
+        },
+        {
+          "name": "Request Validation",
+          "explanation": "User ka input validate karo taaki galat data database mein na jaaye. Bean Validation annotations se bahut asaan hai.",
+          "code": "// DTO with Validation\npublic class UserRequest {\n    \n    @NotBlank(message = \"Naam zaroori hai\")\n    @Size(min = 2, max = 50, message = \"Naam 2-50 characters ka hona chahiye\")\n    private String name;\n    \n    @Email(message = \"Sahi email daalo\")\n    @NotBlank(message = \"Email zaroori hai\")\n    private String email;\n    \n    @Min(value = 18, message = \"Umr 18+ honi chahiye\")\n    private int age;\n    \n    // Getters & Setters\n}\n\n// Controller mein @Valid lagao\n@PostMapping\npublic User createUser(@RequestBody @Valid UserRequest request) {\n    return userService.create(request);\n}\n\n// Global Exception Handler\n@RestControllerAdvice\npublic class GlobalExceptionHandler {\n    \n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    @ResponseStatus(HttpStatus.BAD_REQUEST)\n    public Map<String, String> handleValidation(MethodArgumentNotValidException ex) {\n        Map<String, String> errors = new HashMap<>();\n        ex.getBindingResult().getFieldErrors().forEach(error -> \n            errors.put(error.getField(), error.getDefaultMessage())\n        );\n        return errors;\n    }\n}",
+          "keyPoints": [
+            "@Valid trigger karta hai validation — controller method mein lagao",
+            "@NotBlank, @NotNull, @Size, @Email — common validators",
+            "@RestControllerAdvice se global error handling karo",
+            "DTO (Data Transfer Object) use karo — entity directly expose mat karo",
+            "Custom validator bhi bana sakte ho @Constraint se"
+          ]
+        },
+        {
+          "name": "Exception Handling",
+          "explanation": "Errors ko gracefully handle karo taaki user ko samajh aaye ki kya galat hua. Global exception handler se ek jagah pe sab errors manage karo.",
+          "code": "// Custom Exception\npublic class ResourceNotFoundException extends RuntimeException {\n    public ResourceNotFoundException(String message) {\n        super(message);\n    }\n}\n\n// Error Response DTO\npublic class ErrorResponse {\n    private int status;\n    private String message;\n    private LocalDateTime timestamp;\n    \n    // Constructor, Getters\n}\n\n// Global Exception Handler — ek jagah pe sab errors handle\n@RestControllerAdvice\npublic class GlobalExceptionHandler {\n    \n    @ExceptionHandler(ResourceNotFoundException.class)\n    @ResponseStatus(HttpStatus.NOT_FOUND)\n    public ErrorResponse handleNotFound(ResourceNotFoundException ex) {\n        return new ErrorResponse(404, ex.getMessage(), LocalDateTime.now());\n    }\n    \n    @ExceptionHandler(Exception.class)\n    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)\n    public ErrorResponse handleGeneral(Exception ex) {\n        return new ErrorResponse(500, \"Server mein kuch gadbad ho gayi!\", \n                                LocalDateTime.now());\n    }\n}",
+          "keyPoints": [
+            "@RestControllerAdvice poori app ke errors handle karta hai",
+            "@ExceptionHandler specific exception type handle karta hai",
+            "Custom exceptions banao meaningful error messages ke liye",
+            "Error response mein status, message, timestamp daalo",
+            "Generic Exception handler last mein rakho — catch-all jaisa"
+          ]
+        },
+        {
+          "name": "REST Controller aur Request Mapping",
+          "explanation": "REST API ka dil hai controller! @GetMapping, @PostMapping etc. se HTTP methods map karo. PathVariable URL se data lo, RequestParam query string se lo.",
+          "code": "@RestController\n@RequestMapping(\"/api/users\")\npublic class UserController {\n    \n    @GetMapping\n    public List<User> getAllUsers() {\n        return userService.getAll();\n    }\n    \n    // URL se ID lo: GET /api/users/5\n    @GetMapping(\"/{id}\")\n    public ResponseEntity<User> getUser(@PathVariable Long id) {\n        return userService.findById(id)\n            .map(ResponseEntity::ok)\n            .orElse(ResponseEntity.notFound().build());\n    }\n    \n    // POST body receive karo\n    @PostMapping\n    public ResponseEntity<User> createUser(@Valid @RequestBody UserDto dto) {\n        User created = userService.create(dto);\n        return ResponseEntity.status(201).body(created);\n    }\n    \n    // Query params: GET /api/users?page=0&size=10\n    @GetMapping(\"/search\")\n    public List<User> search(\n        @RequestParam(defaultValue = \"0\") int page,\n        @RequestParam(defaultValue = \"10\") int size) {\n        return userService.search(page, size);\n    }\n}",
+          "keyPoints": [
+            "@GetMapping, @PostMapping, @PutMapping, @DeleteMapping — HTTP methods ke liye",
+            "@PathVariable — URL path se value lo ({id} syntax)",
+            "@RequestParam — query string se value lo (?key=value)",
+            "@RequestBody — JSON body ko Java object mein convert karo",
+            "ResponseEntity se status code aur headers control karo"
+          ]
+        },
+        {
+          "name": "CORS Configuration",
+          "explanation": "Browser sirf same-origin requests allow karta hai by default. CORS configure karo taaki frontend (different port ya domain pe) backend se communicate kar sake.",
+          "code": "// Method level CORS\n@RestController\n@CrossOrigin(origins = \"http://localhost:3000\")\npublic class UserController {\n    // Sirf is controller ke liye allowed\n}\n\n// Global CORS — poori app ke liye\n@Configuration\npublic class WebConfig implements WebMvcConfigurer {\n    \n    @Override\n    public void addCorsMappings(CorsRegistry registry) {\n        registry.addMapping(\"/api/**\")  // Ye sab endpoints\n            .allowedOrigins(\n                \"http://localhost:3000\",\n                \"https://myapp.com\"\n            )\n            .allowedMethods(\"GET\", \"POST\", \"PUT\", \"DELETE\")\n            .allowedHeaders(\"*\")\n            .allowCredentials(true)\n            .maxAge(3600);  // 1 ghanta cache karo\n    }\n}",
+          "keyPoints": [
+            "@CrossOrigin — controller ya method level pe CORS allow karo",
+            "WebMvcConfigurer se global CORS configuration karo",
+            "allowedOrigins — kaunse domains se requests allow hain",
+            "allowCredentials(true) — cookies aur auth headers ke saath"
+          ]
+        },
+        {
+          "name": "Async aur Response Customization",
+          "explanation": "ResponseEntity se custom status codes, headers return karo. response.setBody, headers — sab control karo. Production applications mein proper HTTP responses bahut zaroori hain.",
+          "code": "@RestController\npublic class ProductController {\n    \n    // Custom status code\n    @PostMapping(\"/products\")\n    public ResponseEntity<Product> create(@RequestBody ProductDto dto) {\n        Product p = productService.save(dto);\n        URI location = URI.create(\"/api/products/\" + p.getId());\n        return ResponseEntity.created(location).body(p); // 201 Created\n    }\n    \n    // Custom headers\n    @GetMapping(\"/download\")\n    public ResponseEntity<byte[]> download() {\n        byte[] data = fileService.getData();\n        return ResponseEntity.ok()\n            .header(\"Content-Disposition\", \"attachment; filename=file.csv\")\n            .contentType(MediaType.TEXT_PLAIN)\n            .body(data);\n    }\n    \n    // 204 No Content\n    @DeleteMapping(\"/{id}\")\n    public ResponseEntity<Void> delete(@PathVariable Long id) {\n        productService.delete(id);\n        return ResponseEntity.noContent().build(); // 204\n    }\n}",
+          "keyPoints": [
+            "ResponseEntity.ok() — 200 status",
+            "ResponseEntity.created(uri) — 201 Created",
+            "ResponseEntity.noContent() — 204 No Content",
+            "ResponseEntity.notFound() — 404 Not Found",
+            ".header() se custom headers add karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jpa",
+      "title": "JPA & Data Access",
+      "concepts": [
+        {
+          "name": "JPA Entity",
+          "explanation": "JPA Entity ek Java class hai jo database table se map hoti hai. Har object ek row hai. Annotations se batao kaun sa field kaun sa column hai. Spring Data JPA se database operations bahut asaan ho jaate hain.",
+          "code": "@Entity\n@Table(name = \"users\")\npublic class User {\n    \n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n    \n    @Column(nullable = false, length = 100)\n    private String name;\n    \n    @Column(unique = true, nullable = false)\n    private String email;\n    \n    @Enumerated(EnumType.STRING)\n    private Role role;  // ADMIN, USER\n    \n    @CreatedDate\n    private LocalDateTime createdAt;\n    \n    // Getters, Setters, Constructors\n}",
+          "keyPoints": [
+            "@Entity class ko database table se map karta hai",
+            "@Id primary key define karta hai",
+            "@GeneratedValue auto-increment ke liye",
+            "@Column constraints define karta hai (nullable, unique, length)",
+            "@Table(name) se custom table naam de sakte ho"
+          ]
+        },
+        {
+          "name": "Spring Data Repository",
+          "explanation": "Repository interface likhne se Spring automatically implementation banata hai! Tum sirf method naam likho — Spring query khud banayega. Jaadui lag raha hai lekin sach hai!",
+          "code": "// Base Repository — CrudRepository ya JpaRepository extend karo\npublic interface UserRepository extends JpaRepository<User, Long> {\n    \n    // Method naam se query banti hai!\n    List<User> findByName(String name);      // WHERE name = ?\n    Optional<User> findByEmail(String email); // WHERE email = ?\n    List<User> findByRole(Role role);         // WHERE role = ?\n    \n    // Multiple conditions\n    List<User> findByNameAndRole(String name, Role role);  // AND\n    List<User> findByNameOrEmail(String name, String email); // OR\n    \n    // Like query\n    List<User> findByNameContaining(String keyword); // LIKE %keyword%\n    \n    // Ordering\n    List<User> findByRoleOrderByNameAsc(Role role);  // ORDER BY\n    \n    // Count\n    long countByRole(Role role);  // COUNT WHERE role = ?\n    \n    // Custom JPQL query\n    @Query(\"SELECT u FROM User u WHERE u.email LIKE %:domain\")\n    List<User> findByEmailDomain(@Param(\"domain\") String domain);\n    \n    // Native SQL query\n    @Query(value = \"SELECT * FROM users WHERE created_at > :date\", nativeQuery = true)\n    List<User> findRecentUsers(@Param(\"date\") LocalDateTime date);\n}",
+          "keyPoints": [
+            "JpaRepository extend karo — CRUD + pagination + sorting free!",
+            "Method naming convention: findBy + FieldName + Condition",
+            "And, Or, Like, OrderBy, Between sab method naam mein likh sakte ho",
+            "@Query se custom JPQL ya native SQL likhho",
+            "save() insert aur update dono karta hai (id hai toh update, nahi toh insert)"
+          ]
+        },
+        {
+          "name": "Entity Relationships",
+          "explanation": "Database tables ke beech relationships define karo — OneToMany, ManyToOne, ManyToMany. Jaise ek User ke kai Orders ho sakte hain.",
+          "code": "// One-to-Many: Ek User ke bahut saare Orders\n@Entity\npublic class User {\n    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n    private String name;\n    \n    @OneToMany(mappedBy = \"user\", cascade = CascadeType.ALL)\n    private List<Order> orders = new ArrayList<>();\n}\n\n// Many-to-One: Har Order ek User ka hai\n@Entity\n@Table(name = \"orders\")\npublic class Order {\n    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n    private String product;\n    private double amount;\n    \n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"user_id\")\n    private User user;\n}\n\n// Many-to-Many: Users aur Roles\n@Entity\npublic class User {\n    @ManyToMany\n    @JoinTable(\n        name = \"user_roles\",\n        joinColumns = @JoinColumn(name = \"user_id\"),\n        inverseJoinColumns = @JoinColumn(name = \"role_id\")\n    )\n    private Set<Role> roles = new HashSet<>();\n}",
+          "keyPoints": [
+            "@OneToMany: ek se bahut — mappedBy use karo (owner side ManyToOne hai)",
+            "@ManyToOne: bahut se ek — JoinColumn foreign key define karta hai",
+            "@ManyToMany: JoinTable se junction table banao",
+            "FetchType.LAZY default rakho — eagerly sab load mat karo!",
+            "CascadeType.ALL se parent save = children bhi save"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Spring Security Basics",
+      "concepts": [
+        {
+          "name": "Security Configuration",
+          "explanation": "Spring Security tumhari application ko surakshit banata hai — kon login kar sakta hai, kon kya access kar sakta hai, sab yahan configure hota hai. Socho building ka security system — gate pe guard, har floor pe access card.",
+          "code": "@Configuration\n@EnableWebSecurity\npublic class SecurityConfig {\n    \n    @Bean\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\n        http\n            .csrf(csrf -> csrf.disable())  // REST APIs ke liye\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/public/**\").permitAll()  // Koi bhi access kare\n                .requestMatchers(\"/api/admin/**\").hasRole(\"ADMIN\")  // Sirf admin\n                .anyRequest().authenticated()  // Baaki ke liye login chahiye\n            )\n            .httpBasic(Customizer.withDefaults());  // Basic authentication\n        \n        return http.build();\n    }\n    \n    @Bean\n    public PasswordEncoder passwordEncoder() {\n        return new BCryptPasswordEncoder();  // Passwords hash karo!\n    }\n}",
+          "keyPoints": [
+            "SecurityFilterChain se HTTP security configure karo",
+            "permitAll() = koi bhi access kare, authenticated() = login chahiye",
+            "hasRole() role-based access control ke liye",
+            "BCryptPasswordEncoder hamesha use karo — plain text password KABHI nahi!",
+            "CSRF REST APIs ke liye disable karo, web forms ke liye enable rakho"
+          ]
+        },
+        {
+          "name": "JWT Authentication",
+          "explanation": "JWT (JSON Web Token) stateless authentication ke liye use hota hai. Login pe token milta hai, har request mein wo token bhejo. Server ko session maintain nahi karna padta. Jaise concert ka pass — ek baar lelo, baar baar dikhao.",
+          "code": "// JWT Utility Class\n@Component\npublic class JwtUtil {\n    \n    @Value(\"${jwt.secret}\")\n    private String secret;\n    \n    // Token banao\n    public String generateToken(String username) {\n        return Jwts.builder()\n            .setSubject(username)\n            .setIssuedAt(new Date())\n            .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hours\n            .signWith(SignatureAlgorithm.HS256, secret)\n            .compact();\n    }\n    \n    // Token se username nikalo\n    public String extractUsername(String token) {\n        return Jwts.parser()\n            .setSigningKey(secret)\n            .parseClaimsJws(token)\n            .getBody()\n            .getSubject();\n    }\n    \n    // Token valid hai ya nahi\n    public boolean validateToken(String token, String username) {\n        String tokenUsername = extractUsername(token);\n        return tokenUsername.equals(username) && !isTokenExpired(token);\n    }\n}\n\n// Login Endpoint\n@PostMapping(\"/login\")\npublic ResponseEntity<?> login(@RequestBody LoginRequest request) {\n    // Authenticate karo\n    Authentication auth = authManager.authenticate(\n        new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())\n    );\n    \n    // Token banao aur bhejo\n    String token = jwtUtil.generateToken(request.getUsername());\n    return ResponseEntity.ok(new JwtResponse(token));\n}",
+          "keyPoints": [
+            "JWT = Header + Payload + Signature (Base64 encoded)",
+            "Login pe token generate karo, har request mein Authorization header mein bhejo",
+            "Stateless — server pe session nahi rakhna padta",
+            "Token expiry set karo — kabhi na expire hone wala token security risk hai!",
+            "Secret key strong rakho aur environment variables mein store karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "Testing",
+      "concepts": [
+        {
+          "name": "Unit Testing",
+          "explanation": "Ek ek class/method ko isolation mein test karo. Dependencies ko mock karo taaki sirf apna code test ho. Jaise ek car ka brake SIRF brake test karo — engine ke baare mein mat socho.",
+          "code": "@ExtendWith(MockitoExtension.class)\npublic class UserServiceTest {\n    \n    @Mock\n    private UserRepository userRepository;\n    \n    @InjectMocks\n    private UserService userService;\n    \n    @Test\n    void findById_shouldReturnUser() {\n        // ARRANGE — setup karo\n        User user = new User(1L, \"Raj\", \"raj@email.com\");\n        when(userRepository.findById(1L)).thenReturn(Optional.of(user));\n        \n        // ACT — method chalaao\n        User result = userService.findById(1L);\n        \n        // ASSERT — check karo\n        assertEquals(\"Raj\", result.getName());\n        verify(userRepository).findById(1L);  // Repository call hua ya nahi\n    }\n    \n    @Test\n    void findById_shouldThrowWhenNotFound() {\n        when(userRepository.findById(1L)).thenReturn(Optional.empty());\n        \n        assertThrows(ResourceNotFoundException.class, \n            () -> userService.findById(1L));\n    }\n}",
+          "keyPoints": [
+            "AAA pattern: Arrange (setup), Act (execute), Assert (verify)",
+            "@Mock fake dependency banata hai",
+            "@InjectMocks mocks inject karke test object banata hai",
+            "when().thenReturn() se mock ka behavior define karo",
+            "verify() se check karo ki method call hua ya nahi"
+          ]
+        },
+        {
+          "name": "Integration Testing",
+          "explanation": "Poori app ko test karo — controller se lekar database tak. Real HTTP request bhejo aur response check karo. Ye ensure karta hai ki saare layers saath mein sahi kaam kar rahe hain.",
+          "code": "@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\n@AutoConfigureMockMvc\npublic class UserControllerTest {\n    \n    @Autowired\n    private MockMvc mockMvc;\n    \n    @Autowired\n    private ObjectMapper objectMapper;\n    \n    @Test\n    void createUser_shouldReturn201() throws Exception {\n        UserRequest request = new UserRequest(\"Raj\", \"raj@email.com\", 25);\n        \n        mockMvc.perform(post(\"/api/users\")\n                .contentType(MediaType.APPLICATION_JSON)\n                .content(objectMapper.writeValueAsString(request)))\n            .andExpect(status().isCreated())\n            .andExpect(jsonPath(\"$.name\").value(\"Raj\"))\n            .andExpect(jsonPath(\"$.email\").value(\"raj@email.com\"));\n    }\n    \n    @Test\n    void getUser_shouldReturn404WhenNotFound() throws Exception {\n        mockMvc.perform(get(\"/api/users/999\"))\n            .andExpect(status().isNotFound());\n    }\n}",
+          "keyPoints": [
+            "@SpringBootTest poora Spring context load karta hai",
+            "MockMvc se HTTP requests simulate karo bina server start kiye",
+            "jsonPath() se JSON response verify karo",
+            "@AutoConfigureMockMvc MockMvc auto-configure karta hai",
+            "H2 in-memory database use karo testing ke liye"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "title": "Database Configuration",
+      "concepts": [
+        {
+          "name": "Database Setup",
+          "explanation": "Spring Boot mein database connect karna bahut asaan hai — bas properties file mein URL, username, password daalo aur Spring baaki handle kar lega.",
+          "code": "# MySQL Configuration\nspring.datasource.url=jdbc:mysql://localhost:3306/mydb\nspring.datasource.username=root\nspring.datasource.password=password\nspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver\n\n# JPA/Hibernate Settings\nspring.jpa.hibernate.ddl-auto=update    # auto table create/update\nspring.jpa.show-sql=true                # SQL queries console pe dikhao\nspring.jpa.properties.hibernate.format_sql=true  # Formatted SQL\n\n# H2 In-Memory Database (Testing ke liye)\nspring.datasource.url=jdbc:h2:mem:testdb\nspring.datasource.driver-class-name=org.h2.Driver\nspring.h2.console.enabled=true          # H2 console browser mein kholo",
+          "keyPoints": [
+            "ddl-auto=update tables auto-create/update karta hai",
+            "ddl-auto=validate production mein use karo — changes verify hote hain",
+            "H2 in-memory database testing ke liye perfect hai",
+            "show-sql=true development mein queries dekhne ke liye",
+            "Connection pooling (HikariCP) Spring Boot mein default hai"
+          ]
+        },
+        {
+          "name": "Transaction Management",
+          "explanation": "@Transactional se database operations ko ek unit mein wrap karo. Agar kuch bhi galat ho, sab rollback ho jaayega. Jaise bank transfer — dono accounts update hone chahiye, ya koi nahi.",
+          "code": "@Service\npublic class TransferService {\n    \n    @Autowired\n    private AccountRepository accountRepository;\n    \n    @Transactional  // Sab ya kuch nahi!\n    public void transfer(Long fromId, Long toId, double amount) {\n        Account from = accountRepository.findById(fromId)\n            .orElseThrow(() -> new RuntimeException(\"Account nahi mila\"));\n        Account to = accountRepository.findById(toId)\n            .orElseThrow(() -> new RuntimeException(\"Account nahi mila\"));\n        \n        if (from.getBalance() < amount) {\n            throw new RuntimeException(\"Paisa kam hai!\");\n            // Exception pe sab ROLLBACK ho jaayega\n        }\n        \n        from.setBalance(from.getBalance() - amount);\n        to.setBalance(to.getBalance() + amount);\n        \n        accountRepository.save(from);\n        accountRepository.save(to);\n        // Agar yahan koi error aaye, dono saves rollback!\n    }\n}",
+          "keyPoints": [
+            "@Transactional method pe lagao — sab operations atomic honge",
+            "RuntimeException pe auto rollback hota hai",
+            "Checked exceptions pe rollback NAHI hota (unless specify karo)",
+            "readOnly=true read-only transactions ke liye performance improve karta hai",
+            "Service layer pe lagao, controller pe nahi — business logic mein"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "devtools",
+      "title": "Developer Tools & Productivity",
+      "concepts": [
+        {
+          "name": "Spring Boot DevTools",
+          "explanation": "DevTools se development tez hoti hai — code save karo aur app automatically restart ho jaati. Browser bhi auto-refresh hota hai. Production mein disabled rehta hai.",
+          "code": "<!-- pom.xml mein add karo -->\n<dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-devtools</artifactId>\n    <scope>runtime</scope>\n    <optional>true</optional>\n</dependency>\n\n# application.properties\n# LiveReload enable karo\nspring.devtools.restart.enabled=true\nspring.devtools.livereload.enabled=true\n\n# Certain files pe restart skip karo\nspring.devtools.restart.exclude=static/**,public/**",
+          "keyPoints": [
+            "Auto-restart: code change pe app automatically restart hota hai",
+            "LiveReload: browser auto-refresh hota hai",
+            "H2 console auto-enable hota hai devtools ke saath",
+            "Production mein automatically disabled rehta hai",
+            "optional=true se dependent projects mein nahi jaata"
+          ]
+        },
+        {
+          "name": "Lombok",
+          "explanation": "Lombok boilerplate code hata deta hai — getters, setters, constructors, toString sab annotations se generate ho jaate hain. Code chhota aur clean ho jaata hai.",
+          "code": "// Bina Lombok ke — kitna code!\npublic class User {\n    private Long id;\n    private String name;\n    private String email;\n    \n    // Constructor\n    // Getters (3)\n    // Setters (3)\n    // toString()\n    // equals()\n    // hashCode()\n    // Total: 50+ lines!\n}\n\n// Lombok ke saath — same kaam, kam code!\n@Data  // Getter + Setter + toString + equals + hashCode\n@NoArgsConstructor\n@AllArgsConstructor\n@Builder  // Builder pattern auto-generate\npublic class User {\n    private Long id;\n    private String name;\n    private String email;\n}\n\n// Usage\nUser user = User.builder()\n    .name(\"Raj\")\n    .email(\"raj@email.com\")\n    .build();",
+          "keyPoints": [
+            "@Data = @Getter + @Setter + @ToString + @EqualsAndHashCode",
+            "@Builder elegant object creation ke liye",
+            "@Slf4j automatic logger field add karta hai",
+            "@NoArgsConstructor, @AllArgsConstructor constructors generate karte hain",
+            "@RequiredArgsConstructor final fields ke liye constructor (DI ke liye perfect!)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "actuator",
+      "title": "Actuator & Monitoring",
+      "concepts": [
+        {
+          "name": "Spring Boot Actuator",
+          "explanation": "Actuator tumhari app ki health check karta hai — jaise doctor app ka checkup karta hai. Endpoints milte hain jo batate hain app zinda hai, kitni memory use ho rahi hai, env variables kya hain, etc.",
+          "code": "<!-- pom.xml mein add karo -->\n<dependency>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-starter-actuator</artifactId>\n</dependency>\n\n# application.properties\n# Saare endpoints enable karo\nmanagement.endpoints.web.exposure.include=health,info,metrics,env\n\n# Health details dikhao\nmanagement.endpoint.health.show-details=always\n\n# Custom info\ninfo.app.name=My Application\ninfo.app.version=1.0.0\ninfo.app.description=Spring Boot App",
+          "keyPoints": [
+            "/actuator/health — app zinda hai ya nahi",
+            "/actuator/info — app ki info",
+            "/actuator/metrics — performance metrics",
+            "/actuator/env — environment properties",
+            "Production mein sensitive endpoints secure karo!"
+          ]
+        },
+        {
+          "name": "Custom Health Indicator",
+          "explanation": "Apna custom health check banao — database, external service, disk space jo bhi check karna ho.",
+          "code": "@Component\npublic class DatabaseHealthIndicator implements HealthIndicator {\n    \n    @Autowired\n    private DataSource dataSource;\n    \n    @Override\n    public Health health() {\n        try {\n            // Database connection check karo\n            dataSource.getConnection().isValid(1);\n            return Health.up()\n                .withDetail(\"database\", \"Sab sahi hai!\")\n                .build();\n        } catch (Exception e) {\n            return Health.down()\n                .withDetail(\"database\", \"Connection fail: \" + e.getMessage())\n                .build();\n        }\n    }\n}\n\n// Custom Metrics\n@Service\npublic class OrderService {\n    private final Counter orderCounter;\n    \n    public OrderService(MeterRegistry meterRegistry) {\n        this.orderCounter = meterRegistry.counter(\"orders.created\");\n    }\n    \n    public Order createOrder(OrderRequest request) {\n        Order order = // ... create order\n        orderCounter.increment();  // Metric track karo\n        return order;\n    }\n}",
+          "keyPoints": [
+            "HealthIndicator implement karo custom health checks ke liye",
+            "Health.up() ya Health.down() return karo",
+            "withDetail() se extra info daalo",
+            "MeterRegistry se custom metrics banao",
+            "Prometheus + Grafana se monitoring dashboards banao"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deployment",
+      "title": "Deployment & Configuration",
+      "concepts": [
+        {
+          "name": "Profiles",
+          "explanation": "Profiles se alag alag environments (dev, test, prod) ke liye alag settings rakho. Development mein H2 database, production mein MySQL — same code, alag config.",
+          "code": "# application.properties (common)\nspring.application.name=my-app\n\n# application-dev.properties\nspring.datasource.url=jdbc:h2:mem:devdb\nspring.jpa.show-sql=true\nlogging.level.root=DEBUG\n\n# application-prod.properties\nspring.datasource.url=jdbc:mysql://prod-server:3306/proddb\nspring.jpa.show-sql=false\nlogging.level.root=WARN\n\n# Active profile set karo\n# Option 1: properties mein\nspring.profiles.active=dev\n\n# Option 2: command line se\n# java -jar app.jar --spring.profiles.active=prod\n\n# Option 3: environment variable se\n# SPRING_PROFILES_ACTIVE=prod",
+          "keyPoints": [
+            "application-{profile}.properties profile-specific settings ke liye",
+            "spring.profiles.active se active profile set karo",
+            "Common settings base application.properties mein rakho",
+            "Command line ya env variable se override kar sakte ho",
+            "Multiple profiles active ho sakte hain: spring.profiles.active=dev,cloud"
+          ]
+        },
+        {
+          "name": "Docker Deployment",
+          "explanation": "Docker se app ko container mein pack karo — 'mere machine pe chalta hai' wali problem khatam! Har jagah same environment milega.",
+          "code": "# Dockerfile\nFROM eclipse-temurin:17-jre-alpine\nWORKDIR /app\nCOPY target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]\n\n# Multi-stage build (smaller image)\nFROM eclipse-temurin:17-jdk-alpine AS build\nWORKDIR /app\nCOPY . .\nRUN ./mvnw package -DskipTests\n\nFROM eclipse-temurin:17-jre-alpine\nWORKDIR /app\nCOPY --from=build /app/target/*.jar app.jar\nEXPOSE 8080\nENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]\n\n# docker-compose.yml\nversion: '3.8'\nservices:\n  app:\n    build: .\n    ports:\n      - \"8080:8080\"\n    environment:\n      - SPRING_PROFILES_ACTIVE=prod\n      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/mydb\n    depends_on:\n      - db\n  db:\n    image: mysql:8\n    environment:\n      MYSQL_ROOT_PASSWORD: password\n      MYSQL_DATABASE: mydb\n    ports:\n      - \"3306:3306\"",
+          "keyPoints": [
+            "Multi-stage build se image size chhoti hoti hai",
+            "JRE image use karo (JDK nahi chahiye production mein)",
+            "docker-compose se app + database ek saath chalaao",
+            "Environment variables se Spring properties override karo",
+            "Health check add karo Docker container mein"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "db-migrations",
+      "title": "Database Migrations",
+      "concepts": [
+        {
+          "name": "Flyway",
+          "explanation": "Database schema versioning ke liye Flyway use karo. SQL files with version numbers likho — Flyway automatically execute karta hai order mein. Team mein sab ko same DB schema milega!",
+          "code": "# pom.xml mein add karo\n<dependency>\n    <groupId>org.flywaydb</groupId>\n    <artifactId>flyway-core</artifactId>\n</dependency>\n\n# application.properties\nspring.flyway.enabled=true\nspring.flyway.locations=classpath:db/migration\n\n# File naming convention: V{version}__{description}.sql\n# resources/db/migration/V1__create_users_table.sql\nCREATE TABLE users (\n    id BIGINT PRIMARY KEY AUTO_INCREMENT,\n    name VARCHAR(100) NOT NULL,\n    email VARCHAR(255) UNIQUE NOT NULL,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);\n\n# V2__add_phone_to_users.sql\nALTER TABLE users ADD COLUMN phone VARCHAR(20);\n\n# V3__create_orders_table.sql  \nCREATE TABLE orders (\n    id BIGINT PRIMARY KEY AUTO_INCREMENT,\n    user_id BIGINT REFERENCES users(id),\n    total DECIMAL(10,2)\n);",
+          "keyPoints": [
+            "SQL files version number ke saath likho: V1__, V2__, V3__",
+            "Flyway automatically order mein execute karta hai",
+            "Executed migrations dobara run nahi hote",
+            "Team mein sab ka database consistent rehta hai",
+            "resources/db/migration/ mein files rakho"
+          ]
+        },
+        {
+          "name": "Liquibase",
+          "explanation": "Flyway ka alternative — XML, YAML, JSON ya SQL mein migrations likho. Zyada flexible hai. Changelogs mein changes track hote hain.",
+          "code": "# pom.xml\n<dependency>\n    <groupId>org.liquibase</groupId>\n    <artifactId>liquibase-core</artifactId>\n</dependency>\n\n# application.properties\nspring.liquibase.change-log=classpath:db/changelog/db.changelog-master.yaml\n\n# db/changelog/db.changelog-master.yaml\ndatabaseChangeLog:\n  - changeSet:\n      id: 1\n      author: developer\n      changes:\n        - createTable:\n            tableName: users\n            columns:\n              - column:\n                  name: id\n                  type: BIGINT\n                  autoIncrement: true\n                  constraints:\n                    primaryKey: true\n              - column:\n                  name: name\n                  type: VARCHAR(100)\n                  constraints:\n                    nullable: false\n  - changeSet:\n      id: 2\n      author: developer\n      changes:\n        - addColumn:\n            tableName: users\n            columns:\n              - column:\n                  name: phone\n                  type: VARCHAR(20)",
+          "keyPoints": [
+            "XML, YAML, JSON ya SQL mein migrations",
+            "changeSet id aur author ke saath track hota hai",
+            "Rollback support Flyway se better",
+            "Zyada flexible but Flyway se complex bhi"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced-security",
+      "title": "Advanced Security",
+      "concepts": [
+        {
+          "name": "Method Level Security",
+          "explanation": "Sirf URL pe hi nahin, method level pe bhi security lagao! @PreAuthorize se role check karo method call hone se pehle. Fine-grained access control possible hota hai.",
+          "code": "// Enable karo main class ya config mein\n@EnableMethodSecurity\n@SpringBootApplication\npublic class MyApp { }\n\n// Service mein method level security\n@Service\npublic class UserService {\n    \n    @PreAuthorize(\"hasRole('ADMIN')\")\n    public void deleteUser(Long id) {\n        // Sirf ADMIN delete kar sakta hai\n    }\n    \n    @PreAuthorize(\"hasRole('USER') or hasRole('ADMIN')\")\n    public User getUser(Long id) {\n        return repo.findById(id).orElseThrow();\n    }\n    \n    // SpEL expressions use kar sakte ho\n    @PreAuthorize(\"#userId == authentication.principal.id or hasRole('ADMIN')\")\n    public void updateUser(Long userId, UserDto dto) {\n        // User apna data update kare ya Admin kare\n    }\n    \n    @PostAuthorize(\"returnObject.owner == authentication.name\")\n    public Document getDocument(Long id) {\n        return documentRepo.findById(id).orElseThrow();\n    }\n}",
+          "keyPoints": [
+            "@EnableMethodSecurity enable karo pehle",
+            "@PreAuthorize — method call SE PEHLE check karo",
+            "@PostAuthorize — method RETURN ke baad check karo",
+            "SpEL expressions se complex conditions likhi ja sakti hain",
+            "#paramName se method parameters access karo"
+          ]
+        },
+        {
+          "name": "Password Encoding",
+          "explanation": "Passwords kabhi plain text store mat karo! BCrypt use karo — strong hashing algorithm. PasswordEncoder Spring Security mein built-in hai.",
+          "code": "@Configuration\npublic class SecurityConfig {\n    \n    @Bean\n    public PasswordEncoder passwordEncoder() {\n        // BCrypt recommended hai\n        return new BCryptPasswordEncoder(12); // strength 12\n    }\n}\n\n@Service\npublic class UserService {\n    \n    @Autowired\n    private PasswordEncoder passwordEncoder;\n    \n    public User registerUser(String username, String rawPassword) {\n        User user = new User();\n        user.setUsername(username);\n        // Hashing kar ke store karo\n        user.setPassword(passwordEncoder.encode(rawPassword));\n        return userRepo.save(user);\n    }\n    \n    public boolean checkPassword(String raw, String hashed) {\n        // Login ke waqt verify karo\n        return passwordEncoder.matches(raw, hashed);\n    }\n}\n\n// Output example:\n// encode(\"password123\") => \"$2a$12$randomSalt...hashedValue\"\n// matches(\"password123\", hash) => true",
+          "keyPoints": [
+            "BCryptPasswordEncoder recommended hai",
+            ".encode() raw password ko hash karta hai",
+            ".matches() login ke waqt compare karta hai",
+            "Same password har baar alag hash generate karta hai (salt)",
+            "Kabhi plain text passwords store mat karo!"
+          ]
+        },
+        {
+          "name": "OAuth2 Resource Server",
+          "explanation": "Third-party login (Google, GitHub) ya JWT tokens verify karna — OAuth2 Resource Server se karo. application.properties mein issuer URI set karo aur Spring sab handle kar leta hai!",
+          "code": "# application.properties\nspring.security.oauth2.resourceserver.jwt.issuer-uri=https://accounts.google.com\n# Ya apna JWT secret\nspring.security.oauth2.resourceserver.jwt.secret=mySecretKey\n\n# Security Config\n@Configuration\n@EnableWebSecurity\npublic class SecurityConfig {\n    \n    @Bean\n    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        http\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/public/**\").permitAll()\n                .anyRequest().authenticated()\n            )\n            .oauth2ResourceServer(oauth2 -> oauth2\n                .jwt(jwt -> jwt\n                    .jwtAuthenticationConverter(jwtConverter())\n                )\n            );\n        return http.build();\n    }\n}\n\n// JWT se custom claims nikalo\n@Component\npublic class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken> {\n    public AbstractAuthenticationToken convert(Jwt jwt) {\n        Collection<GrantedAuthority> authorities = extractRoles(jwt);\n        return new JwtAuthenticationToken(jwt, authorities);\n    }\n}",
+          "keyPoints": [
+            "issuer-uri se JWT validation automatic hota hai",
+            "JwtAuthenticationConverter se custom claims map karo",
+            "Google/GitHub ke tokens verify kar sakte ho",
+            "Stateless authentication — server pe session nahi rakhna"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced-testing",
+      "title": "Advanced Testing",
+      "concepts": [
+        {
+          "name": "MockMvc Advanced",
+          "explanation": "MockMvc se controllers test karo bina actual server chalaye. JSON assertions, status checks, header verification — sab ek jagah. Integration testing ke liye perfect!",
+          "code": "@WebMvcTest(UserController.class)\nclass UserControllerAdvancedTest {\n    \n    @Autowired\n    private MockMvc mockMvc;\n    \n    @MockBean\n    private UserService userService;\n    \n    @Autowired\n    private ObjectMapper objectMapper;\n    \n    @Test\n    void createUser_shouldReturn201() throws Exception {\n        UserDto dto = new UserDto(\"Alice\", \"alice@example.com\");\n        User created = new User(1L, \"Alice\", \"alice@example.com\");\n        \n        when(userService.create(any())).thenReturn(created);\n        \n        mockMvc.perform(\n            post(\"/api/users\")\n                .contentType(MediaType.APPLICATION_JSON)\n                .content(objectMapper.writeValueAsString(dto))\n        )\n        .andExpect(status().isCreated())          // 201\n        .andExpect(jsonPath(\"$.id\").value(1))     // id check\n        .andExpect(jsonPath(\"$.name\").value(\"Alice\")) // name check\n        .andExpect(header().exists(\"Location\"));  // Location header\n    }\n}",
+          "keyPoints": [
+            "@WebMvcTest sirf web layer load karta hai — fast!",
+            "@MockBean se service layer mock karo",
+            ".andExpect() se response validate karo",
+            "jsonPath() se JSON response check karo",
+            "status() se HTTP status code validate karo"
+          ]
+        },
+        {
+          "name": "TestContainers",
+          "explanation": "Real database ke saath test karo bina local installation ke! TestContainers Docker containers spin up karta hai test ke liye. H2 in-memory se zyada realistic tests milte hain.",
+          "code": "# pom.xml mein add karo\n<dependency>\n    <groupId>org.testcontainers</groupId>\n    <artifactId>junit-jupiter</artifactId>\n    <scope>test</scope>\n</dependency>\n<dependency>\n    <groupId>org.testcontainers</groupId>\n    <artifactId>postgresql</artifactId>\n    <scope>test</scope>\n</dependency>\n\n@SpringBootTest\n@Testcontainers\nclass UserRepositoryTest {\n    \n    @Container\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\n        \"postgres:15-alpine\"\n    );\n    \n    @DynamicPropertySource\n    static void configureProperties(DynamicPropertyRegistry registry) {\n        registry.add(\"spring.datasource.url\", postgres::getJdbcUrl);\n        registry.add(\"spring.datasource.username\", postgres::getUsername);\n        registry.add(\"spring.datasource.password\", postgres::getPassword);\n    }\n    \n    @Autowired\n    private UserRepository userRepository;\n    \n    @Test\n    void saveUser_shouldPersist() {\n        User user = new User(\"Alice\", \"alice@test.com\");\n        User saved = userRepository.save(user);\n        assertThat(saved.getId()).isNotNull();\n    }\n}",
+          "keyPoints": [
+            "@Testcontainers + @Container se Docker container start hota hai",
+            "@DynamicPropertySource se test properties inject karo",
+            "Real database ke saath tests — zyada reliable",
+            "Docker zaroor installed hona chahiye"
+          ]
+        },
+        {
+          "name": "Security Testing",
+          "explanation": "Secured endpoints test karo @WithMockUser se. Admin access, user access, unauthorized access — sab test karo. Security properly kaam kar rahi hai ye confirm karo!",
+          "code": "@WebMvcTest(UserController.class)\n@Import(SecurityConfig.class)\nclass SecurityTest {\n    \n    @Autowired\n    private MockMvc mockMvc;\n    \n    // Unauthenticated — 401 chahiye\n    @Test\n    void withoutAuth_shouldReturn401() throws Exception {\n        mockMvc.perform(get(\"/api/users\"))\n            .andExpect(status().isUnauthorized());\n    }\n    \n    // User role ke saath — 200 chahiye\n    @Test\n    @WithMockUser(username = \"alice\", roles = {\"USER\"})\n    void withUser_shouldReturn200() throws Exception {\n        mockMvc.perform(get(\"/api/users\"))\n            .andExpect(status().isOk());\n    }\n    \n    // Admin endpoint — User se 403 chahiye\n    @Test\n    @WithMockUser(username = \"bob\", roles = {\"USER\"})\n    void adminEndpointWithUser_shouldReturn403() throws Exception {\n        mockMvc.perform(delete(\"/api/users/1\"))\n            .andExpect(status().isForbidden());\n    }\n    \n    // Admin ke saath — 200 chahiye\n    @Test\n    @WithMockUser(roles = {\"ADMIN\"})\n    void withAdmin_shouldSucceed() throws Exception {\n        mockMvc.perform(delete(\"/api/users/1\"))\n            .andExpect(status().isNoContent());\n    }\n}",
+          "keyPoints": [
+            "@WithMockUser se mock authenticated user banao",
+            "roles = {\"ADMIN\"} se specific role se test karo",
+            "status().isUnauthorized() — 401",
+            "status().isForbidden() — 403",
+            "Security properly configured hai ye test karna zaroori hai"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "events",
+      "title": "Event Handling",
+      "concepts": [
+        {
+          "name": "Application Events",
+          "explanation": "Components ke beech loose coupling maintain karo events se! Publisher event fire karta hai, multiple listeners sunते hain. Order order service ko email service ke baare mein jaanna zaroori nahi!",
+          "code": "// Custom event class banao\npublic class UserRegisteredEvent extends ApplicationEvent {\n    private final String email;\n    \n    public UserRegisteredEvent(Object source, String email) {\n        super(source);\n        this.email = email;\n    }\n    \n    public String getEmail() { return email; }\n}\n\n// Event publish karo\n@Service\npublic class UserService {\n    \n    @Autowired\n    private ApplicationEventPublisher eventPublisher;\n    \n    public User register(String email) {\n        User user = userRepo.save(new User(email));\n        // Event fire karo — listener khud sambhalega\n        eventPublisher.publishEvent(new UserRegisteredEvent(this, email));\n        return user;\n    }\n}\n\n// Event listener\n@Component\npublic class EmailNotificationListener {\n    \n    @EventListener\n    public void onUserRegistered(UserRegisteredEvent event) {\n        String email = event.getEmail();\n        emailService.sendWelcomeEmail(email);\n        System.out.println(\"Welcome email bheja: \" + email);\n    }\n    \n    // Async listener (background mein chale)\n    @Async\n    @EventListener\n    public void onUserRegisteredAsync(UserRegisteredEvent event) {\n        analyticsService.trackRegistration(event.getEmail());\n    }\n}",
+          "keyPoints": [
+            "ApplicationEvent extend karo custom event ke liye",
+            "ApplicationEventPublisher.publishEvent() se fire karo",
+            "@EventListener se listen karo",
+            "Loose coupling — publisher ko listener ki zaroorat nahi",
+            "@Async ke saath background mein execute karo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced-topics",
+      "title": "Advanced Topics",
+      "concepts": [
+        {
+          "name": "@Async — Background Tasks",
+          "explanation": "Time lene wale tasks background mein chalao — user wait mat kare! Email bhejna, report generate karna — sab async karo. @EnableAsync zaroor lagao!",
+          "code": "// Enable async main class ya config mein\n@SpringBootApplication\n@EnableAsync\npublic class MyApp { }\n\n@Service\npublic class EmailService {\n    \n    // Ye method alag thread mein chalega\n    @Async\n    public CompletableFuture<String> sendEmail(String to, String body) {\n        // 3 second lagta hai\n        try { Thread.sleep(3000); } catch (InterruptedException e) {}\n        System.out.println(\"Email bheja: \" + to);\n        return CompletableFuture.completedFuture(\"Sent!\");\n    }\n}\n\n// Use karo\n@RestController\npublic class UserController {\n    \n    @PostMapping(\"/register\")\n    public ResponseEntity<User> register(@RequestBody UserDto dto) {\n        User user = userService.create(dto);\n        // Email background mein jayega — response quickly milega!\n        emailService.sendEmail(user.getEmail(), \"Welcome!\");\n        return ResponseEntity.ok(user); // Instantly return karo\n    }\n}",
+          "keyPoints": [
+            "@EnableAsync enable karo pehle",
+            "@Async — method alag thread mein chalta hai",
+            "CompletableFuture return karo result ke liye",
+            "void return karo fire-and-forget tasks ke liye",
+            "ThreadPoolTaskExecutor se thread pool customize karo"
+          ]
+        },
+        {
+          "name": "@Scheduled — Cron Jobs",
+          "explanation": "Regular tasks automatically chalao — cleanup, reports, notifications. Cron expression ya fixedDelay/fixedRate use karo. @EnableScheduling zaroor lagao!",
+          "code": "@SpringBootApplication\n@EnableScheduling  // Zaroor lagao!\npublic class MyApp { }\n\n@Component\npublic class ScheduledTasks {\n    \n    // Har 5 second baad\n    @Scheduled(fixedRate = 5000)\n    public void heartbeat() {\n        System.out.println(\"Server alive hai!\");\n    }\n    \n    // Pehla run ke 10s baad, phir har 30s\n    @Scheduled(fixedDelay = 30000, initialDelay = 10000)\n    public void cleanupOldSessions() {\n        sessionService.removeExpired();\n    }\n    \n    // Cron expression — specific time pe\n    @Scheduled(cron = \"0 0 2 * * *\")  // Roz raat 2 baje\n    public void dailyBackup() {\n        backupService.createBackup();\n    }\n    \n    // Monday 9 AM pe\n    @Scheduled(cron = \"0 0 9 * * MON\")\n    public void weeklyReport() {\n        reportService.generateWeeklyReport();\n    }\n}",
+          "keyPoints": [
+            "@EnableScheduling enable karo",
+            "fixedRate — pehle run se N ms baad",
+            "fixedDelay — pichle run ke end se N ms baad",
+            "cron — specific time schedule (6 fields: sec min hr day month weekday)",
+            "cron \"0 0 2 * * *\" = har din 2 AM pe"
+          ]
+        },
+        {
+          "name": "@Cacheable — Caching",
+          "explanation": "Same data baar baar database se mat lo — cache karo! @Cacheable se result ek baar fetch hota hai, baaki baar cache se milta hai. Slow queries ke liye life changer!",
+          "code": "@SpringBootApplication\n@EnableCaching  // Enable karo!\npublic class MyApp { }\n\n@Service\npublic class ProductService {\n    \n    // Result cache ho jaayega\n    @Cacheable(value = \"products\", key = \"#id\")\n    public Product getProduct(Long id) {\n        // Pehli baar: database se fetch\n        // Baaki baar: cache se milega\n        System.out.println(\"DB se fetch kiya: \" + id);\n        return productRepo.findById(id).orElseThrow();\n    }\n    \n    // Update hone pe cache hatao\n    @CacheEvict(value = \"products\", key = \"#product.id\")\n    public Product updateProduct(Product product) {\n        return productRepo.save(product);\n    }\n    \n    // Poora cache clear karo\n    @CacheEvict(value = \"products\", allEntries = true)\n    public void clearAllCache() {\n        System.out.println(\"Products cache clear!\");\n    }\n    \n    // Update karo replace karo\n    @CachePut(value = \"products\", key = \"#result.id\")\n    public Product saveProduct(Product product) {\n        return productRepo.save(product);\n    }\n}",
+          "keyPoints": [
+            "@EnableCaching enable karo",
+            "@Cacheable — result cache karo",
+            "@CacheEvict — cache mein se hatao",
+            "@CachePut — cache update karo (DB bhi call hoga)",
+            "By default ConcurrentHashMap use hota hai, Redis/Caffeine bhi lag sakta hai"
+          ]
+        },
+        {
+          "name": "Logging Configuration",
+          "explanation": "Production mein logs hi teri aankhein hain! SLF4J + Logback default hai Spring Boot mein. Log levels, file output, format — sab configure karo.",
+          "code": "# application.properties mein logging configure karo\nlogging.level.root=INFO\nlogging.level.com.myapp=DEBUG           # Apni application ke liye DEBUG\nlogging.level.org.springframework=WARN  # Spring framework ke liye WARN\n\n# File mein likho\nlogging.file.name=logs/app.log\nlogging.file.max-size=10MB\nlogging.file.max-history=7  # 7 din ki history\n\n# Java code mein\nimport org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;\n\n@Service\npublic class OrderService {\n    // Logger banao\n    private static final Logger log = LoggerFactory.getLogger(OrderService.class);\n    \n    // Ya Lombok se (zyada simple)\n    // @Slf4j annotation laga do class pe!\n    \n    public Order createOrder(OrderDto dto) {\n        log.info(\"Naya order create ho raha hai: userId={}\", dto.getUserId());\n        log.debug(\"Order details: {}\", dto);\n        \n        try {\n            Order order = orderRepo.save(new Order(dto));\n            log.info(\"Order banaya: id={}\", order.getId());\n            return order;\n        } catch (Exception e) {\n            log.error(\"Order create mein error: {}\", e.getMessage(), e);\n            throw e;\n        }\n    }\n}",
+          "keyPoints": [
+            "SLF4J + Logback Spring Boot mein default hai",
+            "Log levels: TRACE < DEBUG < INFO < WARN < ERROR",
+            "Production mein INFO ya WARN use karo — zyada logs slow kar dete hain",
+            "@Slf4j (Lombok) se Logger manually banane ki zaroorat nahi",
+            "Parameterized logging use karo: log.info(\"User: {}\", userId)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common-patterns",
+      "title": "Common Patterns & Best Practices",
+      "concepts": [
+        {
+          "name": "Project Structure",
+          "explanation": "Spring Boot project ko organized rakho — har layer ka apna kaam hai. Controller → Service → Repository. Clean architecture se code maintainable rehta hai.",
+          "code": "// Recommended Project Structure\n// com.myapp/\n//   ├── MyApplication.java          (Main class)\n//   ├── config/                      (Configuration classes)\n//   │   ├── SecurityConfig.java\n//   │   └── WebConfig.java\n//   ├── controller/                  (REST Controllers)\n//   │   └── UserController.java\n//   ├── service/                     (Business Logic)\n//   │   ├── UserService.java\n//   │   └── impl/\n//   │       └── UserServiceImpl.java\n//   ├── repository/                  (Data Access)\n//   │   └── UserRepository.java\n//   ├── model/                       (Entities)\n//   │   └── User.java\n//   ├── dto/                         (Data Transfer Objects)\n//   │   ├── UserRequest.java\n//   │   └── UserResponse.java\n//   └── exception/                   (Custom Exceptions)\n//       ├── ResourceNotFoundException.java\n//       └── GlobalExceptionHandler.java\n\n// Layered Architecture Flow:\n// Client → Controller → Service → Repository → Database\n//          (HTTP)       (Logic)   (Data)       (Storage)",
+          "keyPoints": [
+            "Controller: sirf HTTP request/response handle kare, logic nahi",
+            "Service: business logic yahan likho",
+            "Repository: database operations yahan",
+            "DTO: request/response ke liye alag classes — entity directly expose mat karo",
+            "Config: configurations alag package mein rakho"
+          ]
+        },
+        {
+          "name": "Pagination & Sorting",
+          "explanation": "Bade data ko page by page serve karo — 10 lakh records ek baar mat bhejo! Spring Data pagination built-in support deta hai.",
+          "code": "// Repository mein already PagingAndSortingRepository extend hai\npublic interface UserRepository extends JpaRepository<User, Long> {\n    Page<User> findByRole(Role role, Pageable pageable);\n}\n\n// Controller mein Pagination\n@GetMapping\npublic Page<User> getUsers(\n        @RequestParam(defaultValue = \"0\") int page,\n        @RequestParam(defaultValue = \"10\") int size,\n        @RequestParam(defaultValue = \"name\") String sortBy,\n        @RequestParam(defaultValue = \"asc\") String direction) {\n    \n    Sort sort = direction.equalsIgnoreCase(\"desc\") \n        ? Sort.by(sortBy).descending() \n        : Sort.by(sortBy).ascending();\n    \n    Pageable pageable = PageRequest.of(page, size, sort);\n    return userService.findAll(pageable);\n}\n\n// Service\n@Service\npublic class UserService {\n    public Page<User> findAll(Pageable pageable) {\n        return userRepository.findAll(pageable);\n    }\n}",
+          "keyPoints": [
+            "Pageable use karo — page number, size, sort direction",
+            "Page<T> total count, pages, aur content return karta hai",
+            "Default values set karo page aur size ke liye",
+            "Multiple sort fields support hote hain",
+            "Performance: pagination database level pe hoti hai (LIMIT/OFFSET)"
+          ]
+        },
+        {
+          "name": "Caching",
+          "explanation": "Baar baar same data database se laane ki jagah cache mein rakh lo. Pehli baar database se aayega, baad mein cache se — bahut fast!",
+          "code": "// Caching Enable karo\n@SpringBootApplication\n@EnableCaching\npublic class MyApplication { }\n\n// Service mein Cache use karo\n@Service\npublic class ProductService {\n    \n    @Cacheable(\"products\")  // Result cache ho jaayega\n    public Product findById(Long id) {\n        // Ye sirf pehli baar call hoga, baad mein cache se aayega\n        return productRepository.findById(id)\n            .orElseThrow(() -> new RuntimeException(\"Nahi mila!\"));\n    }\n    \n    @CachePut(value = \"products\", key = \"#product.id\")  // Cache update karo\n    public Product update(Product product) {\n        return productRepository.save(product);\n    }\n    \n    @CacheEvict(value = \"products\", key = \"#id\")  // Cache se hatao\n    public void delete(Long id) {\n        productRepository.deleteById(id);\n    }\n    \n    @CacheEvict(value = \"products\", allEntries = true)  // Poora cache saaf\n    public void clearCache() {\n        // Cache cleared!\n    }\n}",
+          "keyPoints": [
+            "@EnableCaching application class pe lagao",
+            "@Cacheable result cache karta hai — same params = cache se aayega",
+            "@CachePut cache update karta hai (method hamesha chalta hai)",
+            "@CacheEvict cache se entry hatata hai",
+            "Redis ya EhCache production mein use karo, default in-memory hai"
+          ]
+        },
+        {
+          "name": "Scheduling & Async",
+          "explanation": "Scheduled tasks aur async operations — email bhejno background mein, reports raat ko generate karo, etc.",
+          "code": "// Scheduling Enable karo\n@SpringBootApplication\n@EnableScheduling\n@EnableAsync\npublic class MyApplication { }\n\n// Scheduled Tasks\n@Component\npublic class ScheduledTasks {\n    \n    @Scheduled(fixedRate = 60000)  // Har 1 minute\n    public void cleanupExpiredSessions() {\n        System.out.println(\"Expired sessions saaf kar rahe hain...\");\n    }\n    \n    @Scheduled(cron = \"0 0 2 * * ?\")  // Roz raat 2 baje\n    public void generateDailyReport() {\n        System.out.println(\"Daily report bana rahe hain...\");\n    }\n}\n\n// Async Operations\n@Service\npublic class EmailService {\n    \n    @Async  // Alag thread mein chalega — caller wait nahi karega\n    public CompletableFuture<String> sendEmail(String to, String body) {\n        // Email bhejna 3 second le sakta hai\n        // @Async se main thread block nahi hoga!\n        emailSender.send(to, body);\n        return CompletableFuture.completedFuture(\"Email bhej diya!\");\n    }\n}",
+          "keyPoints": [
+            "@EnableScheduling main class pe lagao",
+            "fixedRate = milliseconds mein interval",
+            "cron expression se complex schedules banao",
+            "@Async method alag thread mein chalta hai",
+            "@EnableAsync main class pe lagao async ke liye"
+          ]
+        }
+      ]
+    }
+  ]
+}

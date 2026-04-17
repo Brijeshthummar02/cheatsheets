@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Cheatsheets favicon">
+  <defs>
+    <linearGradient id="brandBg" x1="18" y1="10" x2="110" y2="116" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#DB1A1A"/>
+      <stop offset="1" stop-color="#AE2448"/>
+    </linearGradient>
+    <linearGradient id="brandAccent" x1="70" y1="66" x2="108" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8CC7C4"/>
+      <stop offset="1" stop-color="#72BAA9"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="8" y="8" width="112" height="112" rx="30" fill="url(#brandBg)"/>
+
+  <rect x="30" y="24" width="56" height="78" rx="13" fill="#FFF6F6" opacity="0.98"/>
+  <rect x="40" y="39" width="27" height="8" rx="4" fill="#DB1A1A" opacity="0.88"/>
+  <rect x="40" y="54" width="35" height="6" rx="3" fill="#30364F" opacity="0.42"/>
+  <rect x="40" y="65" width="30" height="6" rx="3" fill="#30364F" opacity="0.34"/>
+  <rect x="40" y="76" width="24" height="6" rx="3" fill="#30364F" opacity="0.28"/>
+
+  <circle cx="86" cy="86" r="16" fill="url(#brandAccent)"/>
+  <circle cx="86" cy="86" r="7" fill="#FFF6F6" opacity="0.95"/>
+  <path d="M95 95L105 105" stroke="#FFF6F6" stroke-width="6" stroke-linecap="round"/>
+</svg>

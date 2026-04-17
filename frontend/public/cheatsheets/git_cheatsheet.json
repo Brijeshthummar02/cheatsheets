@@ -1,0 +1,723 @@
+{
+  "title": "Git & GitHub Cheatsheet",
+  "description": "The complete practical Git & GitHub reference — from first commit to advanced team workflows, real-world recovery, and open source contribution. Bookmark-worthy.",
+  "sections": [
+    {
+      "id": "git-setup",
+      "title": "Git Basics & Setup",
+      "concepts": [
+        {
+          "name": "Install & Configure Git",
+          "explanation": "Before anything else, tell Git who you are. Every commit you make will carry your name and email — like a signature on every piece of work. This config lives in a global file (~/.gitconfig) so you only set it once per machine.",
+          "code": "# Install (one-time per machine)\n# macOS: brew install git\n# Linux: sudo apt install git\n# Windows: https://git-scm.com/download/win\n\n# Set your identity (REQUIRED before first commit)\ngit config --global user.name \"Your Name\"\ngit config --global user.email \"you@example.com\"\n\n# Set default branch name to 'main' (modern standard)\ngit config --global init.defaultBranch main\n\n# Set VS Code as default editor\ngit config --global core.editor \"code --wait\"\n\n# Verify your config\ngit config --list",
+          "keyPoints": [
+            "--global applies config to all repos on your machine; --local applies to one repo only",
+            "user.email should match your GitHub account email for commit attribution",
+            "init.defaultBranch main avoids the old 'master' default",
+            "git config --list shows all active config values (global + local merged)"
+          ]
+        },
+        {
+          "name": "Initialize a Repository",
+          "explanation": "git init creates a hidden .git/ folder that IS your repository — it stores every version, every branch, every commit. Without it, Git knows nothing about your project. You only run this once per project.",
+          "code": "# Start tracking an existing folder\ncd my-project\ngit init\n\n# Or create a new folder and init in one step\ngit init my-project\ncd my-project\n\n# Check what Git created\nls -la  # You'll see a .git/ directory\n\n# See current repository status\ngit status",
+          "keyPoints": [
+            "The .git/ folder contains everything — branches, history, config, objects",
+            "Never manually edit files inside .git/ — you can corrupt the repo",
+            "git status is your most-used command — run it constantly",
+            "An empty repo has no commits yet; nothing is tracked until you add files"
+          ]
+        },
+        {
+          "name": "Clone an Existing Repository",
+          "explanation": "Cloning downloads a complete copy of a remote repo — all history, all branches — to your local machine. It also automatically sets up the remote connection called 'origin' pointing back to where you cloned from.",
+          "code": "# Clone via HTTPS (no SSH setup needed)\ngit clone https://github.com/user/repo.git\n\n# Clone into a specific folder name\ngit clone https://github.com/user/repo.git my-folder\n\n# Clone a specific branch only\ngit clone -b develop https://github.com/user/repo.git\n\n# Clone with limited history (faster for large repos)\ngit clone --depth 1 https://github.com/user/repo.git\n\n# After cloning, see what remote was configured\ngit remote -v",
+          "keyPoints": [
+            "HTTPS clone works everywhere but asks for credentials on push",
+            "SSH clone (git@github.com:user/repo.git) never asks for password once set up",
+            "--depth 1 creates a 'shallow clone' with only the latest snapshot, not full history",
+            "origin is just a nickname for the remote URL — you can rename it"
+          ]
+        },
+        {
+          "name": "The .gitignore File",
+          "explanation": "A .gitignore tells Git which files to completely ignore — never track, never commit. Crucial for keeping secrets out of version control and keeping your repo clean of build artifacts and editor junk.",
+          "code": "# Create .gitignore in project root\ntouch .gitignore\n\n# Common .gitignore patterns:\n\n# Ignore a specific file\n.env\nsecrets.txt\n\n# Ignore entire folders\nnode_modules/\n.gradle/\ntarget/\nbuild/\ndist/\n\n# Ignore by file extension\n*.log\n*.class\n*.jar\n*.pyc\n\n# Ignore but keep the folder itself\nlogs/\n!logs/.gitkeep\n\n# Check if a file is being ignored\ngit check-ignore -v filename.txt\n\n# Force-add an ignored file (use carefully!)\ngit add -f accidentally-ignored.txt",
+          "keyPoints": [
+            "Add .gitignore BEFORE you first commit — retroactively ignoring tracked files requires extra steps",
+            "Use gitignore.io to generate templates for your language/framework",
+            "Once a file is tracked, adding it to .gitignore won't stop tracking — run: git rm --cached filename",
+            "Never commit .env, API keys, passwords, or credentials — even private repos can be exposed"
+          ]
+        },
+        {
+          "name": "Understanding the Three Areas",
+          "explanation": "Git has three distinct areas your files live in. Misunderstanding this is the source of 90% of beginner confusion. Think of it as a workflow: Working Directory → Staging Area → Repository.",
+          "code": "# 1. Working Directory = your actual files on disk\n#    (untracked or modified but not staged)\n\n# 2. Staging Area (Index) = files you've marked for next commit\n#    git add moves files here\n\n# 3. Repository (.git) = permanent commit history\n#    git commit moves staged files here\n\n# See the status of all three areas\ngit status\n\n# See what changed in working directory (not staged)\ngit diff\n\n# See what's staged and ready to commit\ngit diff --staged\n\n# See everything at once\ngit diff HEAD",
+          "keyPoints": [
+            "git add = 'I want to include this change in my next commit'",
+            "git commit = 'Save everything I've staged as a permanent snapshot'",
+            "You can stage only part of a file: git add -p filename (interactive patch staging)",
+            "git diff (no args) shows unstaged changes; git diff --staged shows staged changes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "commits",
+      "title": "Working with Files & Commits",
+      "concepts": [
+        {
+          "name": "Staging and Committing",
+          "explanation": "The daily bread of Git work. Stage what you want included, then commit with a clear message. A great commit message is a gift to your future self (and teammates) trying to understand what changed and why.",
+          "code": "# Stage specific file\ngit add filename.txt\n\n# Stage multiple files\ngit add file1.js file2.js\n\n# Stage all changes in current directory\ngit add .\n\n# Stage parts of a file interactively\ngit add -p filename.js\n\n# Commit with message\ngit commit -m \"feat: add user login validation\"\n\n# Stage all tracked files AND commit in one step\ngit commit -am \"fix: correct null check in parser\"\n\n# Open editor for longer commit message\ngit commit",
+          "keyPoints": [
+            "git add . stages everything — double-check with git status first",
+            "git commit -am only stages TRACKED files — new untracked files still need git add",
+            "Commit messages in imperative mood: 'Add feature' not 'Added feature'",
+            "Use Conventional Commits prefix: feat:, fix:, docs:, refactor:, test:, chore:"
+          ]
+        },
+        {
+          "name": "Viewing History (git log)",
+          "explanation": "git log is your time machine. It shows every commit: what changed, who changed it, when. The formatting options let you scan history at a glance or dig deep into specific changes.",
+          "code": "# Default log (too verbose for daily use)\ngit log\n\n# Compact one-line view\ngit log --oneline\n\n# Visual branch graph\ngit log --oneline --graph --all --decorate\n\n# Show commits by specific author\ngit log --author=\"Alice\"\n\n# Show commits on a specific file\ngit log --oneline -- src/auth/login.js\n\n# Show what changed in each commit\ngit log -p\n\n# Show last 5 commits\ngit log -5 --oneline\n\n# Search commit messages\ngit log --grep=\"login\"\n\n# Show commits between two dates\ngit log --after=\"2024-01-01\" --before=\"2024-06-01\" --oneline",
+          "keyPoints": [
+            "--graph --all shows entire repo history including all branches as a visual tree",
+            "-p (patch) shows the actual diff for each commit — great for code archaeology",
+            "Each commit has a SHA-1 hash (like a8f3c2d) — use first 7 chars to reference it",
+            "git log --follow -p -- old/path shows history even after file was renamed/moved"
+          ]
+        },
+        {
+          "name": "Amending & Rewriting Last Commit",
+          "explanation": "Typo in your commit message? Forgot to include a file? git commit --amend lets you fix the most recent commit before you've pushed it. This rewrites history — safe for local commits, dangerous for pushed ones.",
+          "code": "# Fix the last commit message only\ngit commit --amend -m \"correct: fixed the actual bug\"\n\n# Add a forgotten file to the last commit\ngit add forgotten-file.js\ngit commit --amend --no-edit  # Keep the same message\n\n# Change both files AND message\ngit add extra-fix.js\ngit commit --amend -m \"feat: add login + validation\"\n\n# WARNING: Don't amend if you've already pushed!\n# If you must, force push (only on your own branch):\ngit push --force-with-lease origin feature/my-branch",
+          "keyPoints": [
+            "--amend creates a NEW commit replacing the old one — the original SHA changes",
+            "--no-edit keeps the existing message while amending file content",
+            "--force-with-lease is safer than --force: it fails if someone else pushed since you last fetched",
+            "NEVER amend commits on shared branches like main/develop — it resets others' history"
+          ]
+        },
+        {
+          "name": "Viewing File Changes (git diff)",
+          "explanation": "Before you commit, always review exactly what you're about to save. git diff is how you see the precise line-by-line changes. Green lines (with +) are additions; red lines (with -) are deletions.",
+          "code": "# What changed but isn't staged yet\ngit diff\n\n# What is staged and will go into next commit\ngit diff --staged\n# OR: git diff --cached (same thing)\n\n# Compare two commits\ngit diff abc123 def456\n\n# Compare current code to last commit\ngit diff HEAD\n\n# Diff a specific file only\ngit diff HEAD -- src/utils.js\n\n# Compare two branches\ngit diff main..feature/my-feature\n\n# Just show filenames that changed (no line details)\ngit diff --name-only main..feature-branch",
+          "keyPoints": [
+            "git diff (no args) = working directory vs staging area",
+            "git diff HEAD = working directory vs last commit (everything uncommitted)",
+            "git diff main..feature shows what feature adds that main doesn't have",
+            "Use git difftool to open diffs in a visual tool like VS Code or meld"
+          ]
+        },
+        {
+          "name": "Removing & Moving Files",
+          "explanation": "Use git rm and git mv instead of regular shell rm/mv. This way Git tracks the deletion or rename in the staging area automatically — no need to manually stage the change afterward.",
+          "code": "# Remove file from working directory AND staging area\ngit rm filename.txt\n\n# Remove from staging only (stop tracking, keep file on disk)\ngit rm --cached filename.txt\n\n# Remove all .log files from tracking\ngit rm --cached *.log\n\n# Rename/move a file\ngit mv old-name.js new-name.js\ngit mv src/utils.js src/helpers/utils.js\n\n# Commit the removal or rename\ngit commit -m \"refactor: rename utils to helpers\"",
+          "keyPoints": [
+            "git rm --cached = 'stop tracking this file but don't delete it from disk' (useful after forgetting .gitignore)",
+            "git mv is equivalent to: mv old new && git rm old && git add new",
+            "Git detects renames automatically if ~50%+ of content is similar — shown in git log as 'rename'",
+            "After git rm --cached, add the file to .gitignore so it stays untracked"
+          ]
+        },
+        {
+          "name": "git stash — Save Work Without Committing",
+          "explanation": "You're mid-feature when something urgent needs fixing on main. You can't commit half-done work. git stash saves your changes to a temporary stack so you can switch context instantly and return later.",
+          "code": "# Stash current changes (tracked files)\ngit stash\n\n# Stash with a descriptive name\ngit stash save \"WIP: half-done user dashboard\"\n\n# Stash including untracked files\ngit stash -u\n\n# List all stashes\ngit stash list\n# Output: stash@{0}: WIP on main: abc123 feat: add login\n\n# Apply most recent stash (keeps it in list)\ngit stash apply\n\n# Apply AND remove from list\ngit stash pop\n\n# Apply specific stash\ngit stash apply stash@{2}\n\n# Delete a specific stash\ngit stash drop stash@{1}\n\n# Clear all stashes\ngit stash clear",
+          "keyPoints": [
+            "Stashes are LIFO (last in, first out) — stash@{0} is always the most recent",
+            "-u (--include-untracked) stashes new files too — without it, only tracked changes are saved",
+            "git stash pop = apply + drop in one step; prefer apply when unsure if it'll conflict",
+            "Stashes are local-only — they don't push to the remote"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "branching",
+      "title": "Branching Strategies",
+      "concepts": [
+        {
+          "name": "Creating & Switching Branches",
+          "explanation": "Branches are Git's killer feature. They let you work on features, bugs, and experiments completely in isolation without affecting working code. Branches are just pointers to commits — they're practically free to create.",
+          "code": "# List all local branches (* = current)\ngit branch\n\n# List all branches including remote\ngit branch -a\n\n# Create a new branch (stays on current branch)\ngit branch feature/user-auth\n\n# Create AND switch to it (classic way)\ngit checkout -b feature/user-auth\n\n# Modern preferred way (Git 2.23+)\ngit switch -c feature/user-auth\n\n# Switch to existing branch\ngit switch main\n# or legacy: git checkout main\n\n# Rename a branch\ngit branch -m old-name new-name\n\n# Delete a merged branch\ngit branch -d feature/done\n\n# Force-delete an unmerged branch\ngit branch -D feature/abandoned",
+          "keyPoints": [
+            "git switch is the modern command; git checkout does too many things (switching, restoring files, etc.)",
+            "Branch from the right base: switch to main first, then create your feature branch",
+            "-d (lowercase) only deletes merged branches — safe; -D (uppercase) force deletes regardless",
+            "Branch naming conventions: feature/, fix/, hotfix/, release/, chore/"
+          ]
+        },
+        {
+          "name": "Git Flow — the Classic Branching Strategy",
+          "explanation": "Git Flow is a strict branching model that defines roles for each branch. Perfect for teams with scheduled releases. Two eternal branches (main, develop) plus supporting branches for features, releases, and hotfixes.",
+          "code": "# Git Flow branch types:\n# main      → production-ready, always stable\n# develop   → integration branch for features\n# feature/* → new features (branch from develop)\n# release/* → release preparation (from develop)\n# hotfix/*  → critical production fixes (from main)\n\n# Typical feature workflow in Git Flow:\n\n# 1. Start feature\ngit switch develop\ngit pull origin develop\ngit switch -c feature/shopping-cart\n\n# 2. Work, commit, work, commit...\ngit commit -m \"feat: add cart item model\"\n\n# 3. Finish feature\ngit switch develop\ngit merge --no-ff feature/shopping-cart\ngit push origin develop\ngit branch -d feature/shopping-cart\n\n# --no-ff = No fast-forward: preserves branch history as a merge commit",
+          "keyPoints": [
+            "--no-ff creates a merge commit even if fast-forward is possible — keeps branch history visible",
+            "Hotfix branches come from main so you fix production without pulling in unready develop code",
+            "Release branches allow last-minute testing and version bumping without blocking new feature work",
+            "Use 'git flow' CLI tool to automate these workflows: brew install git-flow-avh"
+          ]
+        },
+        {
+          "name": "Trunk-Based Development",
+          "explanation": "The modern alternative to Git Flow used by Google, Meta, and most high-velocity teams. Everyone commits to main (trunk) frequently — at least once a day. Short-lived feature branches (1-2 days max) are merged quickly via PRs. Feature flags control release of incomplete features.",
+          "code": "# Philosophy: commit to main often, use feature flags\n# No long-lived branches\n\n# Day 1 morning: branch from fresh main\ngit switch main\ngit pull origin main\ngit switch -c feature/add-search  # lives < 2 days!\n\n# Work in small chunks\ngit commit -m \"feat: add search input component\"\ngit commit -m \"feat: wire search to API endpoint\"\n\n# Day 1 afternoon: merge back quickly\ngit push origin feature/add-search\n# Open PR → Quick code review → Merge\n\n# Feature not ready for users? Use a feature flag:\n# if (featureFlags.newSearch) { <NewSearch /> } else { <OldSearch /> }",
+          "keyPoints": [
+            "The key rule: no branch lives longer than 2 days — this forces small, reviewable changes",
+            "Feature flags (feature toggles) let you deploy code without releasing the feature to users",
+            "CI tests run on every commit to main — broken main = team stops and fixes immediately",
+            "Requires high test coverage and CI/CD pipeline — not ideal for teams without these"
+          ]
+        },
+        {
+          "name": "GitHub Flow — Simple & Effective",
+          "explanation": "GitHub's own recommended workflow. Simpler than Git Flow, more structured than pure trunk-based. Perfect for teams that deploy continuously. One long-lived branch (main), feature branches for all work, PRs for code review.",
+          "code": "# The 6 steps of GitHub Flow:\n\n# 1. Branch from main\ngit switch main && git pull\ngit switch -c fix/broken-login\n\n# 2. Make commits\ngit commit -m \"fix: handle empty email in login form\"\ngit commit -m \"test: add coverage for empty email case\"\n\n# 3. Push to GitHub\ngit push -u origin fix/broken-login\n\n# 4. Open a Pull Request on GitHub (UI or CLI)\n# gh pr create --title \"Fix broken login\" --body \"...\"\n\n# 5. Review + CI passes → Merge PR\n# (squash merge or merge commit, per team preference)\n\n# 6. Delete the branch + deploy\ngit switch main\ngit pull origin main\ngit branch -d fix/broken-login",
+          "keyPoints": [
+            "Main is always deployable — every merge to main can go to production",
+            "Deploy from the feature branch BEFORE merging to catch production bugs",
+            "This is the most widely used workflow for open source and web projects",
+            "Combine with branch protection rules: require PR review + CI green before merge"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "merging-rebasing",
+      "title": "Merging & Rebasing",
+      "concepts": [
+        {
+          "name": "git merge — Combining Branches",
+          "explanation": "Merge integrates changes from one branch into another. Git has two merge strategies: fast-forward (just moves the pointer, no extra commit) and a true merge commit (creates a new commit with two parents, preserving branch history).",
+          "code": "# Basic merge: integrate feature into main\ngit switch main\ngit merge feature/user-auth\n\n# Force a merge commit even if fast-forward is possible\ngit merge --no-ff feature/user-auth\n\n# Squash all feature commits into ONE commit on main\ngit merge --squash feature/user-auth\ngit commit -m \"feat: complete user authentication\"\n\n# Abort a merge that's gone wrong\ngit merge --abort\n\n# Check if a branch has been merged\ngit branch --merged main    # branches already in main\ngit branch --no-merged main # branches NOT in main\n\n# See the merge commit graph\ngit log --oneline --graph --all",
+          "keyPoints": [
+            "Fast-forward merge: happens when there are no diverging commits — branch pointer just moves forward",
+            "--no-ff always creates a merge commit — better for traceability in shared branches",
+            "--squash combines all branch commits into one staged change — cleaner history but loses individual commit details",
+            "Merge conflicts happen when the same lines were changed differently in both branches"
+          ]
+        },
+        {
+          "name": "git rebase — Cleaner Linear History",
+          "explanation": "Rebase replays your commits on top of another branch's latest commit. The result looks like you branched from the latest code — a clean, linear history with no merge commits. Think of it as 'reattaching' your branch to a new starting point.",
+          "code": "# You're on feature/dashboard, main has moved ahead\n# BEFORE: \n#   main: A - B - C\n#   feature: A - B - D - E\n\ngit switch feature/dashboard\ngit rebase main\n\n# AFTER: D and E are replayed on top of C\n#   main: A - B - C\n#   feature: A - B - C - D' - E'  (D' and E' are new commits)\n\n# Interactive rebase: reorder, squash, edit commits\ngit rebase -i HEAD~3  # Opens editor for last 3 commits\n# Commands in editor:\n# pick  = keep commit as-is\n# reword = change commit message\n# squash = combine with previous commit\n# fixup  = squash, discard its message\n# drop   = remove this commit entirely\n\n# Abort a rebase in progress\ngit rebase --abort\n\n# Continue after resolving conflict\ngit rebase --continue",
+          "keyPoints": [
+            "Rebase rewrites history — new commits have new SHA hashes (hence D' and E')",
+            "GOLDEN RULE: Never rebase commits that have been pushed to a shared branch",
+            "Interactive rebase (-i) is your 'clean up history before PR' superpower",
+            "git rebase vs merge: rebase for local cleanup; merge for integrating into shared branches"
+          ]
+        },
+        {
+          "name": "Cherry-Pick — Grab Specific Commits",
+          "explanation": "Cherry-pick applies a single commit from any branch onto your current branch. Perfect for backporting a hotfix to an older release, or pulling in just one commit from a colleague's WIP branch without taking everything.",
+          "code": "# Copy one specific commit to current branch\ngit cherry-pick abc1234\n\n# Cherry-pick multiple commits\ngit cherry-pick abc1234 def5678\n\n# Cherry-pick a range of commits\ngit cherry-pick abc1234..def5678\n\n# Cherry-pick without immediately committing\ngit cherry-pick -n abc1234  # Stages changes, you commit manually\n\n# Real scenario: backport hotfix to v1.x branch\ngit switch release/v1.x\ngit cherry-pick abc1234   # The commit that fixed the bug on main\ngit push origin release/v1.x\n\n# If conflict during cherry-pick\ngit add resolved-file.js\ngit cherry-pick --continue\n# Or bail out:\ngit cherry-pick --abort",
+          "keyPoints": [
+            "Cherry-pick creates a COPY of the commit with a new SHA — not the same commit object",
+            "-n (--no-commit) stages the changes but lets YOU control when to commit",
+            "Cherry-picking many commits is often a sign you should use merge or rebase instead",
+            "Great use case: bug fix on main needs to also go into release/v2.1 maintenance branch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conflicts",
+      "title": "Resolving Merge Conflicts",
+      "concepts": [
+        {
+          "name": "Understanding & Reading Conflicts",
+          "explanation": "A conflict happens when Git can't automatically merge changes because two commits edited the same lines differently. Git marks the conflict in the file itself with special markers. Your job is to manually decide what the final code should look like.",
+          "code": "# Git marks conflicts like this in your file:\n<<<<<<< HEAD                    ← Your changes (current branch)\nconst timeout = 5000;\n=======                         ← Divider\nconst timeout = 3000;\n>>>>>>> feature/faster-timeouts  ← Incoming changes\n\n# To resolve:\n# 1. Open the file, remove the markers\n# 2. Decide what the final code should be:\nconst timeout = 3000;    // Keep incoming, or...\nconst timeout = 5000;    // Keep yours, or...\nconst timeout = 4000;    // Write something entirely new!\n\n# 3. Stage the resolved file\ngit add src/config.js\n\n# 4. Continue the merge\ngit commit  # Or: git merge --continue",
+          "keyPoints": [
+            "<<<<<<< HEAD means YOUR code (the branch you're on)",
+            ">>>>>>> branch-name means THEIR code (the incoming branch)",
+            "======= divides your code from theirs",
+            "You MUST delete all three marker lines as part of resolution"
+          ]
+        },
+        {
+          "name": "Resolving Conflicts Workflow",
+          "explanation": "A systematic approach to resolving conflicts without panic. The key is to understand BOTH sides of the conflict before deciding — read the context, understand the intent of each change, then craft the correct resolution.",
+          "code": "# Step 1: See which files have conflicts\ngit status\n# Shows: both modified: src/api/auth.js\n\n# Step 2: Use a merge tool (optional but helpful)\ngit mergetool          # Opens configured tool\ngit mergetool --tool=vscode\n\n# Step 3: Edit the file manually\n# Open the conflicted file, find all <<<<<<< markers\n# Decide the correct final version\n\n# Step 4: Verify you removed ALL conflict markers\ngrep -r '<<<<<<' src/   # Should return nothing!\n\n# Step 5: Stage resolved files\ngit add src/api/auth.js\n\n# Step 6: Complete the merge\ngit commit\n\n# Useful: see what both sides changed\ngit diff --diff-filter=U   # Show only conflicted files\ngit log --merge --p        # Show commits that caused conflict",
+          "keyPoints": [
+            "Don't rush conflict resolution — understand BOTH sides before deciding",
+            "git mergetool opens a 3-way diff: left = yours, right = theirs, middle = base",
+            "After resolving, always run your tests — conflicts in logic don't show as text conflicts",
+            "Set VS Code as merge tool: git config --global merge.tool vscode"
+          ]
+        },
+        {
+          "name": "Preventing Conflicts (Best Practices)",
+          "explanation": "The best merge conflict is one that never happens. Small, frequent merges beat large, infrequent ones every time. These practices dramatically reduce conflict frequency and severity.",
+          "code": "# 1. Pull from main frequently\ngit fetch origin\ngit rebase origin/main   # (or: git merge origin/main)\n\n# 2. Keep branches short-lived (< 2-3 days)\n\n# 3. Communicate with team — announce you're editing a file\n\n# 4. Split large files into smaller modules\n# Conflicts cluster in big files touched by many people\n\n# 5. Use git rerere to reuse previous conflict resolutions\ngit config --global rerere.enabled true\n# Git remembers how you resolved a conflict pattern and auto-resolves it next time\n\n# 6. See divergence before merging\ngit log main..feature --oneline  # Commits in feature not in main\ngit log feature..main --oneline  # Commits in main not in feature\ngit diff main...feature          # Changes that diverged",
+          "keyPoints": [
+            "Sync with main at least daily on active features — the further you drift, the worse conflicts get",
+            "git rerere (reuse recorded resolution) is underused magic — enable it!",
+            "Conflicts in generated files (e.g., package-lock.json) are usually safe to take the latest version",
+            "Team coding standard in .editorconfig reduces whitespace conflicts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "undoing",
+      "title": "Undoing Mistakes & Recovery",
+      "concepts": [
+        {
+          "name": "git restore — Discard Uncommitted Changes",
+          "explanation": "You made changes in your working directory but want to throw them away and restore the file to how it was in the last commit. git restore (Git 2.23+) is the clean, purpose-built command for this. WARNING: this cannot be undone.",
+          "code": "# Discard changes in working directory (CANNOT UNDO)\ngit restore filename.js\n\n# Discard all uncommitted changes in entire project\ngit restore .\n\n# Unstage a file (remove from staging area, keep changes)\ngit restore --staged filename.js\n\n# Unstage AND discard changes\ngit restore --staged --worktree filename.js\n\n# Restore file from a specific commit\ngit restore --source abc1234 -- filename.js\n\n# Restore file from another branch\ngit restore --source origin/main -- src/config.js",
+          "keyPoints": [
+            "git restore . is DESTRUCTIVE — permanently throws away all uncommitted changes",
+            "--staged unstages without touching the file content — safe to use often",
+            "--source lets you restore any file from any commit or branch",
+            "The old way: git checkout -- filename.js (still works but confusing)"
+          ]
+        },
+        {
+          "name": "git reset — Move Branch Pointer",
+          "explanation": "git reset moves the current branch pointer to a different commit. Three modes control how much is preserved. This is powerful for undoing local commits — but always dangerous on pushed branches because it rewrites history.",
+          "code": "# --soft: move pointer, keep changes STAGED\ngit reset --soft HEAD~1    # Undo last commit, keep staged\ngit reset --soft HEAD~3    # Undo last 3 commits, keep staged\n\n# --mixed (default): move pointer, keep changes UNSTAGED\ngit reset HEAD~1           # Same as --mixed\ngit reset --mixed HEAD~2   # Undo 2 commits, unstage everything\n\n# --hard: move pointer, DISCARD all changes\ngit reset --hard HEAD~1    # DANGER: lost! (unless in reflog)\ngit reset --hard origin/main  # Reset to match remote\n\n# Use Cases:\n# Undo last commit, keep edits for a new commit:\ngit reset --soft HEAD~1\n\n# Completely start over from remote state:\ngit reset --hard origin/main",
+          "keyPoints": [
+            "--soft: uncommit but keep staged — useful for combining commits or rewriting message",
+            "--mixed: uncommit and unstage — useful for splitting a commit into multiple",
+            "--hard: throw everything away — last resort, and only on local/unshared commits",
+            "HEAD~1 = one commit before HEAD; HEAD~3 = three commits before HEAD"
+          ]
+        },
+        {
+          "name": "git revert — Safe Undo on Public Branches",
+          "explanation": "Unlike reset, git revert doesn't delete commits — it creates a NEW commit that is the opposite of the target commit. This is safe for public/shared branches because it doesn't rewrite history. Everyone can still see what happened.",
+          "code": "# Revert the most recent commit\ngit revert HEAD\n\n# Revert a specific commit by SHA\ngit revert abc1234\n\n# Revert multiple commits\ngit revert HEAD~3..HEAD\n\n# Revert without auto-commit (stage the revert, you commit)\ngit revert -n abc1234\ngit commit -m \"revert: undo payment API changes (broke invoices)\"\n\n# Revert a merge commit (need to specify parent)\ngit revert -m 1 merge_commit_sha\n# -m 1 means: revert to first parent (typically main)",
+          "keyPoints": [
+            "revert is ALWAYS safe on shared/public branches — it adds history, never removes it",
+            "reset is for LOCAL history cleanup; revert is for PUBLIC branch fixes",
+            "-m 1 for reverting merges: 1 = keep first parent (main), 2 = keep second parent (feature)",
+            "After revert, you can always cherry-pick the reverted commit back if it was a mistake"
+          ]
+        },
+        {
+          "name": "git reflog — Your Ultimate Safety Net",
+          "explanation": "The reflog is Git's diary. It records EVERY position HEAD has been at, even after resets, rebases, and branch deletions. If you lost commits with git reset --hard or deleted a branch, reflog can get them back. It's local-only and kept for 90 days.",
+          "code": "# See the reflog (all recent HEAD positions)\ngit reflog\n# Output:\n# abc1234 HEAD@{0}: commit: feat: add search\n# def5678 HEAD@{1}: reset: moving to HEAD~1\n# ghi9012 HEAD@{2}: commit: WIP: half-done feature\n\n# Recover a commit lost by git reset --hard\ngit reflog                 # Find the SHA you want\ngit switch -c recovery-branch HEAD@{2}  # Recover to new branch\n# OR directly reset to it:\ngit reset --hard ghi9012\n\n# Recover a deleted branch\ngit reflog                 # Find the last commit of that branch\ngit switch -c restored-branch abc1234\n\n# See reflog for a specific branch\ngit reflog show feature/old-branch",
+          "keyPoints": [
+            "reflog is LOCAL only — exists on your machine, not in remotes",
+            "Default retention is 90 days — act quickly after an accidental loss!",
+            "reflog entries look like HEAD@{n} — n=0 is the most recent position",
+            "This is why git reset --hard is recoverable locally but not on the remote"
+          ]
+        },
+        {
+          "name": "Removing Sensitive Data from History",
+          "explanation": "Worst-case scenario: you committed a password, API key, or private key to Git (even to a private repo). Simply deleting the file and committing doesn't help — it's still in the history. You need to rewrite history.",
+          "code": "# Option 1: BFG Repo Cleaner (easiest, fast)\n# Install: brew install bfg\nbfg --replace-text passwords.txt my-repo.git\nbfg --delete-files id_rsa my-repo.git\ngit reflog expire --expire=now --all\ngit gc --prune=now --aggressive\ngit push --force\n\n# Option 2: git filter-repo (official, powerful)\n# Install: pip install git-filter-repo\ngit filter-repo --path secrets.env --invert-paths\ngit filter-repo --replace-text expressions.txt\n\n# Option 3: Legacy (slow, avoid if possible)\ngit filter-branch --force --index-filter \\\n  'git rm --cached --ignore-unmatch secrets.env' \\\n  --prune-empty --tag-name-filter cat -- --all\n\n# CRITICAL: After any history rewrite, REVOKE the secret immediately!\n# Assume the secret is compromised — treat it as stolen",
+          "keyPoints": [
+            "FIRST ACTION: Rotate/revoke the exposed credential immediately — assume it was already seen",
+            "History rewrites require force pushing and all collaborators must re-clone",
+            "Use git-filter-repo (not filter-branch) — faster, safer, officially recommended",
+            "Use tools like git-secrets or pre-commit hooks to PREVENT committing secrets"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remotes",
+      "title": "Remotes & Synchronization",
+      "concepts": [
+        {
+          "name": "Managing Remotes",
+          "explanation": "A remote is just a URL with a nickname. 'origin' is the convention for the main remote (the repo you cloned from). You can have multiple remotes — useful for maintaining a fork alongside the upstream, or deploying to multiple services.",
+          "code": "# View remotes (name and URL)\ngit remote -v\n# Output:\n# origin  https://github.com/you/repo.git (fetch)\n# origin  https://github.com/you/repo.git (push)\n\n# Add a remote\ngit remote add upstream https://github.com/original/repo.git\ngit remote add heroku https://git.heroku.com/my-app.git\n\n# Change remote URL (switch from HTTPS to SSH)\ngit remote set-url origin git@github.com:user/repo.git\n\n# Rename a remote\ngit remote rename origin old-origin\n\n# Remove a remote\ngit remote remove upstream\n\n# Fetch without merging (inspect before integrating)\ngit fetch origin\ngit fetch --all   # Fetch from all remotes",
+          "keyPoints": [
+            "origin is a convention, not a special name — you can rename it",
+            "upstream conventionally refers to the original repo you forked from",
+            "git fetch downloads but does NOT change your working files — safe to run anytime",
+            "Switch to SSH URL if tired of entering passwords: git remote set-url origin git@github.com:..."
+          ]
+        },
+        {
+          "name": "Fetching, Pulling & Pushing",
+          "explanation": "The daily remote sync operations. fetch is inspect-only. pull is fetch + merge. push sends your commits up. Understanding the difference between fetch and pull prevents nasty surprises.",
+          "code": "# Fetch: download remote changes, don't touch working files\ngit fetch origin\ngit fetch --all\n\n# After fetch: see what's new\ngit log HEAD..origin/main --oneline  # What remote has that local doesn't\ngit diff HEAD origin/main           # Diff between local and remote\n\n# Pull: fetch + merge into current branch\ngit pull origin main\n\n# Pull with rebase instead of merge (cleaner history)\ngit pull --rebase origin main\n# Set as default:\ngit config --global pull.rebase true\n\n# Push current branch\ngit push origin feature/my-feature\n\n# Push and set upstream tracking in one step\ngit push -u origin feature/my-feature\n# After -u, you can just type: git push\n\n# Push all branches\ngit push --all origin\n\n# Delete remote branch\ngit push origin --delete feature/old-branch",
+          "keyPoints": [
+            "Prefer git pull --rebase to avoid unnecessary merge commits in local history",
+            "-u sets tracking so future git push/pull work without specifying branch",
+            "git push --force-with-lease instead of --force: safer because it checks if someone else pushed",
+            "You can only push to branches you have write access to"
+          ]
+        },
+        {
+          "name": "Tracking Branches & Upstream",
+          "explanation": "A tracking branch is a local branch that knows which remote branch it corresponds to. This enables bare git push and git pull without specifying origin and branch name every time.",
+          "code": "# See tracking relationships for all branches\ngit branch -vv\n# Output:\n# * feature/search  abc123 [origin/feature/search] feat: add filters\n#   main            def456 [origin/main] chore: release v2.1\n\n# Set tracking on existing branch\ngit branch --set-upstream-to=origin/main main\n\n# Push and set tracking at same time\ngit push -u origin feature/my-branch\n\n# Check if your branch is ahead/behind remote\ngit status\n# Output: Your branch is ahead of 'origin/main' by 2 commits.\n#         Your branch is behind 'origin/main' by 3 commits.\n\n# See compact ahead/behind for all branches\ngit branch -vv",
+          "keyPoints": [
+            "Tracking = local branch knows its remote counterpart — enables parameterless push/pull",
+            "'ahead by N' = N commits you have locally that aren't pushed",
+            "'behind by N' = N commits on remote you haven't pulled yet",
+            "Always pull before pushing to avoid rejection and need for force-push"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pull-requests",
+      "title": "Pull Requests & Code Reviews",
+      "concepts": [
+        {
+          "name": "Creating a Perfect Pull Request",
+          "explanation": "A good PR is a gift to reviewers. Small, focused, well-described. Bad PR: 47 files changed, 'misc fixes'. Good PR: one logical change with context, screenshots, and testing notes. The best PRs get reviewed and merged quickly.",
+          "code": "# PR preparation workflow:\n\n# 1. Sync with latest main before opening PR\ngit fetch origin\ngit rebase origin/main   # Replay your commits on latest main\n\n# 2. Clean up commit history\ngit rebase -i origin/main  # Interactive rebase from where you diverged\n# Squash WIP commits, reword messages, reorder\n\n# 3. Push to remote\ngit push -u origin feature/add-payment-gateway\n\n# 4. In GitHub UI — write a great description:\n# Title: \"feat: add Stripe payment gateway integration\"\n# Body:\n# ## What does this PR do?\n# Integrates Stripe payments for checkout flow.\n# ## How to test?\n# 1. Add STRIPE_KEY to .env\n# 2. Go to /checkout, use test card 4242 4242 4242 4242\n# ## Screenshots\n# [before/after screenshots]\n# ## Related Issues\n# Closes #142\n\n# GitHub CLI alternative\ngh pr create --title \"feat: add payment gateway\" --body \"...\"",
+          "keyPoints": [
+            "Small PRs (<400 lines) get reviewed thoroughly; large PRs get rubber-stamped",
+            "'Closes #142' in PR body auto-closes the linked issue when PR merges",
+            "Attach screenshots for UI changes — saves reviewer from running the code",
+            "Self-review your diff first: git diff main..feature or the GitHub diff before requesting review"
+          ]
+        },
+        {
+          "name": "Code Review Best Practices",
+          "explanation": "Code review is communication. The goal is better code, not proving you're smarter. Good reviews catch bugs, improve design, share knowledge, and maintain code standards. Tone matters as much as content.",
+          "code": "# For REVIEWERS:\n\n# 1. Review the intent, not just the code\n#    Ask: 'Does this actually solve the problem?'\n\n# 2. Use the Conventional Comments standard:\n#    praise:  Great use of early return here!\n#    nitpick: nit: Could rename 'x' to 'userId'\n#    issue:   This will throw NPE if user is null\n#    question: q: Why 3 retries instead of 5?\n#    thought:  thought: Could we use a Set here?\n\n# 3. Be specific about required vs optional:\n#    'blocking:' = must fix before merge\n#    'nit:' = minor style, can ignore\n\n# For PR AUTHORS:\n# 1. Respond to ALL comments (even with just 'done' or 'ack')\n# 2. If you disagree, explain why — don't silently ignore\n# 3. Mark your own comments as resolved when addressed\n\n# Checklist before requesting review:\n# ✓ Does it do what the issue says?\n# ✓ Are there tests?\n# ✓ Does CI pass?\n# ✓ Is the diff clean (no debug logs, no commented-out code)?",
+          "keyPoints": [
+            "Nitpick (nit:) prefix signals 'this is optional, not blocking' — reduces friction",
+            "Approve with comments for minor nits; request changes only for actual issues",
+            "Reviews are asynchronous — be patient, set SLAs (e.g., review within 24 hours)",
+            "Check test coverage in the diff — new code without tests is the most common review comment"
+          ]
+        },
+        {
+          "name": "Merge Strategies for PRs",
+          "explanation": "GitHub offers three merge strategies, each with different history implications. Teams should standardize on one strategy for consistency. Your choice affects how clean the git log looks on main.",
+          "code": "# Option 1: Create a merge commit (default)\n# Preserves all commits + adds a merge commit\n# Best: when you want full history of the feature branch\ngit merge --no-ff feature/add-auth\n# main: ... A - B - M (M = merge commit)\n#                    ↑\n#                D - E (feature commits visible)\n\n# Option 2: Squash and merge\n# Combines ALL PR commits into ONE commit on main\n# Best: when feature commits are messy WIP commits\ngit merge --squash feature/add-auth\ngit commit -m \"feat: add user authentication\"\n# main: ... A - B - S (S = squash commit, clean)\n\n# Option 3: Rebase and merge\n# Replays commits linearly on main (no merge commit)\n# Best: when commits are already clean and atomic\ngit rebase main && git merge --ff-only\n# main: ... A - B - D' - E' (linear, no merge commit)",
+          "keyPoints": [
+            "Squash merge is most popular in GitHub repos — clean main history, details in PR",
+            "Rebase merge gives linear history but makes it harder to see what was 'a feature'",
+            "Merge commit is best for release branches where you want to see complete feature scope",
+            "Set your team's strategy in repo settings: 'Allow squash merging' only for consistency"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "collaboration",
+      "title": "Collaboration Workflows",
+      "concepts": [
+        {
+          "name": "Working in a Team — Daily Workflow",
+          "explanation": "Most team friction comes from people working in isolation too long, diverging from the main branch, and then trying to merge a week's worth of changes. The cure is simple: sync early, sync often, make small commits.",
+          "code": "# Morning routine — start the day synced\ngit fetch --all\ngit switch main\ngit pull origin main\n\n# Switch to your feature branch and rebase\ngit switch feature/my-feature\ngit rebase origin/main\n\n# If conflicts during rebase, resolve them:\n# 1. Edit conflicted files\n# 2. git add resolved-file.js\n# 3. git rebase --continue\n\n# Work through the day with atomic commits\ngit commit -m \"feat: add cart model\"\ngit commit -m \"feat: wire cart to checkout API\"\ngit commit -m \"test: add cart unit tests\"\n\n# End of day: push your branch\ngit push origin feature/my-feature\n\n# Check what teammates have pushed\ngit fetch origin\ngit log --oneline --all --graph -10",
+          "keyPoints": [
+            "Rebase on main every morning — keeps your branch fresh and reduces conflict accumulation",
+            "Atomic commits: each commit makes one logical change and the tests pass",
+            "Push at end of every day — backs up your work and lets teammates see your progress",
+            "git fetch --all is always safe — never changes your working files"
+          ]
+        },
+        {
+          "name": "Handling Shared Feature Branches",
+          "explanation": "When multiple developers work on the same feature branch, the usual rebase-happy workflow breaks down because you can't rewrite history that others have pulled. Switch to a merge-based approach for shared branches.",
+          "code": "# On a shared feature branch (multiple devs):\n\n# 1. Always pull before pushing\ngit pull origin feature/shared-feature\n\n# 2. Use merge (not rebase) to sync\ngit merge origin/feature/shared-feature\n# NOT: git rebase origin/feature/shared-feature\n# (rebasing would rewrite history your teammates have)\n\n# 3. Push regularly to reduce divergence\ngit push origin feature/shared-feature\n\n# 4. If push is rejected (someone else pushed):\ngit pull --no-rebase origin feature/shared-feature\ngit push origin feature/shared-feature\n\n# 5. Communicate about who's editing what\n#    Use GitHub's draft PR comments for coordination",
+          "keyPoints": [
+            "Shared branches = use merge, never rebase",
+            "--no-rebase on pull does a merge pull (creates merge commits) — fine for shared branches",
+            "Avoid editing the same files simultaneously on shared branches — coordinate via standups/Slack",
+            "Consider creating personal sub-branches and merging into the shared feature branch via PRs"
+          ]
+        },
+        {
+          "name": "Keeping History Clean with Interactive Rebase",
+          "explanation": "Before opening a PR, clean up your local branch history so reviewers see a logical progression of changes, not a trail of 'WIP fix typo oops fix again' commits. Interactive rebase lets you sculpt history into a professional narrative.",
+          "code": "# Interactive rebase on last N commits (replace N)\ngit rebase -i HEAD~5\n\n# Or rebase from where you diverged from main:\ngit rebase -i origin/main\n\n# The editor opens with something like:\n# pick abc1234 feat: start login form\n# pick def5678 WIP: half done\n# pick ghi9012 fix typo\n# pick jkl3456 actually fix the typo\n# pick mno7890 feat: finish login validation\n\n# Your goal: clean it up\n# pick abc1234 feat: start login form\n# squash def5678 WIP: half done       ← combine into pick above\n# fixup ghi9012 fix typo              ← absorb, discard message\n# fixup jkl3456 actually fix the typo ← absorb, discard message\n# reword mno7890 feat: add user login validation  ← rename this\n\n# Result: 2 clean commits instead of 5 messy ones",
+          "keyPoints": [
+            "squash: combines into previous commit AND lets you edit the combined message",
+            "fixup: combines into previous commit, discards the message — faster for minor fixes",
+            "reword: keep the commit, just change the message",
+            "drop: removes the commit entirely — use carefully, changes are lost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forking",
+      "title": "Forking & Open Source Contribution",
+      "concepts": [
+        {
+          "name": "The Fork & Pull Request Workflow",
+          "explanation": "The standard way to contribute to open source projects. You fork (copy) the repository to your GitHub account, make changes, and submit a pull request back to the original. You never need write access to the original repo.",
+          "code": "# Step 1: Fork on GitHub (click Fork button in UI)\n\n# Step 2: Clone YOUR fork\ngit clone https://github.com/YOUR-USERNAME/project.git\ncd project\n\n# Step 3: Add the ORIGINAL repo as upstream\ngit remote add upstream https://github.com/ORIGINAL/project.git\ngit remote -v\n# origin   = your fork\n# upstream = original repo\n\n# Step 4: Create a feature branch (never work on main!)\ngit switch -c fix/typo-in-readme\n\n# Step 5: Make changes, commit\ngit commit -m \"docs: fix typo in installation section\"\n\n# Step 6: Push to YOUR fork\ngit push -u origin fix/typo-in-readme\n\n# Step 7: Open PR on GitHub (it'll show 'Compare & pull request')\n# Target: original/main ← your-fork/fix/typo-in-readme",
+          "keyPoints": [
+            "Fork = your personal copy of the repo on GitHub (not a Git concept — it's a GitHub feature)",
+            "upstream = the original; origin = your fork — this naming is universal convention",
+            "Never commit directly to main on your fork — always use branches for PRs",
+            "GitHub's PR will automatically detect your fork and suggest the upstream as target"
+          ]
+        },
+        {
+          "name": "Keeping Your Fork Synced with Upstream",
+          "explanation": "Forks don't auto-update. While you work on your fork, the original repo keeps getting new commits. You need to regularly pull from upstream to keep your fork current — especially before starting new work or PRs.",
+          "code": "# Fetch latest changes from the original repo\ngit fetch upstream\n\n# Update your local main with upstream's main\ngit switch main\ngit merge upstream/main      # Merge upstream changes\n# OR:\ngit rebase upstream/main     # Cleaner, but rewrites local commits\n\n# Push updated main to YOUR fork on GitHub\ngit push origin main\n\n# Keep your feature branch updated too\ngit switch fix/my-feature\ngit rebase upstream/main\ngit push --force-with-lease origin fix/my-feature\n\n# One-liner to sync main:\ngit fetch upstream && git switch main && git merge upstream/main && git push origin main\n\n# GitHub UI shortcut: Fork > Sync Fork button (added in 2022)",
+          "keyPoints": [
+            "Always fetch upstream before starting new work on a fork",
+            "Your fork's main should be a mirror of upstream/main — no original commits on it",
+            "After rebasing a feature branch, force-push is required: git push --force-with-lease",
+            "A stale fork causes conflicts in your PRs — reviewers will ask you to rebase"
+          ]
+        },
+        {
+          "name": "Open Source Contribution Checklist",
+          "explanation": "Contributing to open source has unwritten rules. Follow these practices to have your contribution accepted, not ignored or rejected. Maintainers are volunteers — make their job easy.",
+          "code": "# Before starting:\n# ✓ Read CONTRIBUTING.md (exists in most repos)\n# ✓ Search existing Issues to avoid duplicates\n# ✓ Check if there's a related open Issue — comment on it\n# ✓ If adding a feature, open an Issue first to discuss\n\n# Setup:\ngit clone your-fork-url\ngit remote add upstream original-repo-url\n\n# Coding:\n# ✓ Follow the existing code style (or run: npm run lint)\n# ✓ Add tests for new code\n# ✓ Keep commits atomic and well-described\n# ✓ Run the full test suite before pushing\n\n# PR:\n# ✓ Write a clear description of what and why\n# ✓ Reference the related Issue: 'Fixes #42'\n# ✓ Fill out the PR template if one exists\n# ✓ Keep scope small — one problem per PR\n# ✓ Be patient — maintainers are busy!\n\n# After review:\n# ✓ Respond to ALL comments\n# ✓ Don't take feedback personally\n# ✓ Make requested changes on the same branch (PR updates)\n# ✓ Squash WIP commits before maintainer merges",
+          "keyPoints": [
+            "CONTRIBUTING.md is the bible for that project — always read it first",
+            "Small PRs get merged; ambitious PRs get discussed forever. Start small.",
+            "Good first issues are labeled 'good first issue' — perfect starting point",
+            "Code of Conduct exists in most repos — it's binding, treat people with respect"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "github-features",
+      "title": "GitHub Features & Tools",
+      "concepts": [
+        {
+          "name": "GitHub CLI (gh) — GitHub in Your Terminal",
+          "explanation": "The GitHub CLI brings GitHub's web UI features into your terminal. Create PRs, manage issues, check CI status — all without leaving your editor or browser. An underused productivity booster for developers who live in the terminal.",
+          "code": "# Install: brew install gh  (macOS)\n# Windows: winget install GitHub.cli\n\n# Authenticate\ngh auth login\n\n# Create a PR from current branch\ngh pr create --title \"feat: add search\" --body \"Adds fuzzy search\"\n\n# Create PR and open in browser\ngh pr create --web\n\n# List open PRs\ngh pr list\n\n# Check out a PR locally (for review)\ngh pr checkout 42\n\n# Check PR status and CI results\ngh pr status\ngh pr checks\n\n# Merge a PR\ngh pr merge 42 --squash\n\n# Work with Issues\ngh issue list\ngh issue create\ngh issue close 42\n\n# View repo in browser\ngh repo view --web\n\n# Fork a repo and clone in one step\ngh repo fork original/repo --clone",
+          "keyPoints": [
+            "gh pr checkout 42 clones the PR branch locally — fastest way to review code",
+            "gh pr checks shows CI status — see if GitHub Actions passed without opening browser",
+            "Combine with scripts: gh pr list --json number,title | jq '.[] | .title'",
+            "gh can create releases, manage secrets, trigger workflows — check gh --help"
+          ]
+        },
+        {
+          "name": "GitHub Actions — Automated CI/CD",
+          "explanation": "GitHub Actions runs automated workflows on every push, PR, or schedule. Use it for CI (run tests on every PR), CD (deploy on merge to main), linting, security scanning, and more. Lives in .github/workflows/.",
+          "code": "# File: .github/workflows/ci.yml\nname: CI\n\non:\n  pull_request:\n    branches: [main]\n  push:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v4\n\n      - name: Set up Node.js\n        uses: actions/setup-node@v4\n        with:\n          node-version: '20'\n\n      - name: Install dependencies\n        run: npm ci\n\n      - name: Run tests\n        run: npm test\n\n      - name: Run linter\n        run: npm run lint\n\n# cd.yml — Deploy on push to main\nname: Deploy\non:\n  push:\n    branches: [main]\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: ./scripts/deploy.sh",
+          "keyPoints": [
+            "Workflows are YAML files in .github/workflows/ — commit them like regular code",
+            "uses: actions/checkout@v4 clones your repo into the CI runner",
+            "Secrets like API keys go in Settings > Secrets — access as ${{ secrets.MY_KEY }}",
+            "Matrix builds let you test on multiple OS/Node versions in parallel"
+          ]
+        },
+        {
+          "name": "Branch Protection Rules",
+          "explanation": "Branch protection rules prevent accidental (or intentional) direct pushes to important branches. Require PRs, passing tests, and code reviews before anything merges to main. Essential for any serious project.",
+          "code": "# Set up in: GitHub > Repo Settings > Branches > Add rule\n\n# Essential rules to enable for 'main':\n\n# ✓ Require a pull request before merging\n#   - Required approvals: 1 (or 2 for teams)\n#   - Dismiss stale reviews on new push\n\n# ✓ Require status checks to pass before merging\n#   - Select your CI workflow (e.g., 'test')\n#   - Require branches to be up to date before merging\n\n# ✓ Require conversation resolution before merging\n\n# ✓ Include administrators (no bypassing for anyone!)\n\n# ✓ Restrict who can push directly to main\n\n# Effect of these rules:\n# git push origin main  → REJECTED with error:\n# ! [remote rejected] main -> main (protected branch hook declined)\n# You MUST open a PR and get it approved first",
+          "keyPoints": [
+            "'Require branches to be up to date' forces PR authors to rebase on main before merge",
+            "'Dismiss stale reviews' means approval is reset when new commits are pushed — re-review required",
+            "Include administrators prevents the 'I'll just push directly since I'm the owner' trap",
+            "Use CODEOWNERS file to automatically assign reviewers based on file paths"
+          ]
+        },
+        {
+          "name": "GitHub Issues & Project Management",
+          "explanation": "GitHub Issues are more than bug reports — they're the unit of work. Combined with Projects boards, milestones, and labels, they become a lightweight but powerful project management system that lives alongside your code.",
+          "code": "# Issue best practices:\n# Good title: \"Login form crashes when email contains +\"\n# Bad title:  \"Login broken\"\n\n# Issue templates: .github/ISSUE_TEMPLATE/bug_report.md\n# ---\n# name: Bug Report\n# about: Create a report to help us improve\n# ---\n# **Describe the bug**\n# **Steps to reproduce**\n# **Expected behavior**\n# **Environment**\n\n# Linking commits and PRs to issues:\ngit commit -m \"fix: handle special chars in email (fixes #42)\"\n# Keywords: closes, fixes, resolves → auto-close issue on merge\n\n# Labels for organization:\n# bug, enhancement, good first issue, help wanted,\n# priority: high, status: in-progress\n\n# Milestones: group issues by release/sprint\n# v2.0, Sprint 3, Q1 2025\n\n# GitHub Projects: Kanban board linked to issues\n# Todo → In Progress → In Review → Done",
+          "keyPoints": [
+            "Close keywords (closes, fixes, resolves) in PR description auto-close the issue on merge",
+            "'good first issue' label is your tool for attracting contributors to open source projects",
+            "GitHub Projects v2 has roadmap view, custom fields, and workflow automation",
+            "Issue templates (.github/ISSUE_TEMPLATE/) ensure contributors provide the right info"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "debugging-history",
+      "title": "Debugging & History Investigation",
+      "concepts": [
+        {
+          "name": "git blame — Find Who Changed a Line",
+          "explanation": "git blame shows you who last modified every line of a file and in which commit. Not for assigning blame (not productive!) — for finding context: which commit introduced this code, what was the reasoning behind it?",
+          "code": "# Show who changed each line of a file\ngit blame src/api/payment.js\n\n# Output:\n# abc123 (Alice  2024-01-15) const processPayment = (amount) => {\n# def456 (Bob    2024-01-18)   if (amount <= 0) throw new Error('Invalid');\n# abc123 (Alice  2024-01-15)   return stripe.charge(amount);\n\n# Ignore whitespace changes in blame\ngit blame -w src/api/payment.js\n\n# Show blame for a specific range of lines\ngit blame -L 50,75 src/api/payment.js\n\n# Show blame at a specific commit (time travel)\ngit blame HEAD~5 -- src/api/payment.js\n\n# Better blame in VS Code: GitLens extension\n# Hover over any line → shows commit + PR + Jira ticket\n\n# After finding the commit, get full details:\ngit show abc123\ngit log --oneline -1 abc123",
+          "keyPoints": [
+            "git blame is for understanding code history, not criticizing teammates",
+            "-w ignores whitespace-only changes (formatting commits) — more accurate blame",
+            "-L start,end limits to a line range — useful for large files",
+            "git show COMMIT shows the full diff for that commit — the commit message explains WHY"
+          ]
+        },
+        {
+          "name": "git bisect — Binary Search for Bugs",
+          "explanation": "A bug was introduced somewhere in the last 200 commits. How do you find which one? git bisect performs a binary search through your commit history — you mark commits as good or bad, and Git finds the exact offending commit in O(log n) steps.",
+          "code": "# Start bisect session\ngit bisect start\n\n# Mark current commit as bad (bug exists)\ngit bisect bad\n\n# Mark a known good commit (before bug existed)\ngit bisect good v1.5.0          # tag\ngit bisect good abc1234         # SHA\ngit bisect good HEAD~50         # 50 commits ago\n\n# Git checks out the middle commit — test it\n# Does the bug exist? → git bisect bad\n# No bug? → git bisect good\n# Git narrows down and checks out next candidate\n\n# Repeat until Git prints:\n# abc1234 is the first bad commit\n# author: Alice, date: 2024-03-05\n# feat: refactor payment processor\n\n# Show the changes in the culprit commit\ngit show abc1234\n\n# End bisect session (back to original branch)\ngit bisect reset\n\n# Automate with a script\ngit bisect run npm test   # Auto-bisect: bad=test fails, good=test passes",
+          "keyPoints": [
+            "Binary search means 200 commits ≈ only 8 steps — incredibly fast bug hunting",
+            "git bisect run <command> fully automates: command exit 0 = good, non-zero = bad",
+            "Always run git bisect reset when done — otherwise you're in a detached HEAD state",
+            "Works best when you have a test that exposes the bug: git bisect run ./test-bug.sh"
+          ]
+        },
+        {
+          "name": "Searching Code History (git log + grep)",
+          "explanation": "Answer questions like: 'When was this function added?', 'Who deleted the caching logic?', 'What changed this error message?' — using Git's powerful history search capabilities.",
+          "code": "# Find commits that added or removed a specific string\ngit log -S 'processPayment' --oneline\n# -S = 'pickaxe' — finds commits where count of string changed\n\n# Find commits that changed a string with regex\ngit log -G 'function.*processPayment' --oneline\n# -G = regex match in the diff content\n\n# Search commit MESSAGES\ngit log --grep='bug fix' --oneline\ngit log --grep='JIRA-4521' --oneline\n\n# Find all commits affecting a file\ngit log --oneline -- src/payment/processor.js\n\n# See what ACTUALLY changed in those commits\ngit log -p -S 'processPayment'\n\n# When was a specific function introduced?\ngit log -S 'function calculateTax' --oneline\n\n# What was in a file 6 months ago?\ngit show HEAD@{6.months.ago}:src/config.js",
+          "keyPoints": [
+            "-S (pickaxe) finds commits where the occurrence count of the string changes — additions or deletions",
+            "-G uses regex on the entire diff content — more flexible than -S",
+            "--grep searches commit MESSAGES; -S/-G search diff CONTENT",
+            "HEAD@{date} lets you view file state at any point in time: git show HEAD@{2024-01-01}:filename"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tagging-releases",
+      "title": "Tagging & Release Management",
+      "concepts": [
+        {
+          "name": "Git Tags & Semantic Versioning",
+          "explanation": "Tags mark specific commits as release points. While branches move forward, tags are permanent markers — like pinning a bookmark at a specific point in history. Semantic versioning (MAJOR.MINOR.PATCH) is the universal standard.",
+          "code": "# Semantic versioning:\n# v1.2.3\n# MAJOR: breaking changes (v1 → v2)\n# MINOR: new features, backward-compatible (v1.1 → v1.2)\n# PATCH: bug fixes (v1.2.0 → v1.2.1)\n\n# Create a lightweight tag (just a pointer)\ngit tag v1.2.3\n\n# Create an annotated tag (PREFERRED — has metadata)\ngit tag -a v1.2.3 -m \"Release v1.2.3: add payment gateway\"\n\n# Tag a specific past commit\ngit tag -a v1.2.3 abc1234 -m \"Release v1.2.3\"\n\n# List all tags\ngit tag\ngit tag -l 'v1.*'  # Filter with pattern\n\n# See tag details\ngit show v1.2.3\n\n# Push tags to remote (tags are NOT pushed by default!)\ngit push origin v1.2.3     # Push specific tag\ngit push origin --tags     # Push all local tags\n\n# Delete tag\ngit tag -d v1.2.3          # Local\ngit push origin --delete v1.2.3  # Remote",
+          "keyPoints": [
+            "Annotated tags (-a) include author, date, message — always prefer over lightweight tags",
+            "Tags are NOT pushed with git push — explicitly push with --tags or by tag name",
+            "GitHub auto-creates releases from tags — add release notes in the GitHub UI",
+            "Pre-release versions: v2.0.0-alpha.1, v2.0.0-beta.2, v2.0.0-rc.1"
+          ]
+        },
+        {
+          "name": "Creating GitHub Releases",
+          "explanation": "GitHub Releases turn tags into published release entries with release notes, attached binaries, and changelogs. This is what users see when they download a specific version of your software.",
+          "code": "# Via GitHub CLI:\ngh release create v1.2.3 \\\n  --title \"v1.2.3 — Payment Gateway Integration\" \\\n  --notes \"## What's new\n- Added Stripe payment processing\n- Fixed edge case in cart total calculation\n- Performance improvements in checkout flow\n\n## Breaking Changes\nNone\n\n## Upgrade Guide\nUpdate .env with STRIPE_KEY\" \\\n  dist/app-linux.tar.gz dist/app-macos.tar.gz\n\n# Via GitHub UI:\n# Releases > Draft a new release > Choose tag\n\n# Auto-generate changelog from PR descriptions:\ngh release create v1.2.3 --generate-notes\n\n# Create a pre-release\ngh release create v2.0.0-beta.1 --prerelease\n\n# Automate with GitHub Actions on tag push:\n# on:\n#   push:\n#     tags: ['v*']\n# steps:\n#   - run: gh release create ${{ github.ref_name }} --generate-notes",
+          "keyPoints": [
+            "GitHub auto-generates changelog from PR titles since last release with --generate-notes",
+            "Attach build artifacts (binaries, .zip, .jar) directly to the release for distribution",
+            "Pre-releases are visible on the releases page but not shown as 'latest'",
+            "Use CHANGELOG.md (conventional-changelog format) for a human-curated history"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "emergency-recovery",
+      "title": "Emergency Recovery Scenarios",
+      "concepts": [
+        {
+          "name": "Accidentally Pushed to Main",
+          "explanation": "Someone pushed commits directly to main that shouldn't be there (or pushed broken code). This is one of the most common Git emergencies in teams. Here are your recovery options from safest to most drastic.",
+          "code": "# Scenario: bad commits pushed to main\n# Option A (SAFEST): revert the commits (preserves history)\ngit revert HEAD          # Revert last commit\ngit revert abc123 def456 # Revert specific commits\ngit push origin main\n\n# Option B: Reset AND force push (rewrites history)\n# WARN: Only if main is not protected and team is aware!\ngit reset --hard HEAD~2  # Undo last 2 commits locally\ngit push --force-with-lease origin main\n# Everyone on the team must: git fetch && git reset --hard origin/main\n\n# Option C: If main is protected (can't push directly)\n# 1. Create a revert PR\n# 2. Get approval\n# 3. Merge revert PR\n\n# Check what you're reverting first!\ngit log --oneline -5\ngit show HEAD              # See what the bad commit did",
+          "keyPoints": [
+            "Revert is ALWAYS the safe option for shared branches — it adds history, never deletes it",
+            "Force push to main is drastic — teammates must resync their local repos afterward",
+            "--force-with-lease is safer than --force: fails if remote has extra commits you haven't seen",
+            "After any force push, broadcast immediately: 'HEADS UP: force pushed to main, please git fetch && git reset --hard origin/main'"
+          ]
+        },
+        {
+          "name": "Lost Commits After git reset --hard",
+          "explanation": "You ran git reset --hard and thought you lost your work. Good news: Git almost never actually deletes commits immediately. The reflog has them for 90 days. Here's how to recover.",
+          "code": "# Step 1: Don't panic. Check the reflog immediately.\ngit reflog\n# Find entry: abc1234 HEAD@{3}: commit: feat: payment integration\n\n# Step 2: Check what that commit has\ngit show abc1234\n\n# Step 3: Recover by creating a new branch from it\ngit switch -c recover/payment-integration HEAD@{3}\n# Or: git switch -c recovery abc1234\n\n# Step 4: Verify the work is there\ngit log --oneline -5\n\n# Step 5: Now safely merge/cherry-pick back to original branch\ngit switch main\ngit merge recover/payment-integration\n\n# Alternative: just reset to the recovered position\ngit reset --hard abc1234",
+          "keyPoints": [
+            "git reset --hard only removes the branch pointer reference — the commit data stays for 90 days",
+            "reflog is the key — it records every position HEAD has been at",
+            "Create a recovery branch from the reflog entry — safer than directly resetting again",
+            "This only works LOCALLY — commits never pushed are unrecoverable from the remote"
+          ]
+        },
+        {
+          "name": "Accidentally Deleted a Branch",
+          "explanation": "You deleted a branch that wasn't fully merged yet. The commits are still there — the branch was just a pointer. Use the reflog to find where the branch's HEAD was and recreate it.",
+          "code": "# Find the last commit on the deleted branch\ngit reflog\n# Look for: \"checkout: moving from deleted-branch to main\"\n# The commit BEFORE that checkout is the branch tip\n\n# Or search by commit message pattern\ngit log --walk-reflogs --all --oneline | grep 'feature-name'\n\n# Recreate the branch at that commit\ngit switch -c feature/restored-branch abc1234\n\n# Verify it's all there\ngit log --oneline -10\n\n# PREVENTION: Before deleting, check it's merged\ngit branch --merged main  # Only shows merged branches\ngit branch -d safeName    # -d (lowercase) refuses to delete unmerged\n\n# GitHub tip: GitHub keeps deleted branches for 30 days!\n# Merged PR > 'Restore branch' button appears for 30 days",
+          "keyPoints": [
+            "GitHub keeps deleted branches for 30 days after PR merge — use 'Restore branch' button",
+            "git branch -d (lowercase) protects you: refuses to delete unmerged branches",
+            "git log --walk-reflogs searches through all reflog entries — great for finding lost branches",
+            "For remote branches: git fetch origin --prune syncs local tracking refs after remote deletions"
+          ]
+        },
+        {
+          "name": "Fix a Broken Merge Attempt",
+          "explanation": "A merge or rebase went sideways. Conflicts everywhere, editor open, you're not sure what state things are in. These are the abort commands that get you back to a clean state so you can start over.",
+          "code": "# Abort an in-progress merge\ngit merge --abort\n\n# Abort an in-progress rebase\ngit rebase --abort\n\n# Abort an in-progress cherry-pick\ngit cherry-pick --abort\n\n# Abort an in-progress revert\ngit revert --abort\n\n# What state am I in? (shows if merge/rebase/cherry-pick is in progress)\ngit status\n# Look for: 'You are currently rebasing...' or\n#           'You have unmerged paths'\n\n# Nuclear option: discard ALL changes, get back to last commit\ngit reset --hard HEAD\ngit clean -fd  # Remove untracked files and directories\n\n# Start merge fresh with a specific strategy\ngit merge -X ours feature/branch   # Prefer our version in conflicts\ngit merge -X theirs feature/branch # Prefer their version",
+          "keyPoints": [
+            "--abort commands are always safe — they restore the pre-operation state completely",
+            "git status always tells you your current Git state — read it carefully in emergencies",
+            "git clean -fd removes untracked files (like generated conflict backups) — DESTRUCTIVE",
+            "-X ours/-X theirs auto-resolves conflicts in bulk — useful when you're confident in one side"
+          ]
+        },
+        {
+          "name": "Recovering from Broken Repository",
+          "explanation": "In rare cases, a repo can get into a corrupt or stuck state. These are the diagnostics and fixes for when nothing makes sense and normal commands fail.",
+          "code": "# Diagnose repository problems\ngit fsck\n# Checks object database for corruption\n\n# Clean up unnecessary files and optimize\ngit gc\n\n# Remove leftover lock files (stops 'Another git process is running')\nrm -f .git/index.lock\nrm -f .git/MERGE_HEAD\nrm -f .git/MERGE_MSG\nrm -f .git/CHERRY_PICK_HEAD\nrm -f .git/REBASE_HEAD\n\n# Stuck merge state? Force-clear it:\ngit merge --abort 2>/dev/null; git rebase --abort 2>/dev/null\n\n# Broken index? Rebuild it:\ngit rm -r --cached .\ngit add .\n\n# Worst case: re-clone but keep your uncommitted changes\ngit stash\ncd ..\ngit clone <url> project-fresh\ncd project-fresh\ngit stash pop  # (from original repo's stash — moves with you)",
+          "keyPoints": [
+            ".git/index.lock means another Git process is running (or crashed) — safe to delete if no Git process active",
+            "git fsck --lost-found writes orphaned commit objects to .git/lost-found/ — recoverable",
+            "git gc compresses history and removes unreferenced objects — safe and recommended monthly",
+            "When all else fails: stash, reclone, apply stash — you lose local history but keep code"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "best-practices",
+      "title": "Best Practices & Clean Workflows",
+      "concepts": [
+        {
+          "name": "Writing Great Commit Messages",
+          "explanation": "A commit message is a message to the future — to your teammates, to yourself 6 months from now, to the automated tools parsing your history. The Conventional Commits standard has become the industry default for structured, readable commit messages.",
+          "code": "# Conventional Commits format:\n# <type>(<scope>): <short description>\n# [blank line]\n# [optional body]\n# [blank line]\n# [optional footer]\n\n# Types:\n# feat:     new feature\n# fix:      bug fix\n# docs:     documentation only\n# style:    formatting, no logic change\n# refactor: code restructure, no behavior change\n# test:     adding or fixing tests\n# chore:    build tools, dependencies, CI\n# perf:     performance improvement\n# revert:   reverts a previous commit\n\n# Examples:\ngit commit -m \"feat(auth): add JWT token refresh mechanism\"\ngit commit -m \"fix(cart): calculate total correctly for discount codes\"\ngit commit -m \"docs: update README with Docker setup instructions\"\ngit commit -m \"chore: upgrade axios from 1.3 to 1.6\"\n\n# With body (use: git commit, not -m):\n# fix(payment): handle zero-amount transactions\n#\n# Previously, Stripe API was called with amount=0 which\n# caused an error. Now we validate before calling.\n#\n# Closes #234",
+          "keyPoints": [
+            "Subject line: max 72 chars, imperative mood ('add' not 'added'), no period at end",
+            "Body explains the WHY, not the what — the diff already shows what changed",
+            "Tools like semantic-release and auto-changelog use Conventional Commits to automate versioning",
+            "'BREAKING CHANGE:' in the footer triggers a major version bump in semantic-release"
+          ]
+        },
+        {
+          "name": "Git Aliases — Speed Up Your Workflow",
+          "explanation": "Git aliases are custom shortcuts for commands you type 50 times a day. Setting up a handful of power aliases transforms your Git experience. These are the aliases that professional developers swear by.",
+          "code": "# Set up globally useful aliases\ngit config --global alias.st status\ngit config --global alias.co checkout\ngit config --global alias.sw switch\ngit config --global alias.br branch\ngit config --global alias.cm 'commit -m'\ngit config --global alias.ca 'commit -am'\n\n# The must-have one-line log\ngit config --global alias.lg \"log --oneline --graph --all --decorate -20\"\n\n# See what you changed today\ngit config --global alias.today \"log --oneline --since='midnight'\"\n\n# Undo last commit (keep changes staged)\ngit config --global alias.undo 'reset --soft HEAD~1'\n\n# Clean merged branches\ngit config --global alias.cleanup '!git branch --merged main | grep -v main | xargs git branch -d'\n\n# Now use them:\ngit st           # git status\ngit lg           # Pretty graph log\ngit undo         # Undo last commit, keep staged\ngit cm \"fix: typo\" # git commit -m\ngit cleanup      # Delete merged branches",
+          "keyPoints": [
+            "! prefix means shell command — enables powerful aliases that chain git commands",
+            "Aliases live in ~/.gitconfig — you can edit the file directly instead of using config commands",
+            "Share aliases via dotfiles repo — consistent experience across machines",
+            "git lg is the single most useful alias — pretty-print the commit graph"
+          ]
+        },
+        {
+          "name": "Pre-commit Hooks — Automate Code Quality",
+          "explanation": "Git hooks are scripts that run automatically at specific points in your Git workflow. Pre-commit hooks run before every commit — perfect for catching lint errors, test failures, and secrets before they get into the codebase.",
+          "code": "# Option A: Manual hook (no extra tools)\n# Create: .git/hooks/pre-commit\n#!/bin/sh\nnpm run lint\nif [ $? -ne 0 ]; then\n  echo 'Linting failed. Commit blocked.'\n  exit 1\nfi\n\n# Option B: Husky (shareable, committed to repo)\nnpm install --save-dev husky lint-staged\nnpx husky init\n\n# .husky/pre-commit:\n#!/bin/sh\nnpx lint-staged\n\n# package.json:\n# \"lint-staged\": {\n#   \"*.{js,ts}\": [\"eslint --fix\", \"prettier --write\"],\n#   \"*.{css,scss}\": [\"stylelint --fix\"]\n# }\n\n# Option C: pre-commit (Python-based, universal)\n# pip install pre-commit\n# .pre-commit-config.yaml:\n# repos:\n#   - repo: https://github.com/pre-commit/pre-commit-hooks\n#     rev: v4.5.0\n#     hooks:\n#       - id: detect-private-key\n#       - id: check-added-large-files\n#       - id: end-of-file-fixer",
+          "keyPoints": [
+            "Hooks in .git/hooks/ are not committed — Husky commits hooks to the repo so the whole team uses them",
+            "lint-staged only lints STAGED files — fast because it doesn't lint the entire codebase",
+            "detect-private-key hook prevents committing SSH keys and credentials",
+            "Hooks can be bypassed with git commit --no-verify — for extreme emergencies only"
+          ]
+        },
+        {
+          "name": "Monorepo Git Strategies",
+          "explanation": "Managing multiple packages or services in a single repository (monorepo). Git itself is package-agnostic, but you need strategies for selective commits, managing history per package, and efficient CI.",
+          "code": "# Git sparse checkout — only checkout specific directories\ngit clone --filter=blob:none --sparse https://github.com/org/monorepo\ngit sparse-checkout set services/payment packages/shared\n\n# Verify what's checked out\ngit sparse-checkout list\n\n# Partial clone — skip large files until needed\ngit clone --filter=blob:none https://github.com/org/monorepo\n\n# Trigger CI only for changed packages (GitHub Actions)\njobs:\n  changes:\n    outputs:\n      payment: ${{ steps.filter.outputs.payment }}\n    steps:\n      - uses: dorny/paths-filter@v3\n        id: filter\n        with:\n          filters: |\n            payment:\n              - 'services/payment/**'\n  test-payment:\n    needs: changes\n    if: ${{ needs.changes.outputs.payment == 'true' }}\n    steps:\n      - run: cd services/payment && npm test\n\n# Useful git log for specific package:\ngit log --oneline -- services/payment/",
+          "keyPoints": [
+            "Sparse checkout reduces checkout size in large monorepos — only get what you need",
+            "--filter=blob:none makes a partial clone: metadata downloaded now, files on demand",
+            "Path filtering in CI prevents running all tests when only one service changed",
+            "git log -- path limits history to changes affecting that directory"
+          ]
+        },
+        {
+          "name": "Git Config Recommendations for Teams",
+          "explanation": "A set of Git configurations that every team should standardize on to prevent common frustrations — line ending conflicts, incorrect merge strategies, suboptimal diff algorithms, and unsafe push defaults.",
+          "code": "# Recommended global config for all developers on your team\n\n# Safer push default (push only current branch)\ngit config --global push.default current\n\n# Always pull with rebase (cleaner history)\ngit config --global pull.rebase true\n\n# Auto-stash before rebase (saves mid-work state)\ngit config --global rebase.autoStash true\n\n# Reuse recorded resolutions (auto-resolve seen conflicts)\ngit config --global rerere.enabled true\n\n# Better diff algorithm (more human-readable diffs)\ngit config --global diff.algorithm histogram\n\n# Line ending handling (critical for Windows/Mac mixed teams)\n# Windows:\ngit config --global core.autocrlf true\n# Mac/Linux:\ngit config --global core.autocrlf input\n\n# Better merge conflict style (shows common ancestor too)\ngit config --global merge.conflictstyle zdiff3\n\n# Case-sensitive filesystem (important on Mac/Linux)\ngit config --global core.ignorecase false\n\n# Verify your full config\ngit config --list --global",
+          "keyPoints": [
+            "push.default current is safer than 'matching' — only pushes active branch, avoids surprises",
+            "rebase.autoStash stashes uncommitted changes before rebase and re-applies — prevents 'cannot rebase dirty index' errors",
+            "merge.conflictstyle zdiff3 adds the common ancestor to conflict markers — easier resolution",
+            "Create a team .gitconfig template and document it in your onboarding guide"
+          ]
+        }
+      ]
+    }
+  ]
+}

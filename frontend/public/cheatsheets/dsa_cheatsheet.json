@@ -1,0 +1,806 @@
+{
+  "title": "DSA Cheatsheet",
+  "description": "Data Structures & Algorithms explained intuitively — learn to think like an engineer, not just memorize patterns",
+  "sections": [
+    {
+      "id": "complexity",
+      "title": "Complexity Analysis",
+      "concepts": [
+        {
+          "name": "Time Complexity Basics",
+          "explanation": "Big O tells you 'how badly does this slow down when my input grows?' Think of it as: O(1) is instant (grabbing the first book), O(n) is reading every book on a shelf, O(n²) is comparing every book with every other book. The key insight: focus on what happens when n gets HUGE.",
+          "code": "// O(1) - Constant: same speed no matter what\npublic int getFirst(int[] arr) {\n    return arr[0];  // Always 1 operation, even for 1 million items\n}\n\n// O(n) - Linear: grows with input size\npublic int findMax(int[] arr) {\n    int max = arr[0];\n    for (int num : arr) {  // Touch every element once\n        if (num > max) max = num;\n    }\n    return max;\n}\n\n// O(log n) - Logarithmic: cuts problem in half each time\npublic int binarySearch(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;  // Halve the search space\n        if (arr[mid] == target) return mid;\n        if (arr[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}\n\n// O(n²) - Quadratic: nested loops = trouble for large inputs\npublic void bubbleSort(int[] arr) {\n    for (int i = 0; i < arr.length; i++) {       // n times\n        for (int j = 0; j < arr.length - 1; j++) { // n times each\n            // Total: n * n = n² operations!\n            if (arr[j] > arr[j + 1]) {\n                int temp = arr[j];\n                arr[j] = arr[j + 1];\n                arr[j + 1] = temp;\n            }\n        }\n    }\n}",
+          "keyPoints": [
+            "O(1) < O(log n) < O(n) < O(n log n) < O(n²) — memorize this order!",
+            "Drop constants: O(5n) → O(n) because 5x slower is still linear",
+            "Drop smaller terms: O(n² + n) → O(n²) — n² dominates when n is huge",
+            "See nested loops? Probably O(n²). See halving? Probably O(log n).",
+            "Interview tip: always state your complexity when presenting solutions"
+          ]
+        },
+        {
+          "name": "Space Complexity",
+          "explanation": "Space complexity = how much extra memory does your algorithm rent? Imagine your apartment (memory). O(1) means you only need your keys (constant). O(n) means you need a box for every item you're processing. Recursion sneakily uses memory too — each call is like stacking plates that need to be unstacked.",
+          "code": "// O(1) Space - Just a few variables, no matter how big the input\npublic void reverseArray(int[] arr) {\n    int left = 0, right = arr.length - 1;  // Only 3 variables!\n    while (left < right) {\n        int temp = arr[left];\n        arr[left] = arr[right];\n        arr[right] = temp;\n        left++;\n        right--;\n    }\n}\n\n// O(n) Space - Creating a copy needs space proportional to input\npublic int[] copyArray(int[] arr) {\n    int[] copy = new int[arr.length];  // New array = O(n) space\n    for (int i = 0; i < arr.length; i++) {\n        copy[i] = arr[i];\n    }\n    return copy;\n}\n\n// O(n) Space - Recursion uses stack memory!\npublic int factorial(int n) {\n    if (n <= 1) return 1;\n    return n * factorial(n - 1);  // Each call adds to the stack\n    // factorial(5) → factorial(4) → ... → factorial(1)\n    // That's 5 function calls sitting in memory at once!\n}",
+          "keyPoints": [
+            "Space = extra memory used (not counting the input itself)",
+            "O(1) = in-place, just a few variables — best for memory!",
+            "O(n) = creating arrays, HashMaps, or deep recursion",
+            "Recursion depth = space used (each call lives on the stack)",
+            "Trade-off: sometimes using more space gives you faster time"
+          ]
+        },
+        {
+          "name": "Complexity Comparison Table",
+          "explanation": "Common time complexities and their performance characteristics.",
+          "code": "// Complexity Growth (n = 1000)\n// O(1)      : 1 operation\n// O(log n)  : ~10 operations\n// O(n)      : 1,000 operations\n// O(n log n): ~10,000 operations\n// O(n²)     : 1,000,000 operations\n// O(2^n)    : 2^1000 operations (impractical)\n\n// Example: Find pair with sum\n// Brute Force - O(n²)\npublic boolean hasPairSum(int[] arr, int target) {\n    for (int i = 0; i < arr.length; i++) {\n        for (int j = i + 1; j < arr.length; j++) {\n            if (arr[i] + arr[j] == target) return true;\n        }\n    }\n    return false;\n}\n\n// Optimized with HashSet - O(n)\npublic boolean hasPairSumOptimized(int[] arr, int target) {\n    Set<Integer> seen = new HashSet<>();\n    for (int num : arr) {\n        if (seen.contains(target - num)) return true;\n        seen.add(num);\n    }\n    return false;\n}",
+          "keyPoints": [
+            "O(1) - Hash table lookup, array access",
+            "O(log n) - Binary search, balanced tree ops",
+            "O(n) - Linear search, single pass",
+            "O(n log n) - Efficient sorting (merge, heap)",
+            "O(n²) - Nested loops, bubble sort",
+            "O(2^n) - Recursive subsets, brute force"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arrays",
+      "title": "Arrays",
+      "concepts": [
+        {
+          "name": "Array Basics & Operations",
+          "explanation": "Think of an array like a parking lot with numbered spots. You can instantly jump to spot #500 (O(1) access!), but if you want to insert a car in the middle, everyone after that spot has to move over (O(n) insert). Fixed size means you can't add more spots once built.",
+          "code": "// Creating your parking lot\nint[] arr1 = new int[5];           // 5 spots, all empty (zeros)\nint[] arr2 = {1, 2, 3, 4, 5};      // 5 spots, already filled\n\n// Jump to any spot instantly - O(1)!\nint car = arr2[3];  // What's in spot 3? → 4\narr2[3] = 99;       // Put 99 in spot 3\n\n// But checking every spot takes O(n)\nfor (int num : arr2) {\n    System.out.print(num + \" \");  // Visit each spot once\n}\n\n// Reverse array in-place — the classic two-pointer swap\npublic void reverse(int[] arr) {\n    int left = 0, right = arr.length - 1;\n    while (left < right) {\n        // Swap the cars at left and right spots\n        int temp = arr[left];\n        arr[left] = arr[right];\n        arr[right] = temp;\n        left++;    // Move toward center\n        right--;   // Move toward center\n    }\n}",
+          "keyPoints": [
+            "Array = fixed-size, numbered slots (like a parking lot)",
+            "Access by index = O(1) — this is arrays' superpower!",
+            "Insert/delete in middle = O(n) — everything shifts",
+            "Index starts at 0, last index = length - 1",
+            "Need dynamic size? Use ArrayList instead"
+          ]
+        },
+        {
+          "name": "Two Pointer Technique",
+          "explanation": "Imagine two people searching a sorted bookshelf — one starts at the beginning, one at the end. If the sum of their books is too small, the left person moves right (bigger numbers). Too big? Right person moves left. This 'pincer movement' turns O(n²) problems into O(n). Magic!",
+          "code": "// Two Sum on SORTED array — the classic two-pointer example\npublic int[] twoSum(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    \n    while (left < right) {\n        int sum = arr[left] + arr[right];\n        \n        if (sum == target) {\n            return new int[]{left, right};  // Found it!\n        } else if (sum < target) {\n            left++;   // Need bigger sum → move left pointer right\n        } else {\n            right--;  // Need smaller sum → move right pointer left\n        }\n    }\n    return new int[]{-1, -1};  // No pair found\n}\n\n// Remove Duplicates from Sorted Array\n// Key insight: slow pointer marks where to put next unique\npublic int removeDuplicates(int[] arr) {\n    if (arr.length == 0) return 0;\n    \n    int slow = 0;  // Points to last unique element\n    \n    for (int fast = 1; fast < arr.length; fast++) {\n        if (arr[fast] != arr[slow]) {  // Found new unique!\n            slow++;                     // Make room\n            arr[slow] = arr[fast];      // Place it\n        }\n    }\n    return slow + 1;  // Count of unique elements\n}",
+          "keyPoints": [
+            "Two pointers: opposite ends moving inward, or same direction at different speeds",
+            "Works best on SORTED arrays — sorting first is okay if problem allows",
+            "Turns O(n²) brute force into O(n) — huge improvement!",
+            "Key patterns: two sum, container water, palindrome check, remove duplicates",
+            "Ask yourself: 'Can I eliminate options by comparing ends?'"
+          ]
+        },
+        {
+          "name": "Sliding Window",
+          "explanation": "Imagine you're on a train looking through a window at houses. Instead of counting all houses from scratch each time you move, you just subtract the house that left your view and add the new one that entered. That's sliding window — maintain a 'window' of elements and slide it efficiently.",
+          "code": "// Maximum Sum Subarray of Size K — the classic fixed window\npublic int maxSumSubarray(int[] arr, int k) {\n    // First, calculate sum of first window\n    int windowSum = 0;\n    for (int i = 0; i < k; i++) {\n        windowSum += arr[i];\n    }\n    int maxSum = windowSum;\n    \n    // Now slide: remove leftmost, add rightmost\n    for (int i = k; i < arr.length; i++) {\n        windowSum += arr[i] - arr[i - k];  // Slide!\n        maxSum = Math.max(maxSum, windowSum);\n    }\n    return maxSum;\n}\n\n// Longest Substring Without Repeating Characters — variable window\npublic int lengthOfLongestSubstring(String s) {\n    Set<Character> seen = new HashSet<>();\n    int maxLen = 0, left = 0;\n    \n    for (int right = 0; right < s.length(); right++) {\n        // Shrink window until no duplicate\n        while (seen.contains(s.charAt(right))) {\n            seen.remove(s.charAt(left));\n            left++;  // Shrink from left\n        }\n        \n        seen.add(s.charAt(right));  // Expand window\n        maxLen = Math.max(maxLen, right - left + 1);\n    }\n    return maxLen;\n}",
+          "keyPoints": [
+            "Fixed window: size stays constant, just slide along",
+            "Variable window: expand right, shrink left when condition breaks",
+            "The trick: don't recalculate everything — just update the edges!",
+            "Common patterns: max sum subarray, longest substring, minimum window",
+            "Time complexity: O(n) because each element is added and removed at most once"
+          ]
+        },
+        {
+          "name": "Kadane's Algorithm",
+          "explanation": "Find maximum sum contiguous subarray in O(n) time.",
+          "code": "// Maximum Subarray Sum - O(n)\npublic int maxSubArray(int[] nums) {\n    int maxSum = nums[0];\n    int currentSum = nums[0];\n    \n    for (int i = 1; i < nums.length; i++) {\n        currentSum = Math.max(nums[i], currentSum + nums[i]);\n        maxSum = Math.max(maxSum, currentSum);\n    }\n    return maxSum;\n}\n\n// Return subarray indices\npublic int[] maxSubArrayWithIndices(int[] nums) {\n    int maxSum = nums[0], currentSum = nums[0];\n    int start = 0, end = 0, tempStart = 0;\n    \n    for (int i = 1; i < nums.length; i++) {\n        if (nums[i] > currentSum + nums[i]) {\n            currentSum = nums[i];\n            tempStart = i;\n        } else {\n            currentSum = currentSum + nums[i];\n        }\n        \n        if (currentSum > maxSum) {\n            maxSum = currentSum;\n            start = tempStart;\n            end = i;\n        }\n    }\n    return new int[]{start, end, maxSum};\n}\n\n// Maximum Product Subarray - O(n)\npublic int maxProduct(int[] nums) {\n    int maxProd = nums[0];\n    int maxEndingHere = nums[0];\n    int minEndingHere = nums[0];\n    \n    for (int i = 1; i < nums.length; i++) {\n        int temp = maxEndingHere;\n        maxEndingHere = Math.max(nums[i], \n            Math.max(maxEndingHere * nums[i], minEndingHere * nums[i]));\n        minEndingHere = Math.min(nums[i], \n            Math.min(temp * nums[i], minEndingHere * nums[i]));\n        maxProd = Math.max(maxProd, maxEndingHere);\n    }\n    return maxProd;\n}",
+          "keyPoints": [
+            "Classic DP problem solved in O(n)",
+            "At each position: include current or start fresh",
+            "currentSum tracks running sum",
+            "maxSum tracks best sum seen so far",
+            "Handles all negative numbers correctly"
+          ]
+        },
+        {
+          "name": "Dutch National Flag (3-way Partitioning)",
+          "explanation": "Sort array with 3 distinct values in single pass.",
+          "code": "// Sort Colors (0s, 1s, 2s) - O(n) time, O(1) space\npublic void sortColors(int[] nums) {\n    int low = 0, mid = 0, high = nums.length - 1;\n    \n    while (mid <= high) {\n        if (nums[mid] == 0) {\n            swap(nums, low, mid);\n            low++;\n            mid++;\n        } else if (nums[mid] == 1) {\n            mid++;\n        } else { // nums[mid] == 2\n            swap(nums, mid, high);\n            high--;\n        }\n    }\n}\n\nprivate void swap(int[] arr, int i, int j) {\n    int temp = arr[i];\n    arr[i] = arr[j];\n    arr[j] = temp;\n}\n\n// Segregate 0s and 1s\npublic void segregate01(int[] arr) {\n    int left = 0, right = arr.length - 1;\n    while (left < right) {\n        while (left < right && arr[left] == 0) left++;\n        while (left < right && arr[right] == 1) right--;\n        if (left < right) {\n            swap(arr, left, right);\n            left++;\n            right--;\n        }\n    }\n}",
+          "keyPoints": [
+            "Three pointers: low, mid, high",
+            "low tracks end of 0s region",
+            "high tracks start of 2s region",
+            "mid explores unknown region",
+            "Single pass O(n) solution"
+          ]
+        },
+        {
+          "name": "Common Array Problems",
+          "explanation": "Frequently asked array manipulation problems.",
+          "code": "// Rotate Array by k positions - O(n) time, O(1) space\npublic void rotate(int[] arr, int k) {\n    k = k % arr.length;\n    reverse(arr, 0, arr.length - 1);\n    reverse(arr, 0, k - 1);\n    reverse(arr, k, arr.length - 1);\n}\n\nprivate void reverse(int[] arr, int start, int end) {\n    while (start < end) {\n        int temp = arr[start];\n        arr[start] = arr[end];\n        arr[end] = temp;\n        start++;\n        end--;\n    }\n}\n\n// Find Missing Number (1 to n) - O(n)\npublic int findMissing(int[] arr) {\n    int n = arr.length + 1;\n    int expectedSum = n * (n + 1) / 2;\n    int actualSum = 0;\n    for (int num : arr) {\n        actualSum += num;\n    }\n    return expectedSum - actualSum;\n}\n\n// Find Duplicate Number - O(n) time, O(1) space\npublic int findDuplicate(int[] nums) {\n    int slow = nums[0];\n    int fast = nums[0];\n    \n    do {\n        slow = nums[slow];\n        fast = nums[nums[fast]];\n    } while (slow != fast);\n    \n    slow = nums[0];\n    while (slow != fast) {\n        slow = nums[slow];\n        fast = nums[fast];\n    }\n    return slow;\n}\n\n// Merge Two Sorted Arrays - O(m + n)\npublic int[] merge(int[] arr1, int[] arr2) {\n    int[] result = new int[arr1.length + arr2.length];\n    int i = 0, j = 0, k = 0;\n    \n    while (i < arr1.length && j < arr2.length) {\n        if (arr1[i] <= arr2[j]) {\n            result[k++] = arr1[i++];\n        } else {\n            result[k++] = arr2[j++];\n        }\n    }\n    \n    while (i < arr1.length) result[k++] = arr1[i++];\n    while (j < arr2.length) result[k++] = arr2[j++];\n    \n    return result;\n}",
+          "keyPoints": [
+            "Rotate: reverse whole, reverse parts",
+            "Missing number: use sum formula or XOR",
+            "Duplicate: Floyd's cycle detection",
+            "Merge: two-pointer technique",
+            "Practice: Stock buy/sell, majority element"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "strings",
+      "title": "Strings",
+      "concepts": [
+        {
+          "name": "String Basics & Manipulation",
+          "explanation": "Strings are immutable in Java - use StringBuilder for modifications.",
+          "code": "// String Creation\nString s1 = \"Hello\";              // String literal (pooled)\nString s2 = new String(\"Hello\");  // New object\nString s3 = String.valueOf(123);  // From int\n\n// Important String Methods\nint len = s1.length();            // Length\nchar ch = s1.charAt(0);           // Get character at index\nString sub = s1.substring(1, 4);  // \"ell\" (1 to 3)\nboolean contains = s1.contains(\"ll\"); // true\nString upper = s1.toUpperCase();  // \"HELLO\"\nString lower = s1.toLowerCase();  // \"hello\"\nString trimmed = \" Hi \".trim();   // \"Hi\"\n\n// String Comparison\nboolean eq1 = s1.equals(s2);      // Content equality\nboolean eq2 = s1 == s2;           // Reference equality\nint cmp = s1.compareTo(s2);       // Lexicographic: 0, <0, >0\n\n// StringBuilder (Mutable) - O(1) append\nStringBuilder sb = new StringBuilder();\nsb.append(\"Hello\");\nsb.append(\" World\");\nsb.insert(5, \",\");\nsb.delete(5, 6);\nsb.reverse();\nString result = sb.toString();\n\n// Character Array Conversion\nchar[] chars = s1.toCharArray();\nString fromChars = new String(chars);",
+          "keyPoints": [
+            "Strings are immutable - concat creates new string",
+            "Use StringBuilder for multiple modifications",
+            "equals() for content, == for reference",
+            "charAt() is O(1), substring() is O(n)",
+            "String pool saves memory for literals"
+          ]
+        },
+        {
+          "name": "Palindrome Check",
+          "explanation": "Check if string reads same forwards and backwards.",
+          "code": "// Simple Palindrome - O(n)\npublic boolean isPalindrome(String s) {\n    int left = 0, right = s.length() - 1;\n    while (left < right) {\n        if (s.charAt(left) != s.charAt(right)) {\n            return false;\n        }\n        left++;\n        right--;\n    }\n    return true;\n}\n\n// Valid Palindrome (Alphanumeric only) - O(n)\npublic boolean isValidPalindrome(String s) {\n    int left = 0, right = s.length() - 1;\n    \n    while (left < right) {\n        while (left < right && !Character.isLetterOrDigit(s.charAt(left))) {\n            left++;\n        }\n        while (left < right && !Character.isLetterOrDigit(s.charAt(right))) {\n            right--;\n        }\n        \n        if (Character.toLowerCase(s.charAt(left)) != \n            Character.toLowerCase(s.charAt(right))) {\n            return false;\n        }\n        left++;\n        right--;\n    }\n    return true;\n}\n\n// Longest Palindromic Substring - O(n²)\npublic String longestPalindrome(String s) {\n    if (s == null || s.length() < 1) return \"\";\n    int start = 0, end = 0;\n    \n    for (int i = 0; i < s.length(); i++) {\n        int len1 = expandAroundCenter(s, i, i);     // Odd length\n        int len2 = expandAroundCenter(s, i, i + 1); // Even length\n        int len = Math.max(len1, len2);\n        \n        if (len > end - start) {\n            start = i - (len - 1) / 2;\n            end = i + len / 2;\n        }\n    }\n    return s.substring(start, end + 1);\n}\n\nprivate int expandAroundCenter(String s, int left, int right) {\n    while (left >= 0 && right < s.length() && \n           s.charAt(left) == s.charAt(right)) {\n        left--;\n        right++;\n    }\n    return right - left - 1;\n}",
+          "keyPoints": [
+            "Two-pointer from both ends",
+            "Skip non-alphanumeric for valid palindrome",
+            "Expand around center for longest palindrome",
+            "Consider both odd and even length palindromes",
+            "Manacher's algorithm for O(n) solution"
+          ]
+        },
+        {
+          "name": "Anagram Detection",
+          "explanation": "Check if two strings have same characters with same frequency.",
+          "code": "// Using Sorting - O(n log n)\npublic boolean isAnagramSort(String s1, String s2) {\n    if (s1.length() != s2.length()) return false;\n    \n    char[] arr1 = s1.toCharArray();\n    char[] arr2 = s2.toCharArray();\n    Arrays.sort(arr1);\n    Arrays.sort(arr2);\n    \n    return Arrays.equals(arr1, arr2);\n}\n\n// Using Frequency Array - O(n) time, O(1) space\npublic boolean isAnagram(String s1, String s2) {\n    if (s1.length() != s2.length()) return false;\n    \n    int[] count = new int[26];\n    for (int i = 0; i < s1.length(); i++) {\n        count[s1.charAt(i) - 'a']++;\n        count[s2.charAt(i) - 'a']--;\n    }\n    \n    for (int c : count) {\n        if (c != 0) return false;\n    }\n    return true;\n}\n\n// Group Anagrams - O(n * k log k)\npublic List<List<String>> groupAnagrams(String[] strs) {\n    Map<String, List<String>> map = new HashMap<>();\n    \n    for (String s : strs) {\n        char[] chars = s.toCharArray();\n        Arrays.sort(chars);\n        String key = new String(chars);\n        \n        map.putIfAbsent(key, new ArrayList<>());\n        map.get(key).add(s);\n    }\n    \n    return new ArrayList<>(map.values());\n}\n\n// Group Anagrams Optimized - O(n * k)\npublic List<List<String>> groupAnagramsOptimized(String[] strs) {\n    Map<String, List<String>> map = new HashMap<>();\n    \n    for (String s : strs) {\n        int[] count = new int[26];\n        for (char c : s.toCharArray()) {\n            count[c - 'a']++;\n        }\n        \n        StringBuilder key = new StringBuilder();\n        for (int i = 0; i < 26; i++) {\n            key.append('#').append(count[i]);\n        }\n        \n        String keyStr = key.toString();\n        map.putIfAbsent(keyStr, new ArrayList<>());\n        map.get(keyStr).add(s);\n    }\n    \n    return new ArrayList<>(map.values());\n}",
+          "keyPoints": [
+            "Anagrams have same character frequencies",
+            "Sorting approach: O(n log n) time",
+            "Frequency array: O(n) time, O(1) space",
+            "Use HashMap to group anagrams",
+            "Frequency array as key for grouping"
+          ]
+        },
+        {
+          "name": "String Reversal & Rotation",
+          "explanation": "Reverse string or its parts, check rotation.",
+          "code": "// Reverse String - O(n)\npublic String reverse(String s) {\n    char[] chars = s.toCharArray();\n    int left = 0, right = chars.length - 1;\n    while (left < right) {\n        char temp = chars[left];\n        chars[left] = chars[right];\n        chars[right] = temp;\n        left++;\n        right--;\n    }\n    return new String(chars);\n}\n\n// Reverse Words in String - O(n)\npublic String reverseWords(String s) {\n    String[] words = s.trim().split(\"\\\\s+\");\n    StringBuilder result = new StringBuilder();\n    \n    for (int i = words.length - 1; i >= 0; i--) {\n        result.append(words[i]);\n        if (i > 0) result.append(\" \");\n    }\n    return result.toString();\n}\n\n// Rotate String - O(n)\npublic boolean isRotation(String s1, String s2) {\n    if (s1.length() != s2.length()) return false;\n    String doubled = s1 + s1;\n    return doubled.contains(s2);\n}\n\n// Left Rotate String by d positions\npublic String leftRotate(String s, int d) {\n    d = d % s.length();\n    return s.substring(d) + s.substring(0, d);\n}",
+          "keyPoints": [
+            "Use char array for in-place reversal",
+            "Split and reverse for word reversal",
+            "Rotation check: s2 in s1+s1",
+            "Efficient rotation using substring",
+            "Consider edge cases: empty, single char"
+          ]
+        },
+        {
+          "name": "Pattern Matching & Substrings",
+          "explanation": "Find patterns, substrings, and repetitions.",
+          "code": "// Longest Common Prefix - O(n * m)\npublic String longestCommonPrefix(String[] strs) {\n    if (strs == null || strs.length == 0) return \"\";\n    \n    String prefix = strs[0];\n    for (int i = 1; i < strs.length; i++) {\n        while (strs[i].indexOf(prefix) != 0) {\n            prefix = prefix.substring(0, prefix.length() - 1);\n            if (prefix.isEmpty()) return \"\";\n        }\n    }\n    return prefix;\n}\n\n// Longest Repeating Character Replacement - O(n)\npublic int characterReplacement(String s, int k) {\n    int[] count = new int[26];\n    int maxCount = 0, maxLength = 0, left = 0;\n    \n    for (int right = 0; right < s.length(); right++) {\n        maxCount = Math.max(maxCount, ++count[s.charAt(right) - 'A']);\n        \n        while (right - left + 1 - maxCount > k) {\n            count[s.charAt(left) - 'A']--;\n            left++;\n        }\n        \n        maxLength = Math.max(maxLength, right - left + 1);\n    }\n    return maxLength;\n}\n\n// Count and Say - O(n * length)\npublic String countAndSay(int n) {\n    String result = \"1\";\n    \n    for (int i = 1; i < n; i++) {\n        StringBuilder next = new StringBuilder();\n        int count = 1;\n        char current = result.charAt(0);\n        \n        for (int j = 1; j < result.length(); j++) {\n            if (result.charAt(j) == current) {\n                count++;\n            } else {\n                next.append(count).append(current);\n                current = result.charAt(j);\n                count = 1;\n            }\n        }\n        next.append(count).append(current);\n        result = next.toString();\n    }\n    return result;\n}\n\n// KMP Pattern Matching - O(n + m)\npublic int strStr(String haystack, String needle) {\n    if (needle.isEmpty()) return 0;\n    \n    int[] lps = computeLPS(needle);\n    int i = 0, j = 0;\n    \n    while (i < haystack.length()) {\n        if (haystack.charAt(i) == needle.charAt(j)) {\n            i++;\n            j++;\n        }\n        \n        if (j == needle.length()) {\n            return i - j;\n        } else if (i < haystack.length() && \n                   haystack.charAt(i) != needle.charAt(j)) {\n            if (j != 0) {\n                j = lps[j - 1];\n            } else {\n                i++;\n            }\n        }\n    }\n    return -1;\n}\n\nprivate int[] computeLPS(String pattern) {\n    int[] lps = new int[pattern.length()];\n    int len = 0, i = 1;\n    \n    while (i < pattern.length()) {\n        if (pattern.charAt(i) == pattern.charAt(len)) {\n            len++;\n            lps[i] = len;\n            i++;\n        } else {\n            if (len != 0) {\n                len = lps[len - 1];\n            } else {\n                lps[i] = 0;\n                i++;\n            }\n        }\n    }\n    return lps;\n}",
+          "keyPoints": [
+            "KMP for efficient pattern matching O(n+m)",
+            "Sliding window for substring problems",
+            "LPS array for KMP preprocessing",
+            "indexOf() for simple pattern search",
+            "Consider edge cases: empty strings"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linkedlists",
+      "title": "Linked Lists",
+      "concepts": [
+        {
+          "name": "Singly Linked List Implementation",
+          "explanation": "A linked list is like a treasure hunt — each clue (node) tells you where the next clue is. Unlike arrays, there are no numbered spots; you have to follow the chain. Great for inserting/deleting (just rewire pointers!), but terrible for 'give me the 50th element' (you have to walk through 50 nodes).",
+          "code": "// Each node holds data + pointer to next node\nclass Node {\n    int data;\n    Node next;  // The 'clue' to the next node\n    \n    Node(int data) {\n        this.data = data;\n        this.next = null;  // No clue yet\n    }\n}\n\npublic class LinkedList {\n    Node head;  // Entry point to the list\n    \n    // Insert at Beginning - O(1) — just update head!\n    public void insertAtBeginning(int data) {\n        Node newNode = new Node(data);\n        newNode.next = head;  // New node points to old head\n        head = newNode;       // New node becomes head\n    }\n    \n    // Insert at End - O(n) — have to walk to the end\n    public void insertAtEnd(int data) {\n        Node newNode = new Node(data);\n        if (head == null) {\n            head = newNode;\n            return;\n        }\n        \n        Node current = head;\n        while (current.next != null) {  // Walk to the last node\n            current = current.next;\n        }\n        current.next = newNode;  // Link last node to new node\n    }\n    \n    // Delete by Value - O(n) — find it, then rewire\n    public void delete(int key) {\n        if (head == null) return;\n        \n        // Special case: deleting head\n        if (head.data == key) {\n            head = head.next;  // Skip over old head\n            return;\n        }\n        \n        Node current = head;\n        while (current.next != null && current.next.data != key) {\n            current = current.next;  // Find the node BEFORE the one to delete\n        }\n        \n        if (current.next != null) {\n            current.next = current.next.next;  // Skip over deleted node\n        }\n    }\n}",
+          "keyPoints": [
+            "Linked List = chain of nodes, each pointing to the next",
+            "Insert/Delete at head = O(1) — just change one pointer!",
+            "Insert/Delete at end = O(n) — must walk the whole list",
+            "No random access like arrays — finding nth element is O(n)",
+            "Great when you need frequent insertions/deletions"
+          ]
+        },
+        {
+          "name": "Reverse Linked List",
+          "explanation": "Reverse the direction of all pointers in the list.",
+          "code": "// Iterative Approach - O(n) time, O(1) space\npublic Node reverse() {\n    Node prev = null;\n    Node current = head;\n    Node next = null;\n    \n    while (current != null) {\n        next = current.next;  // Store next\n        current.next = prev;  // Reverse link\n        prev = current;       // Move prev forward\n        current = next;       // Move current forward\n    }\n    head = prev;\n    return head;\n}\n\n// Recursive Approach - O(n) time, O(n) space\npublic Node reverseRecursive(Node node) {\n    if (node == null || node.next == null) {\n        return node;\n    }\n    \n    Node newHead = reverseRecursive(node.next);\n    node.next.next = node;\n    node.next = null;\n    \n    return newHead;\n}\n\n// Reverse in Groups of K - O(n)\npublic Node reverseKGroup(Node head, int k) {\n    Node current = head;\n    int count = 0;\n    \n    // Check if there are k nodes\n    while (current != null && count < k) {\n        current = current.next;\n        count++;\n    }\n    \n    if (count == k) {\n        current = reverseKGroup(current, k);\n        \n        while (count > 0) {\n            Node next = head.next;\n            head.next = current;\n            current = head;\n            head = next;\n            count--;\n        }\n        head = current;\n    }\n    return head;\n}",
+          "keyPoints": [
+            "Iterative uses 3 pointers: prev, current, next",
+            "Recursive reverses from end to start",
+            "Iterative is space-efficient O(1)",
+            "Recursive uses O(n) stack space",
+            "Common interview question"
+          ]
+        },
+        {
+          "name": "Detect Cycle (Floyd's Algorithm)",
+          "explanation": "The Tortoise and Hare race! Send two runners around the track — one moves 1 step, the other moves 2 steps. If there's a loop, the fast one will eventually lap the slow one and they'll meet. If there's no loop, the fast one will hit the end. Bonus: to find WHERE the loop starts, reset one to head and move both at same speed until they meet again.",
+          "code": "// Detect if cycle exists — O(n) time, O(1) space!\npublic boolean hasCycle() {\n    if (head == null) return false;\n    \n    Node slow = head;  // Tortoise: moves 1 step\n    Node fast = head;  // Hare: moves 2 steps\n    \n    while (fast != null && fast.next != null) {\n        slow = slow.next;       // 1 step\n        fast = fast.next.next;  // 2 steps\n        \n        if (slow == fast) {\n            return true;  // They met! There's a cycle.\n        }\n    }\n    return false;  // Fast hit the end → no cycle\n}\n\n// Find WHERE the cycle starts — the clever part!\npublic Node detectCycleStart() {\n    Node slow = head, fast = head;\n    \n    // Phase 1: Find meeting point\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow == fast) break;\n    }\n    \n    // No cycle\n    if (fast == null || fast.next == null) return null;\n    \n    // Phase 2: Reset slow to head, move both at same speed\n    slow = head;\n    while (slow != fast) {\n        slow = slow.next;\n        fast = fast.next;  // Both move 1 step now\n    }\n    return slow;  // This is where the cycle begins!\n}",
+          "keyPoints": [
+            "Floyd's Algorithm = Tortoise and Hare (slow/fast pointers)",
+            "If they meet → cycle exists. If fast hits null → no cycle",
+            "To find cycle start: reset slow to head, move both 1 step until they meet",
+            "Why it works: math! Distance traveled relates to cycle entry point",
+            "O(n) time, O(1) space — no extra data structures needed!"
+          ]
+        },
+        {
+          "name": "Find Middle & Merge Lists",
+          "explanation": "Find middle element and merge two sorted lists.",
+          "code": "// Find Middle Element - O(n)\npublic Node findMiddle() {\n    if (head == null) return null;\n    \n    Node slow = head;\n    Node fast = head;\n    \n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n    }\n    return slow;\n}\n\n// Merge Two Sorted Lists - O(m + n)\npublic Node mergeTwoLists(Node l1, Node l2) {\n    Node dummy = new Node(0);\n    Node current = dummy;\n    \n    while (l1 != null && l2 != null) {\n        if (l1.data <= l2.data) {\n            current.next = l1;\n            l1 = l1.next;\n        } else {\n            current.next = l2;\n            l2 = l2.next;\n        }\n        current = current.next;\n    }\n    \n    current.next = (l1 != null) ? l1 : l2;\n    return dummy.next;\n}\n\n// Merge K Sorted Lists - O(N log k)\npublic Node mergeKLists(Node[] lists) {\n    if (lists == null || lists.length == 0) return null;\n    \n    PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> a.data - b.data);\n    \n    for (Node node : lists) {\n        if (node != null) {\n            pq.offer(node);\n        }\n    }\n    \n    Node dummy = new Node(0);\n    Node current = dummy;\n    \n    while (!pq.isEmpty()) {\n        Node min = pq.poll();\n        current.next = min;\n        current = current.next;\n        \n        if (min.next != null) {\n            pq.offer(min.next);\n        }\n    }\n    return dummy.next;\n}\n\n// Check if Palindrome - O(n)\npublic boolean isPalindrome() {\n    if (head == null || head.next == null) return true;\n    \n    // Find middle\n    Node slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n    }\n    \n    // Reverse second half\n    Node prev = null, current = slow;\n    while (current != null) {\n        Node next = current.next;\n        current.next = prev;\n        prev = current;\n        current = next;\n    }\n    \n    // Compare\n    Node left = head, right = prev;\n    while (right != null) {\n        if (left.data != right.data) return false;\n        left = left.next;\n        right = right.next;\n    }\n    return true;\n}",
+          "keyPoints": [
+            "Middle: slow-fast pointer technique",
+            "Merge: use dummy node for simplicity",
+            "Merge K lists: use min-heap (PriorityQueue)",
+            "Palindrome: find middle, reverse, compare",
+            "Dummy node simplifies edge cases"
+          ]
+        },
+        {
+          "name": "Doubly Linked List",
+          "explanation": "Each node has references to both next and previous nodes.",
+          "code": "// Doubly Linked List Node\nclass DoublyNode {\n    int data;\n    DoublyNode prev;\n    DoublyNode next;\n    \n    DoublyNode(int data) {\n        this.data = data;\n        this.prev = null;\n        this.next = null;\n    }\n}\n\npublic class DoublyLinkedList {\n    DoublyNode head;\n    \n    // Insert at Beginning - O(1)\n    public void insertAtBeginning(int data) {\n        DoublyNode newNode = new DoublyNode(data);\n        newNode.next = head;\n        \n        if (head != null) {\n            head.prev = newNode;\n        }\n        head = newNode;\n    }\n    \n    // Insert at End - O(n)\n    public void insertAtEnd(int data) {\n        DoublyNode newNode = new DoublyNode(data);\n        \n        if (head == null) {\n            head = newNode;\n            return;\n        }\n        \n        DoublyNode current = head;\n        while (current.next != null) {\n            current = current.next;\n        }\n        \n        current.next = newNode;\n        newNode.prev = current;\n    }\n    \n    // Delete Node - O(1) if node reference given\n    public void deleteNode(DoublyNode node) {\n        if (node == null) return;\n        \n        if (node.prev != null) {\n            node.prev.next = node.next;\n        } else {\n            head = node.next;\n        }\n        \n        if (node.next != null) {\n            node.next.prev = node.prev;\n        }\n    }\n    \n    // Reverse - O(n)\n    public void reverse() {\n        DoublyNode current = head;\n        DoublyNode temp = null;\n        \n        while (current != null) {\n            temp = current.prev;\n            current.prev = current.next;\n            current.next = temp;\n            current = current.prev;\n        }\n        \n        if (temp != null) {\n            head = temp.prev;\n        }\n    }\n}",
+          "keyPoints": [
+            "Each node has prev and next pointers",
+            "Allows bidirectional traversal",
+            "Delete with node reference: O(1)",
+            "Extra space for prev pointer",
+            "Useful for LRU cache, browser history"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stacks",
+      "title": "Stacks",
+      "concepts": [
+        {
+          "name": "Stack Implementation",
+          "explanation": "A stack is like a pile of plates — you can only add or remove from the top. Last plate in is the first plate out (LIFO). This simple rule makes stacks perfect for 'undo' operations, tracking function calls, and parsing brackets. Every operation is O(1) because you're always working at the top!",
+          "code": "// In Java, use Deque instead of the old Stack class\nimport java.util.ArrayDeque;\nimport java.util.Deque;\n\nDeque<Integer> stack = new ArrayDeque<>();\n\n// Push: add to top — O(1)\nstack.push(10);  // [10]\nstack.push(20);  // [20, 10]\nstack.push(30);  // [30, 20, 10]\n\n// Pop: remove from top — O(1)\nint top = stack.pop();   // Returns 30, stack is now [20, 10]\n\n// Peek: look at top without removing — O(1)\nint peek = stack.peek(); // Returns 20, stack unchanged\n\n// Check if empty — O(1)\nboolean empty = stack.isEmpty();\n\n// The mental model:\n//    ┌────┐\n//    │ 30 │ ← TOP (push here, pop here)\n//    ├────┤\n//    │ 20 │\n//    ├────┤\n//    │ 10 │ ← BOTTOM\n//    └────┘",
+          "keyPoints": [
+            "LIFO = Last In, First Out (like plates in a cafeteria)",
+            "All operations O(1) — push, pop, peek, isEmpty",
+            "Use Deque (ArrayDeque) in Java, not the legacy Stack class",
+            "Perfect for: undo/redo, bracket matching, DFS, expression parsing",
+            "Interview pattern: 'track something I'll need later' = stack"
+          ]
+        },
+        {
+          "name": "Balanced Parentheses",
+          "explanation": "Check if parentheses/brackets are properly balanced.",
+          "code": "// Balanced Parentheses - O(n)\npublic boolean isBalanced(String s) {\n    Stack<Character> stack = new Stack<>();\n    \n    for (char c : s.toCharArray()) {\n        if (c == '(' || c == '{' || c == '[') {\n            stack.push(c);\n        } else if (c == ')' || c == '}' || c == ']') {\n            if (stack.isEmpty()) return false;\n            \n            char top = stack.pop();\n            if ((c == ')' && top != '(') ||\n                (c == '}' && top != '{') ||\n                (c == ']' && top != '[')) {\n                return false;\n            }\n        }\n    }\n    return stack.isEmpty();\n}\n\n// Valid Parentheses with HashMap\npublic boolean isValid(String s) {\n    Stack<Character> stack = new Stack<>();\n    Map<Character, Character> map = new HashMap<>();\n    map.put(')', '(');\n    map.put('}', '{');\n    map.put(']', '[');\n    \n    for (char c : s.toCharArray()) {\n        if (map.containsKey(c)) {\n            char top = stack.isEmpty() ? '#' : stack.pop();\n            if (top != map.get(c)) {\n                return false;\n            }\n        } else {\n            stack.push(c);\n        }\n    }\n    return stack.isEmpty();\n}\n\n// Minimum Remove to Make Valid Parentheses\npublic String minRemoveToMakeValid(String s) {\n    Set<Integer> toRemove = new HashSet<>();\n    Stack<Integer> stack = new Stack<>();\n    \n    for (int i = 0; i < s.length(); i++) {\n        if (s.charAt(i) == '(') {\n            stack.push(i);\n        } else if (s.charAt(i) == ')') {\n            if (stack.isEmpty()) {\n                toRemove.add(i);\n            } else {\n                stack.pop();\n            }\n        }\n    }\n    \n    while (!stack.isEmpty()) {\n        toRemove.add(stack.pop());\n    }\n    \n    StringBuilder result = new StringBuilder();\n    for (int i = 0; i < s.length(); i++) {\n        if (!toRemove.contains(i)) {\n            result.append(s.charAt(i));\n        }\n    }\n    return result.toString();\n}",
+          "keyPoints": [
+            "Push opening brackets onto stack",
+            "Pop and match for closing brackets",
+            "Stack must be empty at end",
+            "Use HashMap for cleaner matching",
+            "Track indices for removal problems"
+          ]
+        },
+        {
+          "name": "Next Greater Element",
+          "explanation": "Find next greater element for each element in array.",
+          "code": "// Next Greater Element to Right - O(n)\npublic int[] nextGreaterElement(int[] arr) {\n    int n = arr.length;\n    int[] result = new int[n];\n    Stack<Integer> stack = new Stack<>();\n    \n    for (int i = n - 1; i >= 0; i--) {\n        while (!stack.isEmpty() && stack.peek() <= arr[i]) {\n            stack.pop();\n        }\n        result[i] = stack.isEmpty() ? -1 : stack.peek();\n        stack.push(arr[i]);\n    }\n    return result;\n}\n\n// Next Greater Element (Circular Array) - O(n)\npublic int[] nextGreaterElementsCircular(int[] arr) {\n    int n = arr.length;\n    int[] result = new int[n];\n    Arrays.fill(result, -1);\n    Stack<Integer> stack = new Stack<>();\n    \n    for (int i = 0; i < 2 * n; i++) {\n        int num = arr[i % n];\n        while (!stack.isEmpty() && arr[stack.peek()] < num) {\n            result[stack.pop()] = num;\n        }\n        if (i < n) {\n            stack.push(i);\n        }\n    }\n    return result;\n}\n\n// Next Smaller Element - O(n)\npublic int[] nextSmallerElement(int[] arr) {\n    int n = arr.length;\n    int[] result = new int[n];\n    Stack<Integer> stack = new Stack<>();\n    \n    for (int i = n - 1; i >= 0; i--) {\n        while (!stack.isEmpty() && stack.peek() >= arr[i]) {\n            stack.pop();\n        }\n        result[i] = stack.isEmpty() ? -1 : stack.peek();\n        stack.push(arr[i]);\n    }\n    return result;\n}\n\n// Stock Span Problem - O(n)\npublic int[] stockSpan(int[] prices) {\n    int n = prices.length;\n    int[] span = new int[n];\n    Stack<Integer> stack = new Stack<>();\n    \n    for (int i = 0; i < n; i++) {\n        while (!stack.isEmpty() && prices[stack.peek()] <= prices[i]) {\n            stack.pop();\n        }\n        span[i] = stack.isEmpty() ? (i + 1) : (i - stack.peek());\n        stack.push(i);\n    }\n    return span;\n}",
+          "keyPoints": [
+            "Traverse from right to left",
+            "Pop smaller/equal elements",
+            "Stack stores potential candidates",
+            "O(n) time - each element pushed/popped once",
+            "Stock span uses same concept"
+          ]
+        },
+        {
+          "name": "Min Stack & Expression Evaluation",
+          "explanation": "Stack with O(1) getMin operation and expression evaluation.",
+          "code": "// Min Stack - O(1) for all operations\nclass MinStack {\n    private Stack<Integer> stack;\n    private Stack<Integer> minStack;\n    \n    public MinStack() {\n        stack = new Stack<>();\n        minStack = new Stack<>();\n    }\n    \n    public void push(int val) {\n        stack.push(val);\n        if (minStack.isEmpty() || val <= minStack.peek()) {\n            minStack.push(val);\n        }\n    }\n    \n    public void pop() {\n        int val = stack.pop();\n        if (val == minStack.peek()) {\n            minStack.pop();\n        }\n    }\n    \n    public int top() {\n        return stack.peek();\n    }\n    \n    public int getMin() {\n        return minStack.peek();\n    }\n}\n\n// Evaluate Postfix Expression - O(n)\npublic int evaluatePostfix(String exp) {\n    Stack<Integer> stack = new Stack<>();\n    \n    for (char c : exp.toCharArray()) {\n        if (Character.isDigit(c)) {\n            stack.push(c - '0');\n        } else {\n            int b = stack.pop();\n            int a = stack.pop();\n            \n            switch (c) {\n                case '+': stack.push(a + b); break;\n                case '-': stack.push(a - b); break;\n                case '*': stack.push(a * b); break;\n                case '/': stack.push(a / b); break;\n            }\n        }\n    }\n    return stack.pop();\n}\n\n// Infix to Postfix Conversion - O(n)\npublic String infixToPostfix(String exp) {\n    StringBuilder result = new StringBuilder();\n    Stack<Character> stack = new Stack<>();\n    \n    for (char c : exp.toCharArray()) {\n        if (Character.isLetterOrDigit(c)) {\n            result.append(c);\n        } else if (c == '(') {\n            stack.push(c);\n        } else if (c == ')') {\n            while (!stack.isEmpty() && stack.peek() != '(') {\n                result.append(stack.pop());\n            }\n            stack.pop(); // Remove '('\n        } else {\n            while (!stack.isEmpty() && precedence(c) <= precedence(stack.peek())) {\n                result.append(stack.pop());\n            }\n            stack.push(c);\n        }\n    }\n    \n    while (!stack.isEmpty()) {\n        result.append(stack.pop());\n    }\n    return result.toString();\n}\n\nprivate int precedence(char op) {\n    switch (op) {\n        case '+': case '-': return 1;\n        case '*': case '/': return 2;\n        case '^': return 3;\n    }\n    return -1;\n}",
+          "keyPoints": [
+            "MinStack: use auxiliary stack for minimums",
+            "Postfix: operands to stack, operators compute",
+            "Infix→Postfix: use precedence",
+            "Parentheses have highest precedence",
+            "All O(n) time and space"
+          ]
+        },
+        {
+          "name": "Histogram & Trapping Water",
+          "explanation": "Find largest rectangle in histogram and trap rainwater.",
+          "code": "// Largest Rectangle in Histogram - O(n)\npublic int largestRectangleArea(int[] heights) {\n    Stack<Integer> stack = new Stack<>();\n    int maxArea = 0;\n    int n = heights.length;\n    \n    for (int i = 0; i <= n; i++) {\n        int h = (i == n) ? 0 : heights[i];\n        \n        while (!stack.isEmpty() && h < heights[stack.peek()]) {\n            int height = heights[stack.pop()];\n            int width = stack.isEmpty() ? i : i - stack.peek() - 1;\n            maxArea = Math.max(maxArea, height * width);\n        }\n        stack.push(i);\n    }\n    return maxArea;\n}\n\n// Trapping Rain Water - O(n) using Stack\npublic int trapWater(int[] height) {\n    Stack<Integer> stack = new Stack<>();\n    int water = 0;\n    \n    for (int i = 0; i < height.length; i++) {\n        while (!stack.isEmpty() && height[i] > height[stack.peek()]) {\n            int top = stack.pop();\n            \n            if (stack.isEmpty()) break;\n            \n            int distance = i - stack.peek() - 1;\n            int boundedHeight = Math.min(height[i], height[stack.peek()]) - height[top];\n            water += distance * boundedHeight;\n        }\n        stack.push(i);\n    }\n    return water;\n}\n\n// Trapping Water - Two Pointer Approach - O(n), O(1) space\npublic int trap(int[] height) {\n    int left = 0, right = height.length - 1;\n    int leftMax = 0, rightMax = 0;\n    int water = 0;\n    \n    while (left < right) {\n        if (height[left] < height[right]) {\n            if (height[left] >= leftMax) {\n                leftMax = height[left];\n            } else {\n                water += leftMax - height[left];\n            }\n            left++;\n        } else {\n            if (height[right] >= rightMax) {\n                rightMax = height[right];\n            } else {\n                water += rightMax - height[right];\n            }\n            right--;\n        }\n    }\n    return water;\n}",
+          "keyPoints": [
+            "Histogram: stack stores increasing heights",
+            "Pop when current < stack top",
+            "Calculate area using popped height",
+            "Trap water: bound by min of left/right max",
+            "Two-pointer approach for O(1) space"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queues",
+      "title": "Queues",
+      "concepts": [
+        {
+          "name": "Queue Implementation",
+          "explanation": "FIFO (First In First Out) data structure for sequential processing.",
+          "code": "// Using LinkedList\nimport java.util.LinkedList;\nimport java.util.Queue;\n\nQueue<Integer> queue = new LinkedList<>();\nqueue.offer(10);  // enqueue - add to rear\nqueue.offer(20);\nint front = queue.poll();  // dequeue - remove from front (10)\nint peek = queue.peek();   // peek at front (20)\nboolean empty = queue.isEmpty();\n\n// Circular Queue Implementation\npublic class CircularQueue {\n    private int[] arr;\n    private int front, rear, size, capacity;\n    \n    public CircularQueue(int capacity) {\n        this.capacity = capacity;\n        arr = new int[capacity];\n        front = 0;\n        rear = -1;\n        size = 0;\n    }\n    \n    public void enqueue(int data) {\n        if (isFull()) {\n            throw new IllegalStateException(\"Queue is full\");\n        }\n        rear = (rear + 1) % capacity;\n        arr[rear] = data;\n        size++;\n    }\n    \n    public int dequeue() {\n        if (isEmpty()) {\n            throw new IllegalStateException(\"Queue is empty\");\n        }\n        int data = arr[front];\n        front = (front + 1) % capacity;\n        size--;\n        return data;\n    }\n    \n    public int peek() {\n        if (isEmpty()) {\n            throw new IllegalStateException(\"Queue is empty\");\n        }\n        return arr[front];\n    }\n    \n    public boolean isEmpty() {\n        return size == 0;\n    }\n    \n    public boolean isFull() {\n        return size == capacity;\n    }\n}",
+          "keyPoints": [
+            "FIFO: First In First Out",
+            "Enqueue O(1), Dequeue O(1)",
+            "Use LinkedList or ArrayDeque",
+            "Circular queue prevents waste",
+            "Common in: BFS, scheduling, buffering"
+          ]
+        },
+        {
+          "name": "Priority Queue (Heap)",
+          "explanation": "Queue where elements are served based on priority, not order.",
+          "code": "import java.util.PriorityQueue;\n\n// Min Heap (default) - smallest element has highest priority\nPriorityQueue<Integer> minHeap = new PriorityQueue<>();\nminHeap.offer(5);\nminHeap.offer(1);\nminHeap.offer(3);\nint min = minHeap.poll();    // 1\nint peek = minHeap.peek();   // 3\n\n// Max Heap - largest element has highest priority\nPriorityQueue<Integer> maxHeap = new PriorityQueue<>((a, b) -> b - a);\n// OR\nPriorityQueue<Integer> maxHeap2 = new PriorityQueue<>(Collections.reverseOrder());\nmaxHeap.offer(5);\nmaxHeap.offer(1);\nmaxHeap.offer(3);\nint max = maxHeap.poll();    // 5\n\n// Custom Objects with Priority\nclass Task implements Comparable<Task> {\n    String name;\n    int priority;\n    \n    Task(String name, int priority) {\n        this.name = name;\n        this.priority = priority;\n    }\n    \n    public int compareTo(Task other) {\n        return this.priority - other.priority;  // Min heap\n    }\n}\n\nPriorityQueue<Task> taskQueue = new PriorityQueue<>();\ntaskQueue.offer(new Task(\"Low\", 3));\ntaskQueue.offer(new Task(\"High\", 1));\nTask highPriority = taskQueue.poll();  // High priority task\n\n// Find Kth Largest Element - O(n log k)\npublic int findKthLargest(int[] nums, int k) {\n    PriorityQueue<Integer> minHeap = new PriorityQueue<>();\n    \n    for (int num : nums) {\n        minHeap.offer(num);\n        if (minHeap.size() > k) {\n            minHeap.poll();\n        }\n    }\n    return minHeap.peek();\n}",
+          "keyPoints": [
+            "Implemented using heap (min or max)",
+            "offer() and poll() are O(log n)",
+            "Default is min-heap in Java",
+            "Custom comparator for max-heap",
+            "Used in: Dijkstra, A*, top K problems"
+          ]
+        },
+        {
+          "name": "Deque (Double-Ended Queue)",
+          "explanation": "Queue allowing insertion/deletion from both ends.",
+          "code": "import java.util.ArrayDeque;\nimport java.util.Deque;\n\nDeque<Integer> deque = new ArrayDeque<>();\n\n// Add elements\ndeque.offerFirst(1);   // Add at front: [1]\ndeque.offerLast(2);    // Add at rear:  [1, 2]\ndeque.offerFirst(0);   // [0, 1, 2]\ndeque.offerLast(3);    // [0, 1, 2, 3]\n\n// Remove elements\nint first = deque.pollFirst();   // 0, deque: [1, 2, 3]\nint last = deque.pollLast();     // 3, deque: [1, 2]\n\n// Peek elements\nint front = deque.peekFirst();   // 1\nint rear = deque.peekLast();     // 2\n\n// Sliding Window Maximum - O(n)\npublic int[] maxSlidingWindow(int[] nums, int k) {\n    if (nums == null || k <= 0) return new int[0];\n    \n    int n = nums.length;\n    int[] result = new int[n - k + 1];\n    Deque<Integer> deque = new ArrayDeque<>();\n    \n    for (int i = 0; i < n; i++) {\n        // Remove elements outside window\n        while (!deque.isEmpty() && deque.peekFirst() < i - k + 1) {\n            deque.pollFirst();\n        }\n        \n        // Remove smaller elements (not useful)\n        while (!deque.isEmpty() && nums[deque.peekLast()] < nums[i]) {\n            deque.pollLast();\n        }\n        \n        deque.offerLast(i);\n        \n        if (i >= k - 1) {\n            result[i - k + 1] = nums[deque.peekFirst()];\n        }\n    }\n    return result;\n}",
+          "keyPoints": [
+            "Can act as stack or queue",
+            "All operations O(1)",
+            "Preferred over Stack class",
+            "Sliding window maximum uses deque",
+            "Stores indices for window problems"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trees",
+      "title": "Trees",
+      "concepts": [
+        {
+          "name": "Binary Tree Basics",
+          "explanation": "A tree is like a family tree turned upside down — one ancestor (root) at the top, each person (node) has at most 2 children. No cycles, no shared parents. The key insight: most tree problems are solved with recursion — 'process this node, then do the same for left and right'. Master the 3 traversal orders and you'll nail 80% of tree problems.",
+          "code": "// The building block: each node has data + left/right children\nclass TreeNode {\n    int data;\n    TreeNode left, right;\n    \n    TreeNode(int data) {\n        this.data = data;\n    }\n}\n\n// The THREE traversals — memorize these!\n\n// INORDER: Left → Root → Right\n// For BST, this gives SORTED order!\npublic void inorder(TreeNode node) {\n    if (node == null) return;\n    inorder(node.left);         // Go left first\n    System.out.print(node.data); // Then process root\n    inorder(node.right);        // Then go right\n}\n\n// PREORDER: Root → Left → Right\n// Good for copying a tree\npublic void preorder(TreeNode node) {\n    if (node == null) return;\n    System.out.print(node.data); // Process root first\n    preorder(node.left);         // Then left\n    preorder(node.right);        // Then right\n}\n\n// POSTORDER: Left → Right → Root\n// Good for deleting a tree (children before parent)\npublic void postorder(TreeNode node) {\n    if (node == null) return;\n    postorder(node.left);        // Left first\n    postorder(node.right);       // Then right\n    System.out.print(node.data); // Root last\n}\n\n// LEVEL ORDER (BFS): Level by level using queue\npublic void levelOrder(TreeNode root) {\n    if (root == null) return;\n    Queue<TreeNode> queue = new LinkedList<>();\n    queue.offer(root);\n    \n    while (!queue.isEmpty()) {\n        TreeNode current = queue.poll();\n        System.out.print(current.data + \" \");\n        \n        if (current.left != null) queue.offer(current.left);\n        if (current.right != null) queue.offer(current.right);\n    }\n}",
+          "keyPoints": [
+            "INORDER = Left, Root, Right (BST → sorted output!)",
+            "PREORDER = Root, Left, Right (for copying trees)",
+            "POSTORDER = Left, Right, Root (for deleting trees)",
+            "LEVEL ORDER = BFS with queue (for shortest path in trees)",
+            "Recursion pattern: base case (null), process node, recurse children"
+          ]
+        },
+        {
+          "name": "Binary Search Tree (BST)",
+          "explanation": "Binary tree where left < root < right for each node.",
+          "code": "public class BST {\n    TreeNode root;\n    \n    // Insert - O(log n) average, O(n) worst\n    public TreeNode insert(TreeNode node, int data) {\n        if (node == null) return new TreeNode(data);\n        \n        if (data < node.data) {\n            node.left = insert(node.left, data);\n        } else if (data > node.data) {\n            node.right = insert(node.right, data);\n        }\n        return node;\n    }\n    \n    // Search - O(log n) average\n    public boolean search(TreeNode node, int key) {\n        if (node == null) return false;\n        if (node.data == key) return true;\n        \n        return key < node.data ? \n               search(node.left, key) : search(node.right, key);\n    }\n    \n    // Delete Node - O(log n) average\n    public TreeNode delete(TreeNode node, int key) {\n        if (node == null) return null;\n        \n        if (key < node.data) {\n            node.left = delete(node.left, key);\n        } else if (key > node.data) {\n            node.right = delete(node.right, key);\n        } else {\n            // Node with only one child or no child\n            if (node.left == null) return node.right;\n            if (node.right == null) return node.left;\n            \n            // Node with two children: get inorder successor\n            node.data = findMin(node.right);\n            node.right = delete(node.right, node.data);\n        }\n        return node;\n    }\n    \n    // Find Minimum - O(log n)\n    public int findMin(TreeNode node) {\n        while (node.left != null) {\n            node = node.left;\n        }\n        return node.data;\n    }\n    \n    // Validate BST - O(n)\n    public boolean isValidBST(TreeNode node) {\n        return validate(node, Long.MIN_VALUE, Long.MAX_VALUE);\n    }\n    \n    private boolean validate(TreeNode node, long min, long max) {\n        if (node == null) return true;\n        if (node.data <= min || node.data >= max) return false;\n        \n        return validate(node.left, min, node.data) && \n               validate(node.right, node.data, max);\n    }\n    \n    // Lowest Common Ancestor - O(log n)\n    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {\n        if (p.data < root.data && q.data < root.data) {\n            return lowestCommonAncestor(root.left, p, q);\n        }\n        if (p.data > root.data && q.data > root.data) {\n            return lowestCommonAncestor(root.right, p, q);\n        }\n        return root;\n    }\n}",
+          "keyPoints": [
+            "Left subtree < node < right subtree",
+            "Inorder gives sorted sequence",
+            "Average O(log n), worst O(n) if skewed",
+            "Delete: find inorder successor/predecessor",
+            "Validate using min-max range"
+          ]
+        },
+        {
+          "name": "Tree Problems",
+          "explanation": "Common tree problems and their solutions.",
+          "code": "// Maximum Depth/Height - O(n)\npublic int maxDepth(TreeNode root) {\n    if (root == null) return 0;\n    return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));\n}\n\n// Check if Balanced - O(n)\npublic boolean isBalanced(TreeNode root) {\n    return checkHeight(root) != -1;\n}\n\nprivate int checkHeight(TreeNode node) {\n    if (node == null) return 0;\n    \n    int leftHeight = checkHeight(node.left);\n    if (leftHeight == -1) return -1;\n    \n    int rightHeight = checkHeight(node.right);\n    if (rightHeight == -1) return -1;\n    \n    if (Math.abs(leftHeight - rightHeight) > 1) return -1;\n    \n    return 1 + Math.max(leftHeight, rightHeight);\n}\n\n// Diameter of Tree - O(n)\nprivate int diameter = 0;\n\npublic int diameterOfBinaryTree(TreeNode root) {\n    height(root);\n    return diameter;\n}\n\nprivate int height(TreeNode node) {\n    if (node == null) return 0;\n    \n    int left = height(node.left);\n    int right = height(node.right);\n    \n    diameter = Math.max(diameter, left + right);\n    return 1 + Math.max(left, right);\n}\n\n// Path Sum - O(n)\npublic boolean hasPathSum(TreeNode root, int sum) {\n    if (root == null) return false;\n    \n    if (root.left == null && root.right == null) {\n        return sum == root.data;\n    }\n    \n    return hasPathSum(root.left, sum - root.data) || \n           hasPathSum(root.right, sum - root.data);\n}\n\n// Serialize and Deserialize - O(n)\npublic String serialize(TreeNode root) {\n    if (root == null) return \"null\";\n    return root.data + \",\" + serialize(root.left) + \",\" + serialize(root.right);\n}\n\npublic TreeNode deserialize(String data) {\n    Queue<String> nodes = new LinkedList<>(Arrays.asList(data.split(\",\")));\n    return buildTree(nodes);\n}\n\nprivate TreeNode buildTree(Queue<String> nodes) {\n    String val = nodes.poll();\n    if (val.equals(\"null\")) return null;\n    \n    TreeNode node = new TreeNode(Integer.parseInt(val));\n    node.left = buildTree(nodes);\n    node.right = buildTree(nodes);\n    return node;\n}",
+          "keyPoints": [
+            "Depth/Height: recursively check children",
+            "Balanced: height difference ≤ 1",
+            "Diameter: longest path between any two nodes",
+            "Path sum: DFS with running sum",
+            "Serialize: preorder with null markers"
+          ]
+        },
+        {
+          "name": "Trie (Prefix Tree)",
+          "explanation": "Tree for efficient string storage and prefix searching.",
+          "code": "class TrieNode {\n    TrieNode[] children = new TrieNode[26];\n    boolean isEndOfWord;\n}\n\npublic class Trie {\n    private TrieNode root;\n    \n    public Trie() {\n        root = new TrieNode();\n    }\n    \n    // Insert Word - O(m) where m is word length\n    public void insert(String word) {\n        TrieNode current = root;\n        for (char c : word.toCharArray()) {\n            int index = c - 'a';\n            if (current.children[index] == null) {\n                current.children[index] = new TrieNode();\n            }\n            current = current.children[index];\n        }\n        current.isEndOfWord = true;\n    }\n    \n    // Search Word - O(m)\n    public boolean search(String word) {\n        TrieNode node = searchNode(word);\n        return node != null && node.isEndOfWord;\n    }\n    \n    // Starts With Prefix - O(m)\n    public boolean startsWith(String prefix) {\n        return searchNode(prefix) != null;\n    }\n    \n    private TrieNode searchNode(String word) {\n        TrieNode current = root;\n        for (char c : word.toCharArray()) {\n            int index = c - 'a';\n            if (current.children[index] == null) {\n                return null;\n            }\n            current = current.children[index];\n        }\n        return current;\n    }\n    \n    // Delete Word - O(m)\n    public void delete(String word) {\n        deleteHelper(root, word, 0);\n    }\n    \n    private boolean deleteHelper(TrieNode current, String word, int index) {\n        if (index == word.length()) {\n            if (!current.isEndOfWord) return false;\n            current.isEndOfWord = false;\n            return isNodeEmpty(current);\n        }\n        \n        int charIndex = word.charAt(index) - 'a';\n        TrieNode node = current.children[charIndex];\n        if (node == null) return false;\n        \n        boolean shouldDeleteNode = deleteHelper(node, word, index + 1);\n        \n        if (shouldDeleteNode) {\n            current.children[charIndex] = null;\n            return isNodeEmpty(current);\n        }\n        return false;\n    }\n    \n    private boolean isNodeEmpty(TrieNode node) {\n        for (TrieNode child : node.children) {\n            if (child != null) return false;\n        }\n        return !node.isEndOfWord;\n    }\n}",
+          "keyPoints": [
+            "Efficient for prefix matching - O(m)",
+            "Space: O(ALPHABET_SIZE * m * n)",
+            "Each node has array of children",
+            "isEndOfWord marks complete words",
+            "Use cases: autocomplete, spell check"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sorting",
+      "title": "Sorting Algorithms",
+      "concepts": [
+        {
+          "name": "Basic Sorting (O(n²))",
+          "explanation": "Simple sorting algorithms - Bubble, Selection, Insertion Sort.",
+          "code": "// Bubble Sort - O(n²) time, O(1) space\npublic void bubbleSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 0; i < n - 1; i++) {\n        boolean swapped = false;\n        for (int j = 0; j < n - i - 1; j++) {\n            if (arr[j] > arr[j + 1]) {\n                int temp = arr[j];\n                arr[j] = arr[j + 1];\n                arr[j + 1] = temp;\n                swapped = true;\n            }\n        }\n        if (!swapped) break;  // Optimization\n    }\n}\n\n// Selection Sort - O(n²) time, O(1) space\npublic void selectionSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 0; i < n - 1; i++) {\n        int minIdx = i;\n        for (int j = i + 1; j < n; j++) {\n            if (arr[j] < arr[minIdx]) {\n                minIdx = j;\n            }\n        }\n        int temp = arr[minIdx];\n        arr[minIdx] = arr[i];\n        arr[i] = temp;\n    }\n}\n\n// Insertion Sort - O(n²) time, O(1) space\n// Best case O(n) for nearly sorted arrays\npublic void insertionSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 1; i < n; i++) {\n        int key = arr[i];\n        int j = i - 1;\n        \n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j--;\n        }\n        arr[j + 1] = key;\n    }\n}",
+          "keyPoints": [
+            "Bubble: swap adjacent if out of order",
+            "Selection: find min and swap",
+            "Insertion: insert in sorted portion",
+            "All O(n²) but insertion fastest for small/sorted",
+            "In-place, stable (bubble, insertion)"
+          ]
+        },
+        {
+          "name": "Merge Sort & Quick Sort",
+          "explanation": "Efficient O(n log n) divide and conquer sorting algorithms.",
+          "code": "// Merge Sort - O(n log n) time, O(n) space\npublic void mergeSort(int[] arr, int left, int right) {\n    if (left < right) {\n        int mid = left + (right - left) / 2;\n        mergeSort(arr, left, mid);\n        mergeSort(arr, mid + 1, right);\n        merge(arr, left, mid, right);\n    }\n}\n\nprivate void merge(int[] arr, int left, int mid, int right) {\n    int n1 = mid - left + 1;\n    int n2 = right - mid;\n    \n    int[] L = new int[n1];\n    int[] R = new int[n2];\n    \n    for (int i = 0; i < n1; i++) L[i] = arr[left + i];\n    for (int j = 0; j < n2; j++) R[j] = arr[mid + 1 + j];\n    \n    int i = 0, j = 0, k = left;\n    \n    while (i < n1 && j < n2) {\n        if (L[i] <= R[j]) {\n            arr[k++] = L[i++];\n        } else {\n            arr[k++] = R[j++];\n        }\n    }\n    \n    while (i < n1) arr[k++] = L[i++];\n    while (j < n2) arr[k++] = R[j++];\n}\n\n// Quick Sort - O(n log n) average, O(n²) worst\npublic void quickSort(int[] arr, int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}\n\nprivate int partition(int[] arr, int low, int high) {\n    int pivot = arr[high];\n    int i = low - 1;\n    \n    for (int j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++;\n            int temp = arr[i];\n            arr[i] = arr[j];\n            arr[j] = temp;\n        }\n    }\n    \n    int temp = arr[i + 1];\n    arr[i + 1] = arr[high];\n    arr[high] = temp;\n    \n    return i + 1;\n}",
+          "keyPoints": [
+            "Merge: Stable, O(n) space, predictable O(n log n)",
+            "Quick: In-place, O(log n) space, average O(n log n)",
+            "Quick sort worst case O(n²) with bad pivot",
+            "Merge better for linked lists",
+            "Quick sort preferred in practice"
+          ]
+        },
+        {
+          "name": "Heap Sort & Counting Sort",
+          "explanation": "Heap sort and non-comparison based counting sort.",
+          "code": "// Heap Sort - O(n log n) time, O(1) space\npublic void heapSort(int[] arr) {\n    int n = arr.length;\n    \n    // Build max heap\n    for (int i = n / 2 - 1; i >= 0; i--) {\n        heapify(arr, n, i);\n    }\n    \n    // Extract elements from heap\n    for (int i = n - 1; i > 0; i--) {\n        int temp = arr[0];\n        arr[0] = arr[i];\n        arr[i] = temp;\n        heapify(arr, i, 0);\n    }\n}\n\nprivate void heapify(int[] arr, int n, int i) {\n    int largest = i;\n    int left = 2 * i + 1;\n    int right = 2 * i + 2;\n    \n    if (left < n && arr[left] > arr[largest]) largest = left;\n    if (right < n && arr[right] > arr[largest]) largest = right;\n    \n    if (largest != i) {\n        int swap = arr[i];\n        arr[i] = arr[largest];\n        arr[largest] = swap;\n        heapify(arr, n, largest);\n    }\n}\n\n// Counting Sort - O(n + k) time, O(k) space\npublic void countingSort(int[] arr) {\n    int max = Arrays.stream(arr).max().getAsInt();\n    int min = Arrays.stream(arr).min().getAsInt();\n    int range = max - min + 1;\n    \n    int[] count = new int[range];\n    int[] output = new int[arr.length];\n    \n    for (int i = 0; i < arr.length; i++) {\n        count[arr[i] - min]++;\n    }\n    \n    for (int i = 1; i < count.length; i++) {\n        count[i] += count[i - 1];\n    }\n    \n    for (int i = arr.length - 1; i >= 0; i--) {\n        output[count[arr[i] - min] - 1] = arr[i];\n        count[arr[i] - min]--;\n    }\n    \n    System.arraycopy(output, 0, arr, 0, arr.length);\n}",
+          "keyPoints": [
+            "Heap: In-place, not stable, O(n log n) guaranteed",
+            "Counting: Non-comparison, O(n+k), for integers",
+            "Counting requires knowing range",
+            "Counting is stable",
+            "Heap sort: build heap then extract max"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "searching",
+      "title": "Searching Algorithms",
+      "concepts": [
+        {
+          "name": "Linear & Binary Search",
+          "explanation": "Basic searching algorithms for arrays.",
+          "code": "// Linear Search - O(n)\npublic int linearSearch(int[] arr, int target) {\n    for (int i = 0; i < arr.length; i++) {\n        if (arr[i] == target) return i;\n    }\n    return -1;\n}\n\n// Binary Search (Iterative) - O(log n)\npublic int binarySearch(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    \n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        \n        if (arr[mid] == target) return mid;\n        if (arr[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}\n\n// Binary Search (Recursive) - O(log n)\npublic int binarySearchRecursive(int[] arr, int target, int left, int right) {\n    if (left > right) return -1;\n    \n    int mid = left + (right - left) / 2;\n    \n    if (arr[mid] == target) return mid;\n    if (arr[mid] < target) {\n        return binarySearchRecursive(arr, target, mid + 1, right);\n    } else {\n        return binarySearchRecursive(arr, target, left, mid - 1);\n    }\n}",
+          "keyPoints": [
+            "Linear: works on unsorted, O(n)",
+            "Binary: requires sorted array, O(log n)",
+            "Binary: divide search space in half",
+            "Use left + (right - left) / 2 to avoid overflow",
+            "Binary search is base for many algorithms"
+          ]
+        },
+        {
+          "name": "Binary Search Variants",
+          "explanation": "Advanced binary search problems - first, last, closest element.",
+          "code": "// Find First Occurrence - O(log n)\npublic int findFirst(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    int result = -1;\n    \n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        \n        if (arr[mid] == target) {\n            result = mid;\n            right = mid - 1;  // Continue searching left\n        } else if (arr[mid] < target) {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n    return result;\n}\n\n// Find Last Occurrence - O(log n)\npublic int findLast(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    int result = -1;\n    \n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        \n        if (arr[mid] == target) {\n            result = mid;\n            left = mid + 1;  // Continue searching right\n        } else if (arr[mid] < target) {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n    return result;\n}\n\n// Find Peak Element - O(log n)\npublic int findPeakElement(int[] arr) {\n    int left = 0, right = arr.length - 1;\n    \n    while (left < right) {\n        int mid = left + (right - left) / 2;\n        \n        if (arr[mid] > arr[mid + 1]) {\n            right = mid;\n        } else {\n            left = mid + 1;\n        }\n    }\n    return left;\n}\n\n// Search in Rotated Sorted Array - O(log n)\npublic int searchRotated(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    \n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        \n        if (arr[mid] == target) return mid;\n        \n        // Left half is sorted\n        if (arr[left] <= arr[mid]) {\n            if (target >= arr[left] && target < arr[mid]) {\n                right = mid - 1;\n            } else {\n                left = mid + 1;\n            }\n        }\n        // Right half is sorted\n        else {\n            if (target > arr[mid] && target <= arr[right]) {\n                left = mid + 1;\n            } else {\n                right = mid - 1;\n            }\n        }\n    }\n    return -1;\n}",
+          "keyPoints": [
+            "First occurrence: search left after finding",
+            "Last occurrence: search right after finding",
+            "Peak element: compare with neighbor",
+            "Rotated array: determine sorted half",
+            "All maintain O(log n) complexity"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dynamicprogramming",
+      "title": "Dynamic Programming",
+      "concepts": [
+        {
+          "name": "DP Fundamentals",
+          "explanation": "DP is just 'smart recursion' — instead of solving the same subproblem 100 times, solve it once and save the answer. Think of it like a GPS that remembers routes it already calculated. Two approaches: TOP-DOWN (memoization) starts from the goal and caches results, BOTTOM-UP (tabulation) builds answers from smallest subproblems up.",
+          "code": "// PROBLEM: Fibonacci — the hello world of DP\n// Without DP: fib(50) takes FOREVER (exponential!)\n// With DP: fib(50) is instant (linear!)\n\n// Approach 1: MEMOIZATION (Top-Down)\n// \"Ask for answer, cache if already computed\"\npublic int fibMemo(int n, int[] memo) {\n    if (n <= 1) return n;\n    if (memo[n] != 0) return memo[n];  // Already solved!\n    \n    memo[n] = fibMemo(n-1, memo) + fibMemo(n-2, memo);\n    return memo[n];\n}\n\n// Approach 2: TABULATION (Bottom-Up)\n// \"Build answer from base cases\"\npublic int fibTab(int n) {\n    if (n <= 1) return n;\n    \n    int[] dp = new int[n + 1];\n    dp[0] = 0;  // Base case\n    dp[1] = 1;  // Base case\n    \n    for (int i = 2; i <= n; i++) {\n        dp[i] = dp[i-1] + dp[i-2];  // Use previously computed!\n    }\n    return dp[n];\n}\n\n// Approach 3: SPACE OPTIMIZED\n// \"Only keep what you need\"\npublic int fibOptimized(int n) {\n    if (n <= 1) return n;\n    int prev2 = 0, prev1 = 1;\n    \n    for (int i = 2; i <= n; i++) {\n        int curr = prev1 + prev2;\n        prev2 = prev1;\n        prev1 = curr;\n    }\n    return prev1;  // O(n) time, O(1) space!\n}",
+          "keyPoints": [
+            "DP = Recursion + Caching (save answers to avoid re-solving)",
+            "Memoization = top-down (recursive with cache)",
+            "Tabulation = bottom-up (iterative, fill table)",
+            "The pattern: 1) Define state 2) Find recurrence 3) Identify base cases",
+            "Space optimization: often you only need the last 1-2 values, not the whole array"
+          ]
+        },
+        {
+          "name": "0/1 Knapsack & Subset Sum",
+          "explanation": "Classic DP problems involving item selection.",
+          "code": "// 0/1 Knapsack - O(nW) time and space\npublic int knapsack(int[] weights, int[] values, int capacity) {\n    int n = weights.length;\n    int[][] dp = new int[n + 1][capacity + 1];\n    \n    for (int i = 1; i <= n; i++) {\n        for (int w = 1; w <= capacity; w++) {\n            if (weights[i - 1] <= w) {\n                dp[i][w] = Math.max(\n                    values[i - 1] + dp[i - 1][w - weights[i - 1]],\n                    dp[i - 1][w]\n                );\n            } else {\n                dp[i][w] = dp[i - 1][w];\n            }\n        }\n    }\n    return dp[n][capacity];\n}\n\n// Subset Sum - O(n * sum)\npublic boolean subsetSum(int[] arr, int sum) {\n    int n = arr.length;\n    boolean[][] dp = new boolean[n + 1][sum + 1];\n    \n    for (int i = 0; i <= n; i++) {\n        dp[i][0] = true;\n    }\n    \n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= sum; j++) {\n            if (arr[i - 1] <= j) {\n                dp[i][j] = dp[i - 1][j] || dp[i - 1][j - arr[i - 1]];\n            } else {\n                dp[i][j] = dp[i - 1][j];\n            }\n        }\n    }\n    return dp[n][sum];\n}\n\n// Partition Equal Subset Sum - O(n * sum)\npublic boolean canPartition(int[] nums) {\n    int sum = 0;\n    for (int num : nums) sum += num;\n    \n    if (sum % 2 != 0) return false;\n    \n    return subsetSum(nums, sum / 2);\n}",
+          "keyPoints": [
+            "Knapsack: include or exclude each item",
+            "dp[i][w] = max value with i items, capacity w",
+            "Subset sum: boolean DP for existence",
+            "Partition: subset sum with target = total/2",
+            "Can optimize space to O(W) or O(sum)"
+          ]
+        },
+        {
+          "name": "Longest Common Subsequence",
+          "explanation": "Find longest common subsequence between two strings.",
+          "code": "// LCS - O(m * n) time and space\npublic int longestCommonSubsequence(String s1, String s2) {\n    int m = s1.length(), n = s2.length();\n    int[][] dp = new int[m + 1][n + 1];\n    \n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1.charAt(i - 1) == s2.charAt(j - 1)) {\n                dp[i][j] = 1 + dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);\n            }\n        }\n    }\n    return dp[m][n];\n}\n\n// Print LCS\npublic String printLCS(String s1, String s2) {\n    int m = s1.length(), n = s2.length();\n    int[][] dp = new int[m + 1][n + 1];\n    \n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1.charAt(i - 1) == s2.charAt(j - 1)) {\n                dp[i][j] = 1 + dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);\n            }\n        }\n    }\n    \n    StringBuilder lcs = new StringBuilder();\n    int i = m, j = n;\n    \n    while (i > 0 && j > 0) {\n        if (s1.charAt(i - 1) == s2.charAt(j - 1)) {\n            lcs.append(s1.charAt(i - 1));\n            i--;\n            j--;\n        } else if (dp[i - 1][j] > dp[i][j - 1]) {\n            i--;\n        } else {\n            j--;\n        }\n    }\n    return lcs.reverse().toString();\n}\n\n// Longest Increasing Subsequence - O(n²)\npublic int lengthOfLIS(int[] nums) {\n    int n = nums.length;\n    int[] dp = new int[n];\n    Arrays.fill(dp, 1);\n    int maxLen = 1;\n    \n    for (int i = 1; i < n; i++) {\n        for (int j = 0; j < i; j++) {\n            if (nums[i] > nums[j]) {\n                dp[i] = Math.max(dp[i], dp[j] + 1);\n            }\n        }\n        maxLen = Math.max(maxLen, dp[i]);\n    }\n    return maxLen;\n}",
+          "keyPoints": [
+            "LCS: if match, add 1 to diagonal",
+            "If no match, take max of left/top",
+            "Backtrack to print actual LCS",
+            "LIS: dp[i] = longest ending at i",
+            "LIS can be optimized to O(n log n)"
+          ]
+        },
+        {
+          "name": "Coin Change & Edit Distance",
+          "explanation": "Classic DP problems for interviews.",
+          "code": "// Coin Change - Minimum Coins - O(amount * n)\npublic int coinChange(int[] coins, int amount) {\n    int[] dp = new int[amount + 1];\n    Arrays.fill(dp, amount + 1);\n    dp[0] = 0;\n    \n    for (int i = 1; i <= amount; i++) {\n        for (int coin : coins) {\n            if (coin <= i) {\n                dp[i] = Math.min(dp[i], dp[i - coin] + 1);\n            }\n        }\n    }\n    return dp[amount] > amount ? -1 : dp[amount];\n}\n\n// Coin Change - Number of Ways - O(amount * n)\npublic int coinChangeWays(int[] coins, int amount) {\n    int[] dp = new int[amount + 1];\n    dp[0] = 1;\n    \n    for (int coin : coins) {\n        for (int i = coin; i <= amount; i++) {\n            dp[i] += dp[i - coin];\n        }\n    }\n    return dp[amount];\n}\n\n// Edit Distance - O(m * n)\npublic int minDistance(String word1, String word2) {\n    int m = word1.length(), n = word2.length();\n    int[][] dp = new int[m + 1][n + 1];\n    \n    for (int i = 0; i <= m; i++) dp[i][0] = i;\n    for (int j = 0; j <= n; j++) dp[0][j] = j;\n    \n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (word1.charAt(i - 1) == word2.charAt(j - 1)) {\n                dp[i][j] = dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = 1 + Math.min(\n                    dp[i - 1][j],      // delete\n                    Math.min(\n                        dp[i][j - 1],  // insert\n                        dp[i - 1][j - 1] // replace\n                    )\n                );\n            }\n        }\n    }\n    return dp[m][n];\n}",
+          "keyPoints": [
+            "Coin change: dp[i] = min coins for amount i",
+            "Ways: order matters vs doesn't matter",
+            "Edit distance: insert, delete, replace",
+            "Base case: empty string needs i/j operations",
+            "Match: no operation needed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "graphs",
+      "title": "Graphs",
+      "concepts": [
+        {
+          "name": "Graph Representation",
+          "explanation": "Different ways to represent graphs in code.",
+          "code": "// Adjacency List (Most Common)\nimport java.util.*;\n\npublic class Graph {\n    private int vertices;\n    private LinkedList<Integer>[] adjList;\n    \n    @SuppressWarnings(\"unchecked\")\n    public Graph(int vertices) {\n        this.vertices = vertices;\n        adjList = new LinkedList[vertices];\n        for (int i = 0; i < vertices; i++) {\n            adjList[i] = new LinkedList<>();\n        }\n    }\n    \n    // Add Edge - Undirected\n    public void addEdge(int src, int dest) {\n        adjList[src].add(dest);\n        adjList[dest].add(src);\n    }\n    \n    // Add Edge - Directed\n    public void addDirectedEdge(int src, int dest) {\n        adjList[src].add(dest);\n    }\n}\n\n// Adjacency Matrix\npublic class GraphMatrix {\n    private int[][] matrix;\n    private int vertices;\n    \n    public GraphMatrix(int vertices) {\n        this.vertices = vertices;\n        matrix = new int[vertices][vertices];\n    }\n    \n    public void addEdge(int src, int dest) {\n        matrix[src][dest] = 1;\n        matrix[dest][src] = 1;  // For undirected\n    }\n}\n\n// Weighted Graph\nclass Edge {\n    int dest;\n    int weight;\n    \n    Edge(int dest, int weight) {\n        this.dest = dest;\n        this.weight = weight;\n    }\n}\n\npublic class WeightedGraph {\n    private List<List<Edge>> adjList;\n    \n    public WeightedGraph(int vertices) {\n        adjList = new ArrayList<>();\n        for (int i = 0; i < vertices; i++) {\n            adjList.add(new ArrayList<>());\n        }\n    }\n    \n    public void addEdge(int src, int dest, int weight) {\n        adjList.get(src).add(new Edge(dest, weight));\n    }\n}",
+          "keyPoints": [
+            "Adjacency List: Best for sparse graphs",
+            "Adjacency Matrix: Best for dense graphs",
+            "List: O(V+E) space, O(V) edge lookup",
+            "Matrix: O(V²) space, O(1) edge lookup",
+            "Weighted graphs store weight with edge"
+          ]
+        },
+        {
+          "name": "BFS & DFS Traversal",
+          "explanation": "BFS (Breadth-First Search) is like ripples in a pond — explore all neighbors at distance 1, then distance 2, etc. Uses a QUEUE. DFS (Depth-First Search) is like exploring a maze by going as far as possible down one path before backtracking. Uses a STACK (or recursion). BFS finds shortest path in unweighted graphs. DFS is simpler and uses less memory.",
+          "code": "// BFS — explore level by level (use Queue)\n// Perfect for: shortest path, level-order processing\npublic void BFS(int start) {\n    boolean[] visited = new boolean[vertices];\n    Queue<Integer> queue = new LinkedList<>();\n    \n    visited[start] = true;\n    queue.offer(start);\n    \n    while (!queue.isEmpty()) {\n        int vertex = queue.poll();\n        System.out.print(vertex + \" \");\n        \n        // Add all unvisited neighbors to queue\n        for (int neighbor : adjList[vertex]) {\n            if (!visited[neighbor]) {\n                visited[neighbor] = true;\n                queue.offer(neighbor);\n            }\n        }\n    }\n}\n\n// DFS — go deep, then backtrack (use Stack or recursion)\n// Perfect for: cycle detection, connected components, topological sort\npublic void DFS(int start) {\n    boolean[] visited = new boolean[vertices];\n    DFSUtil(start, visited);\n}\n\nprivate void DFSUtil(int v, boolean[] visited) {\n    visited[v] = true;\n    System.out.print(v + \" \");\n    \n    for (int neighbor : adjList[v]) {\n        if (!visited[neighbor]) {\n            DFSUtil(neighbor, visited);  // Go deeper!\n        }\n    }  // Automatically backtracks when returning\n}",
+          "keyPoints": [
+            "BFS = Queue + visit level by level (water ripples)",
+            "DFS = Stack/Recursion + go deep first (maze exploration)",
+            "BFS finds SHORTEST PATH in unweighted graphs",
+            "DFS uses less memory (just the current path)",
+            "Both are O(V + E) time — you visit each vertex and edge once"
+          ]
+        },
+        {
+          "name": "Cycle Detection",
+          "explanation": "Detect cycles in directed and undirected graphs.",
+          "code": "// Detect Cycle in Undirected Graph - DFS\npublic boolean hasCycleUndirected() {\n    boolean[] visited = new boolean[vertices];\n    \n    for (int i = 0; i < vertices; i++) {\n        if (!visited[i]) {\n            if (hasCycleDFS(i, visited, -1)) {\n                return true;\n            }\n        }\n    }\n    return false;\n}\n\nprivate boolean hasCycleDFS(int v, boolean[] visited, int parent) {\n    visited[v] = true;\n    \n    for (int neighbor : adjList[v]) {\n        if (!visited[neighbor]) {\n            if (hasCycleDFS(neighbor, visited, v)) {\n                return true;\n            }\n        } else if (neighbor != parent) {\n            return true;  // Back edge found\n        }\n    }\n    return false;\n}\n\n// Detect Cycle in Directed Graph - DFS\npublic boolean hasCycleDirected() {\n    boolean[] visited = new boolean[vertices];\n    boolean[] recStack = new boolean[vertices];\n    \n    for (int i = 0; i < vertices; i++) {\n        if (hasCycleDirectedUtil(i, visited, recStack)) {\n            return true;\n        }\n    }\n    return false;\n}\n\nprivate boolean hasCycleDirectedUtil(int v, boolean[] visited, boolean[] recStack) {\n    if (recStack[v]) return true;  // Cycle found\n    if (visited[v]) return false;\n    \n    visited[v] = true;\n    recStack[v] = true;\n    \n    for (int neighbor : adjList[v]) {\n        if (hasCycleDirectedUtil(neighbor, visited, recStack)) {\n            return true;\n        }\n    }\n    \n    recStack[v] = false;\n    return false;\n}",
+          "keyPoints": [
+            "Undirected: back edge to visited (not parent)",
+            "Directed: use recursion stack",
+            "recStack tracks current path",
+            "Union-Find also works for undirected",
+            "O(V+E) time complexity"
+          ]
+        },
+        {
+          "name": "Dijkstra's Shortest Path",
+          "explanation": "Find shortest path from source to all vertices.",
+          "code": "// Dijkstra's Algorithm - O((V + E) log V)\npublic int[] dijkstra(int start) {\n    int[] dist = new int[vertices];\n    Arrays.fill(dist, Integer.MAX_VALUE);\n    dist[start] = 0;\n    \n    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[1] - b[1]);\n    pq.offer(new int[]{start, 0});\n    \n    boolean[] visited = new boolean[vertices];\n    \n    while (!pq.isEmpty()) {\n        int[] current = pq.poll();\n        int u = current[0];\n        \n        if (visited[u]) continue;\n        visited[u] = true;\n        \n        for (int v : adjList[u]) {\n            if (!visited[v] && dist[u] + 1 < dist[v]) {\n                dist[v] = dist[u] + 1;\n                pq.offer(new int[]{v, dist[v]});\n            }\n        }\n    }\n    return dist;\n}\n\n// Dijkstra with Weighted Graph\npublic int[] dijkstraWeighted(int start, List<List<Edge>> adjList) {\n    int n = adjList.size();\n    int[] dist = new int[n];\n    Arrays.fill(dist, Integer.MAX_VALUE);\n    dist[start] = 0;\n    \n    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[1] - b[1]);\n    pq.offer(new int[]{start, 0});\n    \n    while (!pq.isEmpty()) {\n        int[] current = pq.poll();\n        int u = current[0];\n        int d = current[1];\n        \n        if (d > dist[u]) continue;\n        \n        for (Edge edge : adjList.get(u)) {\n            int v = edge.dest;\n            int weight = edge.weight;\n            \n            if (dist[u] + weight < dist[v]) {\n                dist[v] = dist[u] + weight;\n                pq.offer(new int[]{v, dist[v]});\n            }\n        }\n    }\n    return dist;\n}",
+          "keyPoints": [
+            "Greedy algorithm for shortest path",
+            "Works with non-negative weights only",
+            "Use priority queue (min-heap)",
+            "O((V+E) log V) with binary heap",
+            "Cannot handle negative weights"
+          ]
+        },
+        {
+          "name": "Topological Sort",
+          "explanation": "Linear ordering of vertices in directed acyclic graph (DAG).",
+          "code": "// Topological Sort using DFS - O(V + E)\npublic List<Integer> topologicalSort() {\n    Stack<Integer> stack = new Stack<>();\n    boolean[] visited = new boolean[vertices];\n    \n    for (int i = 0; i < vertices; i++) {\n        if (!visited[i]) {\n            topologicalSortUtil(i, visited, stack);\n        }\n    }\n    \n    List<Integer> result = new ArrayList<>();\n    while (!stack.isEmpty()) {\n        result.add(stack.pop());\n    }\n    return result;\n}\n\nprivate void topologicalSortUtil(int v, boolean[] visited, Stack<Integer> stack) {\n    visited[v] = true;\n    \n    for (int neighbor : adjList[v]) {\n        if (!visited[neighbor]) {\n            topologicalSortUtil(neighbor, visited, stack);\n        }\n    }\n    stack.push(v);\n}\n\n// Kahn's Algorithm (BFS approach) - O(V + E)\npublic List<Integer> topologicalSortKahn() {\n    int[] inDegree = new int[vertices];\n    \n    for (int i = 0; i < vertices; i++) {\n        for (int neighbor : adjList[i]) {\n            inDegree[neighbor]++;\n        }\n    }\n    \n    Queue<Integer> queue = new LinkedList<>();\n    for (int i = 0; i < vertices; i++) {\n        if (inDegree[i] == 0) {\n            queue.offer(i);\n        }\n    }\n    \n    List<Integer> result = new ArrayList<>();\n    \n    while (!queue.isEmpty()) {\n        int vertex = queue.poll();\n        result.add(vertex);\n        \n        for (int neighbor : adjList[vertex]) {\n            inDegree[neighbor]--;\n            if (inDegree[neighbor] == 0) {\n                queue.offer(neighbor);\n            }\n        }\n    }\n    \n    if (result.size() != vertices) {\n        return new ArrayList<>();  // Cycle exists\n    }\n    return result;\n}",
+          "keyPoints": [
+            "Only for DAGs (Directed Acyclic Graphs)",
+            "DFS: post-order traversal",
+            "Kahn's: remove nodes with inDegree 0",
+            "Can detect cycles (result size < V)",
+            "Used in: task scheduling, build systems"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hashing",
+      "title": "Hashing",
+      "concepts": [
+        {
+          "name": "HashMap & HashSet Basics",
+          "explanation": "A HashMap is like a magical library where you shout a book title and it appears instantly — O(1) lookup! It works by converting keys to numbers (hashing) that point to storage locations. HashSet is the same idea but only stores unique values (no duplicates). These are your go-to structures when you need fast lookups.",
+          "code": "import java.util.*;\n\n// HashMap: key-value pairs with O(1) operations\nHashMap<String, Integer> map = new HashMap<>();\n\n// Put: store key-value — O(1)\nmap.put(\"apple\", 5);    // {\"apple\": 5}\nmap.put(\"banana\", 3);   // {\"apple\": 5, \"banana\": 3}\n\n// Get: retrieve by key — O(1)\nint count = map.get(\"apple\");  // 5\n\n// Check if key exists — O(1)\nboolean hasApple = map.containsKey(\"apple\");  // true\n\n// Get with default (avoid null) — O(1)\nint oranges = map.getOrDefault(\"orange\", 0);  // 0\n\n// Iterate (common patterns)\nfor (String key : map.keySet()) { /* keys */ }\nfor (Integer val : map.values()) { /* values */ }\nfor (Map.Entry<String, Integer> e : map.entrySet()) {\n    System.out.println(e.getKey() + \": \" + e.getValue());\n}\n\n// HashSet: only unique values, no duplicates\nHashSet<Integer> set = new HashSet<>();\nset.add(10);  // {10}\nset.add(20);  // {10, 20}\nset.add(10);  // Still {10, 20} — duplicates ignored!\n\nboolean has10 = set.contains(10);  // true — O(1)",
+          "keyPoints": [
+            "HashMap = key-value pairs, O(1) for get/put/remove",
+            "HashSet = unique values only, O(1) for add/contains/remove",
+            "Always use getOrDefault() to avoid null checks",
+            "TreeMap = sorted keys (O(log n)), LinkedHashMap = insertion order",
+            "Interview hack: 'need fast lookup?' → HashMap/HashSet"
+          ]
+        },
+        {
+          "name": "Hashing Problems",
+          "explanation": "Common problems solved using hashing.",
+          "code": "// Two Sum - O(n)\npublic int[] twoSum(int[] nums, int target) {\n    Map<Integer, Integer> map = new HashMap<>();\n    \n    for (int i = 0; i < nums.length; i++) {\n        int complement = target - nums[i];\n        if (map.containsKey(complement)) {\n            return new int[]{map.get(complement), i};\n        }\n        map.put(nums[i], i);\n    }\n    return new int[]{-1, -1};\n}\n\n// Group Anagrams - O(n * k)\npublic List<List<String>> groupAnagrams(String[] strs) {\n    Map<String, List<String>> map = new HashMap<>();\n    \n    for (String s : strs) {\n        char[] chars = s.toCharArray();\n        Arrays.sort(chars);\n        String key = new String(chars);\n        \n        map.putIfAbsent(key, new ArrayList<>());\n        map.get(key).add(s);\n    }\n    return new ArrayList<>(map.values());\n}\n\n// Longest Consecutive Sequence - O(n)\npublic int longestConsecutive(int[] nums) {\n    Set<Integer> set = new HashSet<>();\n    for (int num : nums) {\n        set.add(num);\n    }\n    \n    int maxLen = 0;\n    \n    for (int num : set) {\n        // Only start sequence if it's the beginning\n        if (!set.contains(num - 1)) {\n            int currentNum = num;\n            int currentLen = 1;\n            \n            while (set.contains(currentNum + 1)) {\n                currentNum++;\n                currentLen++;\n            }\n            maxLen = Math.max(maxLen, currentLen);\n        }\n    }\n    return maxLen;\n}\n\n// Subarray Sum Equals K - O(n)\npublic int subarraySum(int[] nums, int k) {\n    Map<Integer, Integer> map = new HashMap<>();\n    map.put(0, 1);\n    \n    int count = 0, sum = 0;\n    \n    for (int num : nums) {\n        sum += num;\n        if (map.containsKey(sum - k)) {\n            count += map.get(sum - k);\n        }\n        map.put(sum, map.getOrDefault(sum, 0) + 1);\n    }\n    return count;\n}\n\n// First Non-Repeating Character - O(n)\npublic int firstUniqChar(String s) {\n    Map<Character, Integer> map = new HashMap<>();\n    \n    for (char c : s.toCharArray()) {\n        map.put(c, map.getOrDefault(c, 0) + 1);\n    }\n    \n    for (int i = 0; i < s.length(); i++) {\n        if (map.get(s.charAt(i)) == 1) {\n            return i;\n        }\n    }\n    return -1;\n}",
+          "keyPoints": [
+            "Hash map for O(1) lookups",
+            "Use complement for two sum",
+            "Sorted string as key for anagrams",
+            "HashSet for sequence checking",
+            "Prefix sum with HashMap for subarray"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "backtracking",
+      "title": "Backtracking",
+      "concepts": [
+        {
+          "name": "Permutations & Combinations",
+          "explanation": "Generate all permutations and combinations.",
+          "code": "// Permutations - O(n!)\npublic List<List<Integer>> permute(int[] nums) {\n    List<List<Integer>> result = new ArrayList<>();\n    backtrack(nums, new ArrayList<>(), result, new boolean[nums.length]);\n    return result;\n}\n\nprivate void backtrack(int[] nums, List<Integer> current, \n                      List<List<Integer>> result, boolean[] used) {\n    if (current.size() == nums.length) {\n        result.add(new ArrayList<>(current));\n        return;\n    }\n    \n    for (int i = 0; i < nums.length; i++) {\n        if (used[i]) continue;\n        \n        current.add(nums[i]);\n        used[i] = true;\n        \n        backtrack(nums, current, result, used);\n        \n        current.remove(current.size() - 1);\n        used[i] = false;\n    }\n}\n\n// Combinations - O(C(n,k) * k)\npublic List<List<Integer>> combine(int n, int k) {\n    List<List<Integer>> result = new ArrayList<>();\n    backtrack(n, k, 1, new ArrayList<>(), result);\n    return result;\n}\n\nprivate void backtrack(int n, int k, int start, \n                      List<Integer> current, List<List<Integer>> result) {\n    if (current.size() == k) {\n        result.add(new ArrayList<>(current));\n        return;\n    }\n    \n    for (int i = start; i <= n; i++) {\n        current.add(i);\n        backtrack(n, k, i + 1, current, result);\n        current.remove(current.size() - 1);\n    }\n}\n\n// Subsets - O(2^n)\npublic List<List<Integer>> subsets(int[] nums) {\n    List<List<Integer>> result = new ArrayList<>();\n    backtrack(nums, 0, new ArrayList<>(), result);\n    return result;\n}\n\nprivate void backtrack(int[] nums, int start, \n                      List<Integer> current, List<List<Integer>> result) {\n    result.add(new ArrayList<>(current));\n    \n    for (int i = start; i < nums.length; i++) {\n        current.add(nums[i]);\n        backtrack(nums, i + 1, current, result);\n        current.remove(current.size() - 1);\n    }\n}",
+          "keyPoints": [
+            "Backtrack: explore, then undo",
+            "Permutations: use all elements",
+            "Combinations: select k elements",
+            "Subsets: all possible combinations",
+            "Always copy list when adding to result"
+          ]
+        },
+        {
+          "name": "N-Queens & Sudoku",
+          "explanation": "Classic backtracking problems.",
+          "code": "// N-Queens - O(n!)\npublic List<List<String>> solveNQueens(int n) {\n    List<List<String>> result = new ArrayList<>();\n    char[][] board = new char[n][n];\n    \n    for (int i = 0; i < n; i++) {\n        Arrays.fill(board[i], '.');\n    }\n    \n    backtrack(board, 0, result);\n    return result;\n}\n\nprivate void backtrack(char[][] board, int row, List<List<String>> result) {\n    if (row == board.length) {\n        result.add(construct(board));\n        return;\n    }\n    \n    for (int col = 0; col < board.length; col++) {\n        if (isValid(board, row, col)) {\n            board[row][col] = 'Q';\n            backtrack(board, row + 1, result);\n            board[row][col] = '.';\n        }\n    }\n}\n\nprivate boolean isValid(char[][] board, int row, int col) {\n    // Check column\n    for (int i = 0; i < row; i++) {\n        if (board[i][col] == 'Q') return false;\n    }\n    \n    // Check diagonal (top-left)\n    for (int i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--) {\n        if (board[i][j] == 'Q') return false;\n    }\n    \n    // Check diagonal (top-right)\n    for (int i = row - 1, j = col + 1; i >= 0 && j < board.length; i--, j++) {\n        if (board[i][j] == 'Q') return false;\n    }\n    \n    return true;\n}\n\nprivate List<String> construct(char[][] board) {\n    List<String> result = new ArrayList<>();\n    for (char[] row : board) {\n        result.add(new String(row));\n    }\n    return result;\n}\n\n// Sudoku Solver - O(9^m) where m is empty cells\npublic void solveSudoku(char[][] board) {\n    solve(board);\n}\n\nprivate boolean solve(char[][] board) {\n    for (int row = 0; row < 9; row++) {\n        for (int col = 0; col < 9; col++) {\n            if (board[row][col] == '.') {\n                for (char num = '1'; num <= '9'; num++) {\n                    if (isValidSudoku(board, row, col, num)) {\n                        board[row][col] = num;\n                        \n                        if (solve(board)) return true;\n                        \n                        board[row][col] = '.';  // Backtrack\n                    }\n                }\n                return false;\n            }\n        }\n    }\n    return true;\n}\n\nprivate boolean isValidSudoku(char[][] board, int row, int col, char num) {\n    // Check row\n    for (int i = 0; i < 9; i++) {\n        if (board[row][i] == num) return false;\n    }\n    \n    // Check column\n    for (int i = 0; i < 9; i++) {\n        if (board[i][col] == num) return false;\n    }\n    \n    // Check 3x3 box\n    int boxRow = (row / 3) * 3;\n    int boxCol = (col / 3) * 3;\n    for (int i = 0; i < 3; i++) {\n        for (int j = 0; j < 3; j++) {\n            if (board[boxRow + i][boxCol + j] == num) return false;\n        }\n    }\n    \n    return true;\n}",
+          "keyPoints": [
+            "N-Queens: place queens row by row",
+            "Check column and diagonals for validity",
+            "Sudoku: try each number 1-9",
+            "Validate row, column, 3x3 box",
+            "Backtrack if no solution found"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "greedy",
+      "title": "Greedy Algorithms",
+      "concepts": [
+        {
+          "name": "Activity Selection & Intervals",
+          "explanation": "Greedy approach for interval scheduling problems.",
+          "code": "// Activity Selection - O(n log n)\nclass Activity {\n    int start, end;\n    Activity(int start, int end) {\n        this.start = start;\n        this.end = end;\n    }\n}\n\npublic int activitySelection(Activity[] activities) {\n    Arrays.sort(activities, (a, b) -> a.end - b.end);\n    \n    int count = 1;\n    int lastEnd = activities[0].end;\n    \n    for (int i = 1; i < activities.length; i++) {\n        if (activities[i].start >= lastEnd) {\n            count++;\n            lastEnd = activities[i].end;\n        }\n    }\n    return count;\n}\n\n// Merge Intervals - O(n log n)\npublic int[][] merge(int[][] intervals) {\n    if (intervals.length == 0) return new int[0][];\n    \n    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);\n    List<int[]> merged = new ArrayList<>();\n    \n    int[] current = intervals[0];\n    merged.add(current);\n    \n    for (int[] interval : intervals) {\n        if (interval[0] <= current[1]) {\n            current[1] = Math.max(current[1], interval[1]);\n        } else {\n            current = interval;\n            merged.add(current);\n        }\n    }\n    \n    return merged.toArray(new int[merged.size()][]);\n}\n\n// Minimum Meeting Rooms - O(n log n)\npublic int minMeetingRooms(int[][] intervals) {\n    int[] start = new int[intervals.length];\n    int[] end = new int[intervals.length];\n    \n    for (int i = 0; i < intervals.length; i++) {\n        start[i] = intervals[i][0];\n        end[i] = intervals[i][1];\n    }\n    \n    Arrays.sort(start);\n    Arrays.sort(end);\n    \n    int rooms = 0, endPtr = 0;\n    \n    for (int i = 0; i < start.length; i++) {\n        if (start[i] < end[endPtr]) {\n            rooms++;\n        } else {\n            endPtr++;\n        }\n    }\n    return rooms;\n}",
+          "keyPoints": [
+            "Sort by end time for activity selection",
+            "Greedy: always pick earliest ending",
+            "Merge intervals: sort by start time",
+            "Meeting rooms: track concurrent meetings",
+            "Local optimal leads to global optimal"
+          ]
+        },
+        {
+          "name": "Fractional Knapsack & Huffman",
+          "explanation": "Classic greedy algorithms.",
+          "code": "// Fractional Knapsack - O(n log n)\nclass Item {\n    int value, weight;\n    Item(int value, int weight) {\n        this.value = value;\n        this.weight = weight;\n    }\n}\n\npublic double fractionalKnapsack(Item[] items, int capacity) {\n    Arrays.sort(items, (a, b) -> \n        Double.compare((double)b.value/b.weight, (double)a.value/a.weight));\n    \n    double totalValue = 0;\n    \n    for (Item item : items) {\n        if (capacity >= item.weight) {\n            totalValue += item.value;\n            capacity -= item.weight;\n        } else {\n            totalValue += (double)item.value * capacity / item.weight;\n            break;\n        }\n    }\n    return totalValue;\n}\n\n// Jump Game - O(n)\npublic boolean canJump(int[] nums) {\n    int maxReach = 0;\n    \n    for (int i = 0; i < nums.length; i++) {\n        if (i > maxReach) return false;\n        maxReach = Math.max(maxReach, i + nums[i]);\n    }\n    return true;\n}\n\n// Jump Game II - Minimum Jumps - O(n)\npublic int jump(int[] nums) {\n    int jumps = 0, currentEnd = 0, farthest = 0;\n    \n    for (int i = 0; i < nums.length - 1; i++) {\n        farthest = Math.max(farthest, i + nums[i]);\n        \n        if (i == currentEnd) {\n            jumps++;\n            currentEnd = farthest;\n        }\n    }\n    return jumps;\n}",
+          "keyPoints": [
+            "Fractional: sort by value/weight ratio",
+            "Can take fraction of items",
+            "Jump game: track maximum reachable",
+            "Greedy choice at each step",
+            "Prove greedy choice is optimal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bitmanipulation",
+      "title": "Bit Manipulation",
+      "concepts": [
+        {
+          "name": "Bitwise Operations",
+          "explanation": "Essential bit manipulation techniques.",
+          "code": "public class BitManipulation {\n    // Check if ith bit is set - O(1)\n    public boolean isSet(int num, int i) {\n        return (num & (1 << i)) != 0;\n    }\n    \n    // Set ith bit - O(1)\n    public int setBit(int num, int i) {\n        return num | (1 << i);\n    }\n    \n    // Clear ith bit - O(1)\n    public int clearBit(int num, int i) {\n        return num & ~(1 << i);\n    }\n    \n    // Toggle ith bit - O(1)\n    public int toggleBit(int num, int i) {\n        return num ^ (1 << i);\n    }\n    \n    // Count set bits (Brian Kernighan's Algorithm) - O(k) where k is set bits\n    public int countSetBits(int n) {\n        int count = 0;\n        while (n > 0) {\n            n &= (n - 1);  // Clear rightmost set bit\n            count++;\n        }\n        return count;\n    }\n    \n    // Check if power of 2 - O(1)\n    public boolean isPowerOfTwo(int n) {\n        return n > 0 && (n & (n - 1)) == 0;\n    }\n    \n    // Find unique element (all others appear twice) - O(n)\n    public int findUnique(int[] arr) {\n        int xor = 0;\n        for (int num : arr) {\n            xor ^= num;\n        }\n        return xor;  // XOR of duplicate numbers = 0\n    }\n    \n    // Get rightmost set bit - O(1)\n    public int getRightmostSetBit(int n) {\n        return n & -n;\n    }\n    \n    // Clear all bits from MSB to i - O(1)\n    public int clearBitsMSBtoI(int num, int i) {\n        int mask = (1 << i) - 1;\n        return num & mask;\n    }\n    \n    // Swap two numbers without temp - O(1)\n    public void swap(int a, int b) {\n        a = a ^ b;\n        b = a ^ b;  // b = a\n        a = a ^ b;  // a = b\n    }\n}",
+          "keyPoints": [
+            "& (AND): check bits, clear bits",
+            "| (OR): set bits",
+            "^ (XOR): toggle bits, find unique",
+            "<< left shift: multiply by 2",
+            ">> right shift: divide by 2",
+            "n & (n-1): clear rightmost set bit"
+          ]
+        },
+        {
+          "name": "Bit Manipulation Problems",
+          "explanation": "Common bit manipulation interview problems.",
+          "code": "// Single Number (appears once, others twice) - O(n)\npublic int singleNumber(int[] nums) {\n    int result = 0;\n    for (int num : nums) {\n        result ^= num;\n    }\n    return result;\n}\n\n// Two numbers appear once, others twice - O(n)\npublic int[] singleNumberIII(int[] nums) {\n    int xor = 0;\n    for (int num : nums) {\n        xor ^= num;\n    }\n    \n    int rightmostBit = xor & -xor;\n    int[] result = new int[2];\n    \n    for (int num : nums) {\n        if ((num & rightmostBit) != 0) {\n            result[0] ^= num;\n        } else {\n            result[1] ^= num;\n        }\n    }\n    return result;\n}\n\n// Reverse bits - O(1)\npublic int reverseBits(int n) {\n    int result = 0;\n    for (int i = 0; i < 32; i++) {\n        result <<= 1;\n        result |= (n & 1);\n        n >>= 1;\n    }\n    return result;\n}\n\n// Number of 1 bits (Hamming Weight) - O(1)\npublic int hammingWeight(int n) {\n    int count = 0;\n    while (n != 0) {\n        count++;\n        n &= (n - 1);\n    }\n    return count;\n}\n\n// Missing Number (0 to n) - O(n)\npublic int missingNumber(int[] nums) {\n    int result = nums.length;\n    for (int i = 0; i < nums.length; i++) {\n        result ^= i ^ nums[i];\n    }\n    return result;\n}\n\n// Subset Generation using Bits - O(2^n * n)\npublic List<List<Integer>> subsets(int[] nums) {\n    List<List<Integer>> result = new ArrayList<>();\n    int n = nums.length;\n    int totalSubsets = 1 << n;  // 2^n\n    \n    for (int i = 0; i < totalSubsets; i++) {\n        List<Integer> subset = new ArrayList<>();\n        for (int j = 0; j < n; j++) {\n            if ((i & (1 << j)) != 0) {\n                subset.add(nums[j]);\n            }\n        }\n        result.add(subset);\n    }\n    return result;\n}",
+          "keyPoints": [
+            "XOR properties: a^a=0, a^0=a",
+            "XOR all to find unique element",
+            "Use rightmost bit to separate groups",
+            "Reverse bits: process each bit",
+            "Generate subsets: 2^n iterations"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "math",
+      "title": "Mathematical Algorithms",
+      "concepts": [
+        {
+          "name": "GCD, LCM & Prime Numbers",
+          "explanation": "Fundamental mathematical algorithms.",
+          "code": "// GCD (Euclidean Algorithm) - O(log(min(a,b)))\npublic int gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\n// LCM - O(log(min(a,b)))\npublic int lcm(int a, int b) {\n    return (a * b) / gcd(a, b);\n}\n\n// Check if Prime - O(√n)\npublic boolean isPrime(int n) {\n    if (n <= 1) return false;\n    if (n <= 3) return true;\n    if (n % 2 == 0 || n % 3 == 0) return false;\n    \n    for (int i = 5; i * i <= n; i += 6) {\n        if (n % i == 0 || n % (i + 2) == 0) {\n            return false;\n        }\n    }\n    return true;\n}\n\n// Sieve of Eratosthenes - O(n log log n)\npublic List<Integer> sieveOfEratosthenes(int n) {\n    boolean[] isPrime = new boolean[n + 1];\n    Arrays.fill(isPrime, true);\n    isPrime[0] = isPrime[1] = false;\n    \n    for (int i = 2; i * i <= n; i++) {\n        if (isPrime[i]) {\n            for (int j = i * i; j <= n; j += i) {\n                isPrime[j] = false;\n            }\n        }\n    }\n    \n    List<Integer> primes = new ArrayList<>();\n    for (int i = 2; i <= n; i++) {\n        if (isPrime[i]) primes.add(i);\n    }\n    return primes;\n}\n\n// Count Prime Numbers - O(n log log n)\npublic int countPrimes(int n) {\n    if (n <= 2) return 0;\n    \n    boolean[] isPrime = new boolean[n];\n    Arrays.fill(isPrime, true);\n    \n    for (int i = 2; i * i < n; i++) {\n        if (isPrime[i]) {\n            for (int j = i * i; j < n; j += i) {\n                isPrime[j] = false;\n            }\n        }\n    }\n    \n    int count = 0;\n    for (int i = 2; i < n; i++) {\n        if (isPrime[i]) count++;\n    }\n    return count;\n}",
+          "keyPoints": [
+            "GCD: Euclidean algorithm is efficient",
+            "LCM: (a*b) / GCD(a,b)",
+            "Prime check: test up to √n",
+            "Sieve: efficient for multiple primes",
+            "Sieve: mark multiples as composite"
+          ]
+        },
+        {
+          "name": "Power & Modular Arithmetic",
+          "explanation": "Fast exponentiation and modular operations.",
+          "code": "// Fast Power (Exponentiation by Squaring) - O(log n)\npublic long power(long base, long exp) {\n    long result = 1;\n    while (exp > 0) {\n        if (exp % 2 == 1) {\n            result *= base;\n        }\n        base *= base;\n        exp /= 2;\n    }\n    return result;\n}\n\n// Modular Exponentiation - O(log n)\npublic long modPower(long base, long exp, long mod) {\n    long result = 1;\n    base %= mod;\n    \n    while (exp > 0) {\n        if (exp % 2 == 1) {\n            result = (result * base) % mod;\n        }\n        base = (base * base) % mod;\n        exp /= 2;\n    }\n    return result;\n}\n\n// Factorial - O(n)\npublic long factorial(int n) {\n    long result = 1;\n    for (int i = 2; i <= n; i++) {\n        result *= i;\n    }\n    return result;\n}\n\n// nCr (Combinations) - O(n)\npublic long nCr(int n, int r) {\n    if (r > n) return 0;\n    if (r == 0 || r == n) return 1;\n    \n    r = Math.min(r, n - r);  // Optimization\n    long result = 1;\n    \n    for (int i = 0; i < r; i++) {\n        result *= (n - i);\n        result /= (i + 1);\n    }\n    return result;\n}\n\n// Pascal's Triangle - O(n²)\npublic List<List<Integer>> generate(int numRows) {\n    List<List<Integer>> triangle = new ArrayList<>();\n    \n    for (int i = 0; i < numRows; i++) {\n        List<Integer> row = new ArrayList<>();\n        for (int j = 0; j <= i; j++) {\n            if (j == 0 || j == i) {\n                row.add(1);\n            } else {\n                int val = triangle.get(i - 1).get(j - 1) + \n                         triangle.get(i - 1).get(j);\n                row.add(val);\n            }\n        }\n        triangle.add(row);\n    }\n    return triangle;\n}",
+          "keyPoints": [
+            "Fast power: O(log n) instead of O(n)",
+            "Modular arithmetic prevents overflow",
+            "(a*b) % m = ((a%m) * (b%m)) % m",
+            "nCr: use min(r, n-r) for efficiency",
+            "Pascal's: each number is sum of two above"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interview-patterns",
+      "title": "Interview Patterns & Problem Solving",
+      "concepts": [
+        {
+          "name": "Pattern Recognition Guide",
+          "explanation": "The secret to coding interviews: recognize the PATTERN, not the problem. Most problems fit into a handful of patterns. Train yourself to spot these clues early — it's like identifying recipes by the ingredients.",
+          "code": "// PATTERN RECOGNITION CHEAT SHEET\n\n// 🔍 SEE THIS → TRY THIS\n\n// \"Find pair that sums to X\" → HashMap or Two Pointers (if sorted)\n// \"Longest/Shortest substring\" → Sliding Window\n// \"All permutations/subsets\" → Backtracking\n// \"Connected components\" → BFS/DFS + visited set\n// \"Shortest path (unweighted)\" → BFS\n// \"Top K elements\" → Heap (PriorityQueue)\n// \"Sorted array + search\" → Binary Search\n// \"Merge sorted things\" → Two Pointers\n// \"Cycle in linked list\" → Fast/Slow Pointers\n// \"Optimize brute force\" → DP (if overlapping subproblems)\n// \"Tree level-by-level\" → BFS with Queue\n// \"Process most recent first\" → Stack\n// \"Range of values to search\" → Binary Search on Answer\n// \"Frequency count\" → HashMap\n// \"Unique elements only\" → HashSet\n\n// THE INTERVIEW LOOP:\n// 1. Clarify: What are the inputs? Edge cases?\n// 2. Examples: Walk through a simple example\n// 3. Brute Force: State the obvious solution first\n// 4. Optimize: Can you use a pattern to do better?\n// 5. Code: Write clean, correct code\n// 6. Test: Trace through with an example",
+          "keyPoints": [
+            "Read the problem → Identify keywords → Match to pattern",
+            "\"Optimal\" usually means there's a better approach than brute force",
+            "Most array problems: Two Pointers, Sliding Window, or HashMap",
+            "Most tree problems: Recursion (pre/in/postorder) or BFS",
+            "When stuck: What data structure gives me O(1) lookup for what I need?"
+          ]
+        },
+        {
+          "name": "Common Interview Gotchas",
+          "explanation": "The bugs that trip up 90% of candidates. Memorize these edge cases and checks — they show interviewers you think like a real engineer, not just someone who memorized solutions.",
+          "code": "// 🚨 EDGE CASES TO ALWAYS CHECK\n\n// ARRAYS\nif (arr == null || arr.length == 0) return ...;\nif (arr.length == 1) return arr[0];  // Single element\n// Watch for: off-by-one errors with length-1\n\n// STRINGS\nif (s == null || s.isEmpty()) return ...;\n// Watch for: uppercase vs lowercase, spaces\n\n// LINKED LISTS\nif (head == null) return null;\nif (head.next == null) return head;  // Single node\n// Watch for: losing the next pointer before updating\n\n// TREES\nif (root == null) return ...;  // Empty tree\nif (root.left == null && root.right == null) ...;  // Leaf\n// Watch for: asymmetric trees, single-child nodes\n\n// NUMBERS\n// Overflow: use long for intermediate calculations\n// Division by zero: check before dividing\n// Negative numbers: affect modulo results differently\n\n// 🎯 INTERVIEW PRESENTATION TIPS\n// - Think out loud — silence is scary for interviewers\n// - Start with brute force, then optimize\n// - State time/space complexity before AND after coding\n// - Test with: empty input, single element, already sorted\n// - Ask: \"Should I handle invalid input, or assume it's valid?\"",
+          "keyPoints": [
+            "ALWAYS check: null, empty, single element cases first",
+            "Arrays: watch for index out of bounds (arr[i-1], arr[i+1])",
+            "Strings: consider empty string, single char, spaces",
+            "Integers: consider 0, negative, very large numbers (overflow)",
+            "Think out loud — interviewers can only help if they know your thinking"
+          ]
+        },
+        {
+          "name": "Data Structure Selection",
+          "explanation": "Choosing the right data structure is half the battle. Each structure has superpowers and weaknesses. Match the problem's needs to the structure's strengths.",
+          "code": "// DATA STRUCTURE SELECTION GUIDE\n\n// NEED O(1) LOOKUP BY KEY? → HashMap\nMap<String, Integer> cache = new HashMap<>();\n\n// NEED O(1) UNIQUE CHECK? → HashSet\nSet<Integer> seen = new HashSet<>();\n\n// NEED SORTED ORDER? → TreeMap/TreeSet (O(log n))\nTreeMap<Integer, String> sorted = new TreeMap<>();\n\n// NEED MIN/MAX QUICKLY? → Heap (PriorityQueue)\nPriorityQueue<Integer> minHeap = new PriorityQueue<>();\nPriorityQueue<Integer> maxHeap = new PriorityQueue<>(Collections.reverseOrder());\n\n// NEED FIFO ORDER? → Queue (LinkedList or ArrayDeque)\nQueue<Integer> queue = new LinkedList<>();\n\n// NEED LIFO/UNDO? → Stack (ArrayDeque)\nDeque<Integer> stack = new ArrayDeque<>();\n\n// NEED FAST INSERT/DELETE + ITERATION? → LinkedList\nLinkedList<Integer> list = new LinkedList<>();\n\n// NEED RANDOM ACCESS BY INDEX? → ArrayList\nArrayList<Integer> arr = new ArrayList<>();\n\n// NEED BOTH ENDS? → Deque (ArrayDeque)\nDeque<Integer> deque = new ArrayDeque<>();\n\n// COMPLEXITY QUICK REFERENCE:\n// ArrayList:  get O(1), add O(1)*, insert O(n)\n// LinkedList: get O(n), add O(1), insert O(1)\n// HashMap:    all operations O(1) average\n// TreeMap:    all operations O(log n)\n// PriorityQueue: add O(log n), peek O(1), poll O(log n)",
+          "keyPoints": [
+            "Fast lookup by value → HashSet",
+            "Fast lookup by key → HashMap",
+            "Maintain sorted order → TreeMap/TreeSet",
+            "Track min/max → PriorityQueue (Heap)",
+            "Random access by index → ArrayList"
+          ]
+        }
+      ]
+    }
+  ]
+}

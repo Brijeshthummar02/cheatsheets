@@ -1,0 +1,803 @@
+{
+  "title": "Java Cheatsheet",
+  "description": "Master Java with clear, memorable concepts — explained like a friend teaching you",
+  "sections": [
+    {
+      "id": "basics",
+      "title": "Java Basics",
+      "concepts": [
+        {
+          "name": "Your First Java Program",
+          "explanation": "Think of this as Java's 'welcome ceremony.' Every program needs a class (your code's home) and a main method (the front door where Java always starts). The class is the building, main() is where you enter.",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}",
+          "keyPoints": [
+            "public = anyone can access this (like a public park)",
+            "static = belongs to the class itself, not any specific object",
+            "void = this method gives nothing back when it finishes",
+            "main = the magic name Java looks for to start running",
+            "String[] args = optional inputs you can pass when running the program"
+          ]
+        },
+        {
+          "name": "Primitive Data Types",
+          "explanation": "These are Java's building blocks — simple values stored directly in memory. Think of them as different-sized boxes: byte is a tiny box, int is medium, long is huge. Use the smallest box that fits to save memory.",
+          "code": "// Whole numbers (pick based on size needed)\nbyte tiny = 127;           // -128 to 127 (1 byte)\nshort small = 32000;       // -32,768 to 32,767 (2 bytes)\nint normal = 2_000_000;    // Most common choice (4 bytes)\nlong huge = 9_000_000_000L;// Add 'L' suffix! (8 bytes)\n\n// Decimal numbers\nfloat price = 19.99f;      // Add 'f' suffix! (4 bytes)\ndouble precise = 3.14159;  // Default for decimals (8 bytes)\n\n// Others\nboolean isReady = true;    // Only true or false\nchar letter = 'A';         // Single character in single quotes",
+          "keyPoints": [
+            "int is your go-to for whole numbers — 99% of the time, it's enough",
+            "double is default for decimals — only use float when memory is critical",
+            "Don't forget L for long and f for float — the compiler needs a hint!",
+            "Use underscores in big numbers for readability: 1_000_000 = 1000000"
+          ]
+        },
+        {
+          "name": "Reading User Input",
+          "explanation": "Scanner is like a microphone for your program — it listens to what the user types. Import it, point it at System.in (the keyboard), and use different methods based on what you expect. Always close it when done!",
+          "code": "import java.util.Scanner;  // Step 1: Import\n\nScanner scanner = new Scanner(System.in);  // Step 2: Create\n\nSystem.out.print(\"What's your name? \");  // print (no newline)\nString name = scanner.nextLine();  // Reads entire line\n\nSystem.out.print(\"How old are you? \");\nint age = scanner.nextInt();       // Reads just the number\n\nscanner.close();  // Step 3: Close when done!",
+          "keyPoints": [
+            "nextLine() = reads everything until Enter (best for names, sentences)",
+            "nextInt()/nextDouble() = reads just the number, leaves the Enter behind",
+            "Common bug fix: after nextInt(), add nextLine() to consume the leftover Enter",
+            "print() stays on same line, println() moves to next line"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "operators",
+      "title": "Operators",
+      "concepts": [
+        {
+          "name": "Arithmetic Operators",
+          "explanation": "Basic mathematical operations.",
+          "code": "int a = 10, b = 3;\nint sum = a + b;        // 13\nint diff = a - b;       // 7\nint product = a * b;    // 30\nint quotient = a / b;   // 3 (integer division)\nint remainder = a % b;  // 1 (modulo)\n\na++; // Increment: a = 11\nb--; // Decrement: b = 2",
+          "keyPoints": [
+            "/ performs integer division if both operands are integers",
+            "% gives remainder (modulo operation)",
+            "++ increments by 1, -- decrements by 1"
+          ]
+        },
+        {
+          "name": "Comparison Operators",
+          "explanation": "Compare values and return boolean.",
+          "code": "int x = 5, y = 10;\nboolean isEqual = (x == y);      // false\nboolean notEqual = (x != y);     // true\nboolean greater = (x > y);       // false\nboolean less = (x < y);          // true\nboolean greaterEq = (x >= 5);    // true\nboolean lessEq = (y <= 10);      // true",
+          "keyPoints": [
+            "== checks equality, != checks inequality",
+            "Use .equals() for String comparison",
+            "Returns boolean (true or false)"
+          ]
+        },
+        {
+          "name": "Logical Operators",
+          "explanation": "Combine boolean expressions.",
+          "code": "boolean a = true, b = false;\n\n// AND - both must be true\nboolean and = a && b;  // false\n\n// OR - at least one must be true\nboolean or = a || b;   // true\n\n// NOT - inverts boolean\nboolean not = !a;      // false",
+          "keyPoints": [
+            "&& (AND): true only if both are true",
+            "|| (OR): true if at least one is true",
+            "! (NOT): inverts the boolean value"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "control-flow",
+      "title": "Control Flow",
+      "concepts": [
+        {
+          "name": "if / else if / else",
+          "explanation": "Execute code based on conditions.",
+          "code": "int score = 85;\n\nif (score >= 90) {\n    System.out.println(\"Grade: A\");\n} else if (score >= 80) {\n    System.out.println(\"Grade: B\");\n} else if (score >= 70) {\n    System.out.println(\"Grade: C\");\n} else {\n    System.out.println(\"Grade: F\");\n}",
+          "keyPoints": [
+            "Conditions evaluated top to bottom",
+            "First true condition executes, rest are skipped",
+            "else block is optional"
+          ]
+        },
+        {
+          "name": "Ternary Operator",
+          "explanation": "Compact if-else in a single line.",
+          "code": "int age = 20;\nString status = (age >= 18) ? \"Adult\" : \"Minor\";\n\n// Equivalent to:\nString status;\nif (age >= 18) {\n    status = \"Adult\";\n} else {\n    status = \"Minor\";\n}",
+          "keyPoints": [
+            "Syntax: condition ? valueIfTrue : valueIfFalse",
+            "Use for simple if-else assignments",
+            "Makes code more concise"
+          ]
+        },
+        {
+          "name": "switch Statement",
+          "explanation": "Multi-way branch based on value.",
+          "code": "int day = 3;\nString dayName;\n\nswitch (day) {\n    case 1:\n        dayName = \"Monday\";\n        break;\n    case 2:\n        dayName = \"Tuesday\";\n        break;\n    case 3:\n        dayName = \"Wednesday\";\n        break;\n    default:\n        dayName = \"Invalid day\";\n}",
+          "keyPoints": [
+            "Use break to prevent fall-through",
+            "default case handles unmatched values",
+            "Works with int, char, String, enum"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loops",
+      "title": "Loops",
+      "concepts": [
+        {
+          "name": "for Loop",
+          "explanation": "Iterate a fixed number of times.",
+          "code": "// Print numbers 0 to 4\nfor (int i = 0; i < 5; i++) {\n    System.out.println(i);\n}\n\n// Nested loop\nfor (int i = 1; i <= 3; i++) {\n    for (int j = 1; j <= 3; j++) {\n        System.out.print(i * j + \" \");\n    }\n    System.out.println();\n}",
+          "keyPoints": [
+            "Three parts: initialization; condition; update",
+            "Condition checked before each iteration",
+            "Use for known iteration count"
+          ]
+        },
+        {
+          "name": "while Loop",
+          "explanation": "Loop while condition is true.",
+          "code": "int count = 0;\nwhile (count < 5) {\n    System.out.println(count);\n    count++;\n}\n\n// Infinite loop (use with caution)\n// while (true) {\n//     // code\n//     if (condition) break;\n// }",
+          "keyPoints": [
+            "Condition checked before first iteration",
+            "May not execute at all if condition false",
+            "Use when iteration count unknown"
+          ]
+        },
+        {
+          "name": "do-while Loop",
+          "explanation": "Execute at least once, then check condition.",
+          "code": "int num;\nScanner sc = new Scanner(System.in);\n\ndo {\n    System.out.print(\"Enter positive number: \");\n    num = sc.nextInt();\n} while (num <= 0);\n\nSystem.out.println(\"You entered: \" + num);",
+          "keyPoints": [
+            "Condition checked after first iteration",
+            "Guarantees at least one execution",
+            "Useful for input validation"
+          ]
+        },
+        {
+          "name": "for-each Loop",
+          "explanation": "Iterate through arrays or collections.",
+          "code": "String[] fruits = {\"Apple\", \"Banana\", \"Orange\"};\n\nfor (String fruit : fruits) {\n    System.out.println(fruit);\n}\n\nList<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);\nfor (int num : numbers) {\n    System.out.println(num);\n}",
+          "keyPoints": [
+            "Simplified syntax for iterating collections",
+            "Cannot modify collection during iteration",
+            "No access to index"
+          ]
+        },
+        {
+          "name": "break and continue",
+          "explanation": "Control loop execution flow.",
+          "code": "// break: Exit loop immediately\nfor (int i = 0; i < 10; i++) {\n    if (i == 5) break;\n    System.out.println(i); // Prints 0-4\n}\n\n// continue: Skip current iteration\nfor (int i = 0; i < 5; i++) {\n    if (i == 2) continue;\n    System.out.println(i); // Prints 0,1,3,4\n}",
+          "keyPoints": [
+            "break exits the loop entirely",
+            "continue skips to next iteration",
+            "Both affect only innermost loop"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arrays",
+      "title": "Arrays",
+      "concepts": [
+        {
+          "name": "Array Declaration & Initialization",
+          "explanation": "Fixed-size collection of elements of same type.",
+          "code": "// Declaration and initialization\nint[] numbers = {1, 2, 3, 4, 5};\n\n// Declare then initialize\nString[] names = new String[3];\nnames[0] = \"Alice\";\nnames[1] = \"Bob\";\nnames[2] = \"Charlie\";\n\n// Access elements\nint first = numbers[0];  // 1\nint length = numbers.length;  // 5",
+          "keyPoints": [
+            "Array size is fixed after creation",
+            "Index starts at 0",
+            "Use .length property (not method) for size",
+            "Accessing invalid index throws ArrayIndexOutOfBoundsException"
+          ]
+        },
+        {
+          "name": "Multi-dimensional Arrays",
+          "explanation": "Arrays of arrays for matrix-like structures.",
+          "code": "// 2D array (matrix)\nint[][] matrix = {\n    {1, 2, 3},\n    {4, 5, 6},\n    {7, 8, 9}\n};\n\n// Access element\nint value = matrix[1][2];  // 6\n\n// Iterate 2D array\nfor (int i = 0; i < matrix.length; i++) {\n    for (int j = 0; j < matrix[i].length; j++) {\n        System.out.print(matrix[i][j] + \" \");\n    }\n    System.out.println();\n}",
+          "keyPoints": [
+            "2D array: array of arrays",
+            "Access with [row][column]",
+            "Can have jagged arrays (rows of different lengths)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oop",
+      "title": "Object-Oriented Programming",
+      "concepts": [
+        {
+          "name": "Classes and Objects",
+          "explanation": "A class is like a cookie cutter — it defines the shape. An object is the actual cookie you cut from it. You can make many cookies (objects) from one cutter (class), each with their own color/flavor (data).",
+          "code": "// Class = the blueprint/cookie cutter\nclass Car {\n    // Fields = what info each car remembers\n    String brand;\n    int year;\n    \n    // Constructor = how to create a new car\n    Car(String brand, int year) {\n        this.brand = brand;  // 'this' = the car being created\n        this.year = year;\n    }\n    \n    // Method = what the car can do\n    void honk() {\n        System.out.println(brand + \" says beep!\");\n    }\n}\n\n// Objects = actual cars made from the blueprint\nCar myCar = new Car(\"Toyota\", 2024);\nCar yourCar = new Car(\"Honda\", 2023);\nmyCar.honk();  // \"Toyota says beep!\"",
+          "keyPoints": [
+            "Class = blueprint (defines what info and abilities objects have)",
+            "Object = actual instance (a real 'thing' with its own data)",
+            "this = 'the current object I'm working with' (helps avoid confusion)",
+            "Constructor = special method called when you say 'new'"
+          ]
+        },
+        {
+          "name": "Encapsulation",
+          "explanation": "Think of a bank vault. You can't just reach in and grab money — you go through a teller (methods) who checks if you're allowed. Encapsulation hides your data (private) and controls access through getters/setters.",
+          "code": "class BankAccount {\n    private double balance;  // Hidden! Only this class can touch it\n    \n    // Getter = asking \"what's my balance?\"\n    public double getBalance() {\n        return balance;\n    }\n    \n    // Setter with validation = \"I want to set my balance\"\n    public void setBalance(double amount) {\n        if (amount >= 0) {  // Validation! Can't have negative balance\n            this.balance = amount;\n        }\n    }\n    \n    // Business method with rules\n    public void withdraw(double amount) {\n        if (amount > 0 && amount <= balance) {\n            balance -= amount;\n        }\n    }\n}",
+          "keyPoints": [
+            "private = only this class can access (the vault door)",
+            "public = anyone can access (the teller window)",
+            "Getters let outside code READ your data safely",
+            "Setters let outside code WRITE your data with validation"
+          ]
+        },
+        {
+          "name": "Inheritance",
+          "explanation": "Inheritance is like genetics — a child inherits traits from their parent. In Java, a child class automatically gets all the public/protected stuff from its parent, then can add its own features. You get code reuse for free!",
+          "code": "// Parent = generic animal\nclass Animal {\n    String name;\n    \n    void eat() {\n        System.out.println(name + \" is eating\");\n    }\n}\n\n// Child = specific animal, inherits from Animal\nclass Dog extends Animal {\n    void bark() {\n        System.out.println(name + \" says woof!\");\n    }\n}\n\nDog buddy = new Dog();\nbuddy.name = \"Buddy\";  // Inherited from Animal!\nbuddy.eat();   // Inherited: \"Buddy is eating\"\nbuddy.bark();  // Own method: \"Buddy says woof!\"",
+          "keyPoints": [
+            "extends = 'this class inherits from that class'",
+            "Child gets all public/protected members automatically",
+            "Java is single-inheritance only (one parent) — use interfaces for 'multiple'",
+            "super.method() calls the parent's version of a method"
+          ]
+        },
+        {
+          "name": "Polymorphism - Method Overriding",
+          "explanation": "Child class provides specific implementation of parent method.",
+          "code": "class Animal {\n    void makeSound() {\n        System.out.println(\"Some sound\");\n    }\n}\n\nclass Dog extends Animal {\n    @Override\n    void makeSound() {\n        System.out.println(\"Bark\");\n    }\n}\n\nAnimal animal = new Dog();\nanimal.makeSound();  // Prints \"Bark\"",
+          "keyPoints": [
+            "@Override annotation recommended",
+            "Method signature must match parent",
+            "Called method determined at runtime (dynamic binding)"
+          ]
+        },
+        {
+          "name": "Polymorphism - Method Overloading",
+          "explanation": "Multiple methods with same name but different parameters.",
+          "code": "class Calculator {\n    int add(int a, int b) {\n        return a + b;\n    }\n    \n    double add(double a, double b) {\n        return a + b;\n    }\n    \n    int add(int a, int b, int c) {\n        return a + b + c;\n    }\n}\n\nCalculator calc = new Calculator();\ncalc.add(5, 10);        // Calls first method\ncalc.add(5.5, 10.5);    // Calls second method\ncalc.add(1, 2, 3);      // Calls third method",
+          "keyPoints": [
+            "Same method name, different parameters",
+            "Compile-time polymorphism",
+            "Return type alone doesn't distinguish methods"
+          ]
+        },
+        {
+          "name": "Abstract Classes",
+          "explanation": "Cannot be instantiated; used as base for other classes.",
+          "code": "abstract class Shape {\n    abstract double area();  // Abstract method\n    \n    void display() {  // Concrete method\n        System.out.println(\"Area: \" + area());\n    }\n}\n\nclass Circle extends Shape {\n    double radius;\n    \n    Circle(double radius) {\n        this.radius = radius;\n    }\n    \n    @Override\n    double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\nShape shape = new Circle(5);\nshape.display();",
+          "keyPoints": [
+            "Cannot create objects of abstract class",
+            "Can have abstract and concrete methods",
+            "Child must implement all abstract methods",
+            "Use when classes share common behavior"
+          ]
+        },
+        {
+          "name": "Interfaces",
+          "explanation": "Contract specifying what methods a class must implement.",
+          "code": "interface Drawable {\n    void draw();  // Abstract by default\n}\n\ninterface Resizable {\n    void resize(int width, int height);\n}\n\nclass Rectangle implements Drawable, Resizable {\n    public void draw() {\n        System.out.println(\"Drawing rectangle\");\n    }\n    \n    public void resize(int w, int h) {\n        System.out.println(\"Resizing to \" + w + \"x\" + h);\n    }\n}\n\nRectangle rect = new Rectangle();\nrect.draw();\nrect.resize(100, 200);",
+          "keyPoints": [
+            "All methods public and abstract by default",
+            "Class can implement multiple interfaces",
+            "Achieves multiple inheritance",
+            "Java 8+: interfaces can have default methods"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "collections",
+      "title": "Collections Framework",
+      "concepts": [
+        {
+          "name": "ArrayList",
+          "explanation": "Dynamic array that can grow/shrink.",
+          "code": "import java.util.ArrayList;\n\nArrayList<String> list = new ArrayList<>();\n\n// Add elements\nlist.add(\"Java\");\nlist.add(\"Python\");\nlist.add(\"JavaScript\");\n\n// Access\nString first = list.get(0);  // \"Java\"\n\n// Remove\nlist.remove(1);  // Removes \"Python\"\n\n// Size\nint size = list.size();\n\n// Iterate\nfor (String lang : list) {\n    System.out.println(lang);\n}",
+          "keyPoints": [
+            "Resizable array implementation",
+            "Maintains insertion order",
+            "Allows duplicates and null",
+            "Fast random access O(1)"
+          ]
+        },
+        {
+          "name": "HashMap",
+          "explanation": "Key-value pairs for fast lookups.",
+          "code": "import java.util.HashMap;\n\nHashMap<String, Integer> map = new HashMap<>();\n\n// Put key-value pairs\nmap.put(\"Alice\", 25);\nmap.put(\"Bob\", 30);\nmap.put(\"Charlie\", 35);\n\n// Get value\nint age = map.get(\"Alice\");  // 25\n\n// Check if key exists\nif (map.containsKey(\"Bob\")) {\n    System.out.println(\"Found\");\n}\n\n// Iterate\nfor (String key : map.keySet()) {\n    System.out.println(key + \" = \" + map.get(key));\n}",
+          "keyPoints": [
+            "Stores key-value pairs",
+            "Keys must be unique",
+            "Fast lookup O(1) average",
+            "No guaranteed order"
+          ]
+        },
+        {
+          "name": "HashSet",
+          "explanation": "Collection of unique elements.",
+          "code": "import java.util.HashSet;\n\nHashSet<String> set = new HashSet<>();\n\n// Add elements\nset.add(\"Apple\");\nset.add(\"Banana\");\nset.add(\"Apple\");  // Duplicate ignored\n\n// Check if contains\nboolean has = set.contains(\"Apple\");  // true\n\n// Remove\nset.remove(\"Banana\");\n\n// Size\nint size = set.size();  // 1\n\nfor (String item : set) {\n    System.out.println(item);\n}",
+          "keyPoints": [
+            "No duplicate elements",
+            "No guaranteed order",
+            "Fast add/remove/contains O(1)",
+            "Allows one null element"
+          ]
+        },
+        {
+          "name": "LinkedList",
+          "explanation": "Doubly-linked list for efficient insertions/deletions.",
+          "code": "import java.util.LinkedList;\n\nLinkedList<String> list = new LinkedList<>();\n\n// Add elements\nlist.add(\"First\");\nlist.add(\"Second\");\nlist.addFirst(\"Start\");\nlist.addLast(\"End\");\n\n// Remove\nString first = list.removeFirst();\nString last = list.removeLast();\n\n// Peek (view without removing)\nString head = list.peekFirst();",
+          "keyPoints": [
+            "Efficient insertion/deletion at ends",
+            "Slower random access than ArrayList",
+            "Can be used as Stack or Queue",
+            "More memory overhead per element"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exceptions",
+      "title": "Exception Handling",
+      "concepts": [
+        {
+          "name": "try-catch-finally",
+          "explanation": "Handle errors gracefully without crashing.",
+          "code": "try {\n    int result = 10 / 0;  // ArithmeticException\n} catch (ArithmeticException e) {\n    System.out.println(\"Cannot divide by zero\");\n    e.printStackTrace();\n} finally {\n    System.out.println(\"Always executes\");\n}\n\n// Multiple catch blocks\ntry {\n    int[] arr = {1, 2, 3};\n    System.out.println(arr[5]);\n} catch (ArrayIndexOutOfBoundsException e) {\n    System.out.println(\"Index error\");\n} catch (Exception e) {\n    System.out.println(\"General error\");\n}",
+          "keyPoints": [
+            "try: Code that may throw exception",
+            "catch: Handle specific exception",
+            "finally: Always executes (cleanup code)",
+            "Multiple catch blocks for different exceptions"
+          ]
+        },
+        {
+          "name": "throw and throws",
+          "explanation": "Manually throw exceptions or declare method throws.",
+          "code": "// throw: Manually throw exception\nvoid checkAge(int age) {\n    if (age < 18) {\n        throw new IllegalArgumentException(\"Too young\");\n    }\n}\n\n// throws: Declare method may throw exception\nvoid readFile() throws IOException {\n    FileReader fr = new FileReader(\"file.txt\");\n}\n\n// Caller must handle\ntry {\n    readFile();\n} catch (IOException e) {\n    e.printStackTrace();\n}",
+          "keyPoints": [
+            "throw: Actually throws exception",
+            "throws: Declares method may throw",
+            "Checked exceptions must be handled or declared",
+            "RuntimeException doesn't require throws"
+          ]
+        },
+        {
+          "name": "Custom Exceptions",
+          "explanation": "Create your own exception types.",
+          "code": "// Define custom exception\nclass InvalidAgeException extends Exception {\n    public InvalidAgeException(String message) {\n        super(message);\n    }\n}\n\n// Use custom exception\nclass Person {\n    void setAge(int age) throws InvalidAgeException {\n        if (age < 0 || age > 150) {\n            throw new InvalidAgeException(\"Invalid age: \" + age);\n        }\n    }\n}\n\n// Handle it\ntry {\n    Person p = new Person();\n    p.setAge(-5);\n} catch (InvalidAgeException e) {\n    System.out.println(e.getMessage());\n}",
+          "keyPoints": [
+            "Extend Exception for checked exceptions",
+            "Extend RuntimeException for unchecked",
+            "Provide meaningful error messages",
+            "Use for domain-specific errors"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "strings",
+      "title": "Strings",
+      "concepts": [
+        {
+          "name": "String Methods",
+          "explanation": "Common operations on String objects.",
+          "code": "String str = \"  Hello World  \";\n\n// Length\nint len = str.length();  // 15\n\n// Trim whitespace\nString trimmed = str.trim();  // \"Hello World\"\n\n// Uppercase/Lowercase\nString upper = str.toUpperCase();  // \"  HELLO WORLD  \"\nString lower = str.toLowerCase();  // \"  hello world  \"\n\n// Substring\nString sub = trimmed.substring(0, 5);  // \"Hello\"\n\n// Replace\nString replaced = trimmed.replace(\"World\", \"Java\");\n\n// Split\nString[] words = trimmed.split(\" \");  // [\"Hello\", \"World\"]\n\n// Contains\nboolean has = trimmed.contains(\"Hello\");  // true",
+          "keyPoints": [
+            "Strings are immutable",
+            "Methods return new String objects",
+            "Use .equals() for comparison, not ==",
+            "StringBuilder for efficient concatenation"
+          ]
+        },
+        {
+          "name": "StringBuilder",
+          "explanation": "Mutable string for efficient modifications.",
+          "code": "StringBuilder sb = new StringBuilder(\"Hello\");\n\n// Append\nsb.append(\" World\");  // \"Hello World\"\nsb.append(\"!\");       // \"Hello World!\"\n\n// Insert\nsb.insert(6, \"Java \");  // \"Hello Java World!\"\n\n// Delete\nsb.delete(6, 11);       // \"Hello World!\"\n\n// Reverse\nsb.reverse();           // \"!dlroW olleH\"\n\n// Convert to String\nString result = sb.toString();",
+          "keyPoints": [
+            "Mutable (can be modified)",
+            "More efficient for concatenation in loops",
+            "Not thread-safe (use StringBuffer for thread-safety)",
+            "Methods modify the object in place"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "streams",
+      "title": "Streams API (Java 8+)",
+      "concepts": [
+        {
+          "name": "Stream Operations",
+          "explanation": "Functional-style operations on collections.",
+          "code": "import java.util.Arrays;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nList<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);\n\n// Filter\nList<Integer> evens = numbers.stream()\n    .filter(n -> n % 2 == 0)\n    .collect(Collectors.toList());  // [2, 4, 6]\n\n// Map\nList<Integer> squares = numbers.stream()\n    .map(n -> n * n)\n    .collect(Collectors.toList());  // [1, 4, 9, 16, 25, 36]\n\n// Reduce\nint sum = numbers.stream()\n    .reduce(0, (a, b) -> a + b);  // 21\n\n// ForEach\nnumbers.stream()\n    .forEach(System.out::println);",
+          "keyPoints": [
+            "filter: Select elements matching condition",
+            "map: Transform each element",
+            "reduce: Combine elements to single value",
+            "Streams are lazy and chainable"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lambda",
+      "title": "Lambda Expressions",
+      "concepts": [
+        {
+          "name": "Lambda Syntax",
+          "explanation": "Concise way to write anonymous functions.",
+          "code": "// Traditional anonymous class\nRunnable r1 = new Runnable() {\n    public void run() {\n        System.out.println(\"Hello\");\n    }\n};\n\n// Lambda expression\nRunnable r2 = () -> System.out.println(\"Hello\");\n\n// With parameters\nComparator<String> comp = (s1, s2) -> s1.compareTo(s2);\n\n// Multiple statements\nComparator<String> comp2 = (s1, s2) -> {\n    System.out.println(\"Comparing\");\n    return s1.compareTo(s2);\n};",
+          "keyPoints": [
+            "Syntax: (parameters) -> expression",
+            "Use {} for multiple statements",
+            "Type inference for parameters",
+            "Works with functional interfaces"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generics",
+      "title": "Generics",
+      "concepts": [
+        {
+          "name": "Generic Classes",
+          "explanation": "Create type-safe classes that work with any type.",
+          "code": "// Generic class\npublic class Box<T> {\n    private T value;\n    \n    public void set(T value) {\n        this.value = value;\n    }\n    \n    public T get() {\n        return value;\n    }\n}\n\n// Usage\nBox<String> stringBox = new Box<>();\nstringBox.set(\"Hello\");\nString value = stringBox.get();\n\nBox<Integer> intBox = new Box<>();\nintBox.set(42);\nint number = intBox.get();",
+          "keyPoints": [
+            "T is type parameter (can be any name)",
+            "Provides type safety at compile time",
+            "Eliminates need for casting",
+            "Common conventions: T (Type), E (Element), K (Key), V (Value)"
+          ]
+        },
+        {
+          "name": "Generic Methods",
+          "explanation": "Methods that work with different types.",
+          "code": "public class Utils {\n    // Generic method\n    public static <T> void printArray(T[] array) {\n        for (T element : array) {\n            System.out.print(element + \" \");\n        }\n        System.out.println();\n    }\n    \n    // Multiple type parameters\n    public static <K, V> void printPair(K key, V value) {\n        System.out.println(key + \" = \" + value);\n    }\n}\n\n// Usage\nInteger[] intArray = {1, 2, 3};\nString[] strArray = {\"A\", \"B\", \"C\"};\nUtils.printArray(intArray);\nUtils.printArray(strArray);\nUtils.printPair(\"Name\", \"John\");",
+          "keyPoints": [
+            "Type parameter before return type",
+            "Type inferred from arguments",
+            "Can have multiple type parameters",
+            "Increases code reusability"
+          ]
+        },
+        {
+          "name": "Bounded Type Parameters",
+          "explanation": "Restrict types that can be used as type arguments.",
+          "code": "// Upper bound (extends)\npublic class NumberBox<T extends Number> {\n    private T value;\n    \n    public double doubleValue() {\n        return value.doubleValue();\n    }\n}\n\n// Usage\nNumberBox<Integer> intBox = new NumberBox<>();  // OK\nNumberBox<Double> doubleBox = new NumberBox<>();  // OK\n// NumberBox<String> strBox = new NumberBox<>();  // ERROR\n\n// Multiple bounds\npublic <T extends Number & Comparable<T>> T max(T a, T b) {\n    return a.compareTo(b) > 0 ? a : b;\n}",
+          "keyPoints": [
+            "extends limits type to specific class/interface",
+            "Can access methods of bound type",
+            "Multiple bounds: T extends Class & Interface1 & Interface2",
+            "Enables more specific operations on generic types"
+          ]
+        },
+        {
+          "name": "Wildcards",
+          "explanation": "Flexible type parameters for generic methods.",
+          "code": "import java.util.List;\nimport java.util.ArrayList;\n\npublic class WildcardExample {\n    // Unbounded wildcard\n    public static void printList(List<?> list) {\n        for (Object item : list) {\n            System.out.println(item);\n        }\n    }\n    \n    // Upper bounded wildcard\n    public static double sumList(List<? extends Number> list) {\n        double sum = 0.0;\n        for (Number num : list) {\n            sum += num.doubleValue();\n        }\n        return sum;\n    }\n    \n    // Lower bounded wildcard\n    public static void addNumbers(List<? super Integer> list) {\n        list.add(1);\n        list.add(2);\n    }\n}\n\n// Usage\nList<Integer> ints = Arrays.asList(1, 2, 3);\nList<Double> doubles = Arrays.asList(1.1, 2.2);\nsumList(ints);    // OK\nsumList(doubles); // OK",
+          "keyPoints": [
+            "? represents unknown type",
+            "? extends T: upper bounded (read-only)",
+            "? super T: lower bounded (write-only)",
+            "Use when you don't need to know exact type"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced-collections",
+      "title": "Advanced Collections",
+      "concepts": [
+        {
+          "name": "TreeMap",
+          "explanation": "Sorted map implementation using Red-Black tree.",
+          "code": "import java.util.TreeMap;\n\nTreeMap<String, Integer> map = new TreeMap<>();\n\n// Add elements (automatically sorted by key)\nmap.put(\"Charlie\", 30);\nmap.put(\"Alice\", 25);\nmap.put(\"Bob\", 28);\n\n// Iterate (in sorted order)\nfor (String key : map.keySet()) {\n    System.out.println(key + \" = \" + map.get(key));\n}  // Output: Alice, Bob, Charlie\n\n// First and last\nString first = map.firstKey();   // \"Alice\"\nString last = map.lastKey();     // \"Charlie\"\n\n// Submap\nTreeMap<String, Integer> sub = new TreeMap<>(map.subMap(\"B\", \"D\"));",
+          "keyPoints": [
+            "Keys sorted in natural order or by Comparator",
+            "O(log n) for add, remove, contains",
+            "NavigableMap operations (firstKey, lastKey, subMap)",
+            "No null keys (throws NullPointerException)"
+          ]
+        },
+        {
+          "name": "TreeSet",
+          "explanation": "Sorted set implementation, no duplicates.",
+          "code": "import java.util.TreeSet;\n\nTreeSet<Integer> set = new TreeSet<>();\n\n// Add elements (automatically sorted)\nset.add(5);\nset.add(1);\nset.add(3);\nset.add(1);  // Duplicate ignored\n\nSystem.out.println(set);  // [1, 3, 5]\n\n// Navigation methods\nint first = set.first();    // 1\nint last = set.last();      // 5\nInteger lower = set.lower(3);   // 1 (greatest < 3)\nInteger higher = set.higher(3); // 5 (smallest > 3)\n\n// Subset\nTreeSet<Integer> sub = new TreeSet<>(set.subSet(2, 6));",
+          "keyPoints": [
+            "Elements sorted in natural order",
+            "No duplicates allowed",
+            "O(log n) operations",
+            "NavigableSet methods available"
+          ]
+        },
+        {
+          "name": "Queue & Deque",
+          "explanation": "FIFO queue and double-ended queue.",
+          "code": "import java.util.Queue;\nimport java.util.LinkedList;\nimport java.util.Deque;\nimport java.util.ArrayDeque;\n\n// Queue (FIFO)\nQueue<String> queue = new LinkedList<>();\nqueue.offer(\"First\");   // Add to tail\nqueue.offer(\"Second\");\nqueue.offer(\"Third\");\n\nString head = queue.peek();    // \"First\" (view, don't remove)\nString removed = queue.poll(); // \"First\" (remove and return)\n\n// Deque (double-ended queue)\nDeque<String> deque = new ArrayDeque<>();\ndeque.addFirst(\"Start\");\ndeque.addLast(\"End\");\ndeque.removeFirst();\ndeque.removeLast();\n\n// Use as Stack\ndeque.push(\"A\");  // Add to front\ndeque.push(\"B\");\nString top = deque.pop();  // Remove from front (\"B\")",
+          "keyPoints": [
+            "Queue: FIFO (First In First Out)",
+            "offer/poll for safe operations",
+            "Deque: Insert/remove from both ends",
+            "Can be used as Stack or Queue"
+          ]
+        },
+        {
+          "name": "PriorityQueue",
+          "explanation": "Queue where elements are ordered by priority.",
+          "code": "import java.util.PriorityQueue;\nimport java.util.Comparator;\n\n// Min heap (natural order)\nPriorityQueue<Integer> minHeap = new PriorityQueue<>();\nminHeap.offer(5);\nminHeap.offer(1);\nminHeap.offer(3);\n\nSystem.out.println(minHeap.poll());  // 1 (smallest)\nSystem.out.println(minHeap.poll());  // 3\n\n// Max heap (reverse order)\nPriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());\nmaxHeap.offer(5);\nmaxHeap.offer(1);\nmaxHeap.offer(3);\n\nSystem.out.println(maxHeap.poll());  // 5 (largest)\n\n// Custom objects\nPriorityQueue<Task> tasks = new PriorityQueue<>(\n    Comparator.comparingInt(Task::getPriority)\n);",
+          "keyPoints": [
+            "Elements ordered by natural order or Comparator",
+            "O(log n) for offer and poll",
+            "O(1) for peek",
+            "Not thread-safe"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "file-io",
+      "title": "File I/O",
+      "concepts": [
+        {
+          "name": "Reading Files",
+          "explanation": "Read text files using various methods.",
+          "code": "import java.io.*;\nimport java.nio.file.*;\nimport java.util.List;\n\n// Method 1: Files.readAllLines (Java 8+)\ntry {\n    List<String> lines = Files.readAllLines(Paths.get(\"file.txt\"));\n    for (String line : lines) {\n        System.out.println(line);\n    }\n} catch (IOException e) {\n    e.printStackTrace();\n}\n\n// Method 2: BufferedReader\ntry (BufferedReader br = new BufferedReader(new FileReader(\"file.txt\"))) {\n    String line;\n    while ((line = br.readLine()) != null) {\n        System.out.println(line);\n    }\n} catch (IOException e) {\n    e.printStackTrace();\n}\n\n// Method 3: Scanner\ntry (Scanner scanner = new Scanner(new File(\"file.txt\"))) {\n    while (scanner.hasNextLine()) {\n        System.out.println(scanner.nextLine());\n    }\n} catch (FileNotFoundException e) {\n    e.printStackTrace();\n}",
+          "keyPoints": [
+            "Files.readAllLines: Simple, reads all at once",
+            "BufferedReader: Efficient for large files",
+            "Scanner: Flexible parsing",
+            "Always use try-with-resources for auto-close"
+          ]
+        },
+        {
+          "name": "Writing Files",
+          "explanation": "Write text to files.",
+          "code": "import java.io.*;\nimport java.nio.file.*;\nimport java.util.Arrays;\n\n// Method 1: Files.write (Java 8+)\ntry {\n    List<String> lines = Arrays.asList(\"Line 1\", \"Line 2\", \"Line 3\");\n    Files.write(Paths.get(\"output.txt\"), lines);\n} catch (IOException e) {\n    e.printStackTrace();\n}\n\n// Method 2: BufferedWriter\ntry (BufferedWriter writer = new BufferedWriter(new FileWriter(\"output.txt\"))) {\n    writer.write(\"Hello, World!\");\n    writer.newLine();\n    writer.write(\"Second line\");\n} catch (IOException e) {\n    e.printStackTrace();\n}\n\n// Append to file\ntry (BufferedWriter writer = new BufferedWriter(\n    new FileWriter(\"output.txt\", true))) {  // true = append mode\n    writer.write(\"Appended line\");\n} catch (IOException e) {\n    e.printStackTrace();\n}",
+          "keyPoints": [
+            "Files.write: Simple for small files",
+            "BufferedWriter: Better performance for large files",
+            "Use append mode (true) to add to existing file",
+            "Always close writers (use try-with-resources)"
+          ]
+        },
+        {
+          "name": "File Operations",
+          "explanation": "Common file and directory operations.",
+          "code": "import java.io.File;\nimport java.nio.file.*;\n\n// Check file existence\nFile file = new File(\"myfile.txt\");\nboolean exists = file.exists();\nboolean isFile = file.isFile();\nboolean isDir = file.isDirectory();\n\n// Get file info\nlong size = file.length();  // In bytes\nString name = file.getName();\nString path = file.getAbsolutePath();\n\n// Create/delete file\ntry {\n    boolean created = file.createNewFile();\n    boolean deleted = file.delete();\n} catch (IOException e) {\n    e.printStackTrace();\n}\n\n// Directory operations\nFile dir = new File(\"mydir\");\nboolean dirCreated = dir.mkdir();  // Create single directory\nboolean dirsCreated = dir.mkdirs();  // Create nested directories\n\n// List files in directory\nFile[] files = dir.listFiles();\nfor (File f : files) {\n    System.out.println(f.getName());\n}\n\n// Copy/move files (Java 7+)\ntry {\n    Files.copy(Paths.get(\"source.txt\"), Paths.get(\"dest.txt\"));\n    Files.move(Paths.get(\"old.txt\"), Paths.get(\"new.txt\"));\n} catch (IOException e) {\n    e.printStackTrace();\n}",
+          "keyPoints": [
+            "File class for file/directory operations",
+            "exists(), isFile(), isDirectory() for checks",
+            "Files class (Java 7+) for modern operations",
+            "mkdir() creates one dir, mkdirs() creates nested"
+          ]
+        },
+        {
+          "name": "Serialization",
+          "explanation": "Save and restore objects to/from files.",
+          "code": "import java.io.*;\n\n// Serializable class\nclass Person implements Serializable {\n    private static final long serialVersionUID = 1L;\n    private String name;\n    private int age;\n    private transient String password;  // Not serialized\n    \n    Person(String name, int age, String password) {\n        this.name = name;\n        this.age = age;\n        this.password = password;\n    }\n}\n\n// Serialize (write object to file)\ntry (ObjectOutputStream out = new ObjectOutputStream(\n    new FileOutputStream(\"person.ser\"))) {\n    Person person = new Person(\"Alice\", 30, \"secret\");\n    out.writeObject(person);\n} catch (IOException e) {\n    e.printStackTrace();\n}\n\n// Deserialize (read object from file)\ntry (ObjectInputStream in = new ObjectInputStream(\n    new FileInputStream(\"person.ser\"))) {\n    Person person = (Person) in.readObject();\n    System.out.println(person.name);  // \"Alice\"\n} catch (IOException | ClassNotFoundException e) {\n    e.printStackTrace();\n}",
+          "keyPoints": [
+            "Implement Serializable interface",
+            "serialVersionUID for version control",
+            "transient keyword excludes fields",
+            "ObjectOutputStream/ObjectInputStream for serialization"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multithreading",
+      "title": "Multithreading & Concurrency",
+      "concepts": [
+        {
+          "name": "Creating Threads",
+          "explanation": "Two ways to create threads in Java.",
+          "code": "// Method 1: Extend Thread class\nclass MyThread extends Thread {\n    public void run() {\n        System.out.println(\"Thread running: \" + Thread.currentThread().getName());\n    }\n}\n\nMyThread t = new MyThread();\nt.start();\n\n// Method 2: Implement Runnable (preferred)\nclass MyRunnable implements Runnable {\n    public void run() {\n        System.out.println(\"Runnable running\");\n    }\n}\n\nThread t2 = new Thread(new MyRunnable());\nt2.start();\n\n// Lambda (Java 8+)\nThread t3 = new Thread(() -> {\n    System.out.println(\"Lambda thread\");\n});\nt3.start();",
+          "keyPoints": [
+            "Runnable interface preferred over extending Thread",
+            "Call start(), not run()",
+            "start() creates new thread, run() executes in current thread",
+            "Use lambda for concise thread creation"
+          ]
+        },
+        {
+          "name": "Thread Synchronization",
+          "explanation": "Prevent race conditions with synchronized.",
+          "code": "class Counter {\n    private int count = 0;\n    \n    // Synchronized method\n    public synchronized void increment() {\n        count++;\n    }\n    \n    // Synchronized block\n    public void decrement() {\n        synchronized(this) {\n            count--;\n        }\n    }\n    \n    public int getCount() {\n        return count;\n    }\n}\n\n// Usage\nCounter counter = new Counter();\n\nThread t1 = new Thread(() -> {\n    for (int i = 0; i < 1000; i++) {\n        counter.increment();\n    }\n});\n\nThread t2 = new Thread(() -> {\n    for (int i = 0; i < 1000; i++) {\n        counter.increment();\n    }\n});\n\nt1.start();\nt2.start();\nt1.join();  // Wait for t1 to finish\nt2.join();\n\nSystem.out.println(\"Count: \" + counter.getCount());  // 2000",
+          "keyPoints": [
+            "synchronized prevents concurrent access",
+            "Can synchronize methods or blocks",
+            "Synchronized on object's monitor",
+            "join() waits for thread to complete"
+          ]
+        },
+        {
+          "name": "ExecutorService",
+          "explanation": "Manage thread pools efficiently.",
+          "code": "import java.util.concurrent.*;\n\n// Fixed thread pool\nExecutorService executor = Executors.newFixedThreadPool(5);\n\n// Submit tasks\nfor (int i = 0; i < 10; i++) {\n    final int taskId = i;\n    executor.submit(() -> {\n        System.out.println(\"Task \" + taskId + \" by \" + \n            Thread.currentThread().getName());\n    });\n}\n\n// Shutdown executor\nexecutor.shutdown();\ntry {\n    executor.awaitTermination(1, TimeUnit.MINUTES);\n} catch (InterruptedException e) {\n    e.printStackTrace();\n}\n\n// Callable (returns result)\nExecutorService exec = Executors.newSingleThreadExecutor();\nFuture<Integer> future = exec.submit(() -> {\n    Thread.sleep(1000);\n    return 42;\n});\n\ntry {\n    Integer result = future.get();  // Blocks until result available\n    System.out.println(\"Result: \" + result);\n} catch (Exception e) {\n    e.printStackTrace();\n}\n\nexec.shutdown();",
+          "keyPoints": [
+            "ExecutorService manages thread pool",
+            "newFixedThreadPool(n): Fixed number of threads",
+            "newCachedThreadPool(): Grows as needed",
+            "Callable returns value, Runnable doesn't",
+            "Future.get() retrieves result"
+          ]
+        },
+        {
+          "name": "CompletableFuture",
+          "explanation": "Asynchronous programming with chaining.",
+          "code": "import java.util.concurrent.CompletableFuture;\n\n// Async task\nCompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {\n    // Simulate long operation\n    try { Thread.sleep(1000); } catch (InterruptedException e) {}\n    return \"Hello\";\n});\n\n// Chain operations\nfuture.thenApply(s -> s + \" World\")\n      .thenApply(String::toUpperCase)\n      .thenAccept(System.out::println);  // Prints: HELLO WORLD\n\n// Combine futures\nCompletableFuture<String> future1 = CompletableFuture.supplyAsync(() -> \"Hello\");\nCompletableFuture<String> future2 = CompletableFuture.supplyAsync(() -> \"World\");\n\nCompletableFuture<String> combined = future1.thenCombine(future2, \n    (s1, s2) -> s1 + \" \" + s2);\n\nSystem.out.println(combined.get());  // \"Hello World\"\n\n// Exception handling\nCompletableFuture.supplyAsync(() -> {\n    if (true) throw new RuntimeException(\"Error\");\n    return \"Success\";\n}).exceptionally(ex -> {\n    System.out.println(\"Caught: \" + ex.getMessage());\n    return \"Default Value\";\n}).thenAccept(System.out::println);",
+          "keyPoints": [
+            "supplyAsync(): Run task asynchronously",
+            "thenApply(): Transform result",
+            "thenAccept(): Consume result",
+            "thenCombine(): Combine multiple futures",
+            "exceptionally(): Handle exceptions"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "datetime",
+      "title": "Date & Time API (Java 8+)",
+      "concepts": [
+        {
+          "name": "LocalDate, LocalTime, LocalDateTime",
+          "explanation": "Work with dates and times without time zones.",
+          "code": "import java.time.*;\n\n// Current date\nLocalDate today = LocalDate.now();  // 2024-02-05\n\n// Specific date\nLocalDate date = LocalDate.of(2024, 12, 25);\nLocalDate parsed = LocalDate.parse(\"2024-12-25\");\n\n// Date operations\nLocalDate tomorrow = today.plusDays(1);\nLocalDate nextMonth = today.plusMonths(1);\nLocalDate lastYear = today.minusYears(1);\n\n// Get components\nint year = today.getYear();\nMonth month = today.getMonth();\nint day = today.getDayOfMonth();\nDayOfWeek dayOfWeek = today.getDayOfWeek();\n\n// LocalTime\nLocalTime now = LocalTime.now();  // 14:30:45.123\nLocalTime time = LocalTime.of(14, 30);  // 14:30\n\n// LocalDateTime (date + time)\nLocalDateTime dateTime = LocalDateTime.now();\nLocalDateTime specific = LocalDateTime.of(2024, 12, 25, 10, 30);",
+          "keyPoints": [
+            "LocalDate: Date without time",
+            "LocalTime: Time without date",
+            "LocalDateTime: Date + time, no timezone",
+            "Immutable - operations return new instances",
+            "Use plusDays(), minusDays() for arithmetic"
+          ]
+        },
+        {
+          "name": "ZonedDateTime",
+          "explanation": "Date and time with time zone information.",
+          "code": "import java.time.*;\nimport java.time.format.DateTimeFormatter;\n\n// Current time in specific timezone\nZonedDateTime tokyo = ZonedDateTime.now(ZoneId.of(\"Asia/Tokyo\"));\nZonedDateTime newYork = ZonedDateTime.now(ZoneId.of(\"America/New_York\"));\n\n// Convert between timezones\nZonedDateTime utc = ZonedDateTime.now(ZoneId.of(\"UTC\"));\nZonedDateTime london = utc.withZoneSameInstant(ZoneId.of(\"Europe/London\"));\n\n// Format\nDateTimeFormatter formatter = DateTimeFormatter.ofPattern(\"yyyy-MM-dd HH:mm:ss z\");\nString formatted = tokyo.format(formatter);\n\n// Parse\nZonedDateTime parsed = ZonedDateTime.parse(\"2024-12-25T10:30:00+09:00[Asia/Tokyo]\");",
+          "keyPoints": [
+            "ZonedDateTime: Date + time + timezone",
+            "withZoneSameInstant(): Convert timezones",
+            "DateTimeFormatter: Format and parse",
+            "Important for global applications"
+          ]
+        },
+        {
+          "name": "Period & Duration",
+          "explanation": "Measure date and time differences.",
+          "code": "import java.time.*;\n\n// Period: Date-based (days, months, years)\nLocalDate start = LocalDate.of(2024, 1, 1);\nLocalDate end = LocalDate.of(2024, 12, 31);\n\nPeriod period = Period.between(start, end);\nint days = period.getDays();      // Days component\nint months = period.getMonths();  // Months component\nlong totalDays = start.until(end).getDays();  // Total days\n\n// Duration: Time-based (hours, minutes, seconds)\nLocalTime startTime = LocalTime.of(9, 0);\nLocalTime endTime = LocalTime.of(17, 30);\n\nDuration duration = Duration.between(startTime, endTime);\nlong hours = duration.toHours();      // 8\nlong minutes = duration.toMinutes();  // 510\n\n// Add duration\nLocalDateTime now = LocalDateTime.now();\nLocalDateTime later = now.plus(Duration.ofHours(2));",
+          "keyPoints": [
+            "Period: Date-based amount (days, months, years)",
+            "Duration: Time-based amount (hours, minutes, seconds)",
+            "Use between() to calculate difference",
+            "Can add/subtract from dates/times"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wrappers",
+      "title": "Wrapper Classes",
+      "concepts": [
+        {
+          "name": "Wrapper Classes & Autoboxing",
+          "explanation": "Object wrappers for primitive types.",
+          "code": "// Wrapper classes for primitives\nInteger intObj = Integer.valueOf(10);\nDouble doubleObj = Double.valueOf(3.14);\nBoolean boolObj = Boolean.valueOf(true);\nCharacter charObj = Character.valueOf('A');\n\n// Autoboxing (automatic primitive to wrapper)\nInteger auto = 10;  // Compiler: Integer.valueOf(10)\n\n// Unboxing (automatic wrapper to primitive)\nint primitive = auto;  // Compiler: auto.intValue()\n\n// Parsing strings\nint num = Integer.parseInt(\"123\");\ndouble d = Double.parseDouble(\"3.14\");\nboolean b = Boolean.parseBoolean(\"true\");\n\n// Useful constants\nint maxInt = Integer.MAX_VALUE;  // 2147483647\nint minInt = Integer.MIN_VALUE;  // -2147483648\n\n// Compare wrappers\nInteger a = 100, b = 100;\nSystem.out.println(a == b);  // true (cached -128 to 127)\n\nInteger c = 200, d = 200;\nSystem.out.println(c == d);  // false (different objects)\nSystem.out.println(c.equals(d));  // true (use equals!))",
+          "keyPoints": [
+            "Each primitive has wrapper: Integer, Double, Boolean, etc.",
+            "Autoboxing: primitive → wrapper automatic",
+            "Unboxing: wrapper → primitive automatic",
+            "Use equals() for wrapper comparison, not ==",
+            "valueOf() preferred over constructor (caching)",
+            "parseInt() converts String to primitive"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "optional",
+      "title": "Optional Class",
+      "concepts": [
+        {
+          "name": "Optional for Null Safety",
+          "explanation": "Avoid NullPointerException with Optional.",
+          "code": "import java.util.Optional;\n\n// Create Optional\nOptional<String> optional = Optional.of(\"Hello\");\nOptional<String> nullable = Optional.ofNullable(getUserName());  // May be null\nOptional<String> empty = Optional.empty();\n\n// Check if present\nif (optional.isPresent()) {\n    String value = optional.get();\n    System.out.println(value);\n}\n\n// Better: Use ifPresent\noptional.ifPresent(value -> System.out.println(value));\n\n// Provide default value\nString name = nullable.orElse(\"Default Name\");\nString name2 = nullable.orElseGet(() -> getDefaultName());\n\n// Throw exception if empty\nString name3 = nullable.orElseThrow(() -> new IllegalStateException(\"No name\"));\n\n// Transform value\nOptional<Integer> length = optional.map(String::length);\n\n// Chain operations\nOptional<User> user = findUserById(id);\nString email = user\n    .map(User::getEmail)\n    .map(String::toLowerCase)\n    .orElse(\"no-email@example.com\");\n\n// Filter\nOptional<String> longName = optional.filter(s -> s.length() > 5);",
+          "keyPoints": [
+            "Optional.of(): Value must not be null",
+            "Optional.ofNullable(): Value can be null",
+            "isPresent() + get(): Check before retrieving",
+            "orElse(): Provide default value",
+            "orElseThrow(): Throw exception if empty",
+            "map(), filter(): Transform and filter",
+            "Helps avoid NullPointerException"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "math-random",
+      "title": "Math & Random",
+      "concepts": [
+        {
+          "name": "Math Class",
+          "explanation": "Mathematical operations and constants.",
+          "code": "// Constants\ndouble pi = Math.PI;       // 3.141592653589793\ndouble e = Math.E;         // 2.718281828459045\n\n// Basic operations\nint abs = Math.abs(-5);             // 5\ndouble ceil = Math.ceil(4.1);       // 5.0\ndouble floor = Math.floor(4.9);     // 4.0\nlong round = Math.round(4.6);       // 5\n\n// Power and roots\ndouble pow = Math.pow(2, 3);        // 8.0 (2^3)\ndouble sqrt = Math.sqrt(16);        // 4.0\ndouble cbrt = Math.cbrt(27);        // 3.0 (cube root)\n\n// Min and max\nint min = Math.min(5, 10);          // 5\nint max = Math.max(5, 10);          // 10\n\n// Trigonometry (radians)\ndouble sin = Math.sin(Math.PI / 2); // 1.0\ndouble cos = Math.cos(0);           // 1.0\ndouble tan = Math.tan(Math.PI / 4); // 1.0\n\n// Random (0.0 to 1.0)\ndouble random = Math.random();",
+          "keyPoints": [
+            "All methods are static",
+            "Trigonometric functions use radians",
+            "Math.random() returns [0.0, 1.0)",
+            "Use for basic mathematical operations"
+          ]
+        },
+        {
+          "name": "Random Class",
+          "explanation": "Generate random numbers with more control.",
+          "code": "import java.util.Random;\n\nRandom random = new Random();\n\n// Random integers\nint randomInt = random.nextInt();           // Any int\nint bounded = random.nextInt(100);          // 0 to 99\nint range = random.nextInt(50) + 50;        // 50 to 99\n\n// Random doubles\ndouble randomDouble = random.nextDouble();  // 0.0 to 1.0\n\n// Random boolean\nboolean randomBool = random.nextBoolean();\n\n// Random Gaussian (normal distribution)\ndouble gaussian = random.nextGaussian();    // Mean 0, stddev 1\n\n// Seed for reproducibility\nRandom seeded = new Random(12345);\nint val1 = seeded.nextInt();  // Always same sequence\n\n// Java 8+ Stream API\nimport java.util.stream.IntStream;\nIntStream.generate(() -> random.nextInt(100))\n         .limit(10)\n         .forEach(System.out::println);",
+          "keyPoints": [
+            "Random class offers more control than Math.random()",
+            "nextInt(bound): Generate 0 to bound-1",
+            "Can set seed for reproducible sequences",
+            "Supports various distributions"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modern-java",
+      "title": "Modern Java Features (11+)",
+      "concepts": [
+        {
+          "name": "var Keyword (Java 10+)",
+          "explanation": "Let Java figure out the type for you. It's not dynamic typing — the type is still fixed at compile time, just inferred. Great for long generic types, but don't overuse it — readability matters!",
+          "code": "// Before: Repetitive type declarations\nArrayList<Map<String, List<Integer>>> data = new ArrayList<>();\n\n// After: var infers the type\nvar data = new ArrayList<Map<String, List<Integer>>>();\nvar name = \"John\";      // String\nvar count = 42;         // int\nvar users = getUsers(); // Whatever getUsers() returns\n\n// var is LOCAL variables only — not fields or parameters!\nvar list = List.of(1, 2, 3);  // List<Integer>\nfor (var item : list) {\n    System.out.println(item);\n}",
+          "keyPoints": [
+            "Type is determined at compile time — still strongly typed!",
+            "Only for local variables with initializers (not fields or params)",
+            "Makes code cleaner when type is obvious from the right side",
+            "Avoid when type isn't clear: var x = getValue(); // What's x?"
+          ]
+        },
+        {
+          "name": "Records (Java 16+)",
+          "explanation": "Tired of writing boilerplate for data classes? Records are Java's way of saying 'just hold this data.' You get constructor, getters, equals(), hashCode(), and toString() for free. Perfect for DTOs!",
+          "code": "// Old way: 50+ lines of boilerplate\nclass PersonOld {\n    private final String name;\n    private final int age;\n    // Constructor, getters, equals, hashCode, toString...\n}\n\n// New way: One line!\nrecord Person(String name, int age) {}\n\n// Usage\nPerson p = new Person(\"Alice\", 30);\np.name();     // \"Alice\" (note: no 'get' prefix)\np.age();      // 30\np.toString(); // \"Person[name=Alice, age=30]\"\n\n// Can add custom methods and validation\nrecord Email(String address) {\n    // Compact constructor for validation\n    public Email {\n        if (!address.contains(\"@\")) {\n            throw new IllegalArgumentException(\"Invalid email\");\n        }\n    }\n}",
+          "keyPoints": [
+            "Records are immutable — fields are final, no setters",
+            "Auto-generates: constructor, getters, equals(), hashCode(), toString()",
+            "Getters use field name (not getField()) — e.g., person.name()",
+            "Perfect for DTOs, API responses, and value objects"
+          ]
+        },
+        {
+          "name": "Text Blocks (Java 15+)",
+          "explanation": "Multi-line strings without escape character nightmares. Finally, you can write JSON, SQL, or HTML that actually looks readable! The opening \"\"\" must be on its own line.",
+          "code": "// Before: Escape quote hell\nString json = \"{\\n\" +\n              \"  \\\"name\\\": \\\"John\\\",\\n\" +\n              \"  \\\"age\\\": 30\\n\" +\n              \"}\";\n\n// After: Just paste it\nString json = \"\"\"\n    {\n        \"name\": \"John\",\n        \"age\": 30\n    }\n    \"\"\";\n\n// SQL that you can actually read!\nString sql = \"\"\"\n    SELECT u.name, u.email\n    FROM users u\n    WHERE u.active = true\n    ORDER BY u.created_at DESC\n    \"\"\";\n\n// HTML templates\nString html = \"\"\"\n    <html>\n        <body>\n            <h1>Hello, %s!</h1>\n        </body>\n    </html>\n    \"\"\".formatted(userName);",
+          "keyPoints": [
+            "Opening \"\"\" must be followed by newline",
+            "Indentation relative to closing \"\"\" (trailing whitespace trimmed)",
+            "No escape needed for quotes inside",
+            "Use .formatted() for string interpolation"
+          ]
+        },
+        {
+          "name": "Pattern Matching for instanceof (Java 16+)",
+          "explanation": "No more casting after instanceof! Java now creates the variable for you in one step. It's the little things that make code cleaner.",
+          "code": "// Before: Check type, then cast (annoying repetition)\nif (obj instanceof String) {\n    String s = (String) obj;  // Cast required\n    System.out.println(s.length());\n}\n\n// After: Pattern matching (Java 16+)\nif (obj instanceof String s) {\n    // s is already cast to String!\n    System.out.println(s.length());\n}\n\n// Works with negation too\nif (!(obj instanceof String s)) {\n    return;\n}\n// s is available here!\nSystem.out.println(s.toUpperCase());\n\n// Combine with &&\nif (obj instanceof String s && s.length() > 5) {\n    System.out.println(\"Long string: \" + s);\n}",
+          "keyPoints": [
+            "Variable is automatically cast and available in the scope",
+            "Reduces boilerplate and potential ClassCastException",
+            "Works with && conditions but NOT with ||",
+            "Foundation for more pattern matching features in future Java"
+          ]
+        },
+        {
+          "name": "Sealed Classes (Java 17+)",
+          "explanation": "Control exactly which classes can extend yours. It's like an invite-only party for inheritance. Useful when you know all the subtypes and want the compiler to help you catch missing cases.",
+          "code": "// Only these three can extend Shape\nsealed abstract class Shape permits Circle, Rectangle, Triangle {\n    abstract double area();\n}\n\n// Must be final, sealed, or non-sealed\nfinal class Circle extends Shape {\n    double radius;\n    double area() { return Math.PI * radius * radius; }\n}\n\nfinal class Rectangle extends Shape {\n    double width, height;\n    double area() { return width * height; }\n}\n\nfinal class Triangle extends Shape {\n    double base, height;\n    double area() { return 0.5 * base * height; }\n}\n\n// Compiler knows all subtypes — exhaustive switch!\nString describe(Shape shape) {\n    return switch (shape) {\n        case Circle c -> \"Circle with radius \" + c.radius;\n        case Rectangle r -> \"Rectangle \" + r.width + \"x\" + r.height;\n        case Triangle t -> \"Triangle with base \" + t.base;\n        // No default needed — compiler knows all cases!\n    };\n}",
+          "keyPoints": [
+            "sealed = 'only these specific classes can extend me'",
+            "Permitted subclasses must be final, sealed, or non-sealed",
+            "Enables exhaustive pattern matching in switch",
+            "Great for representing fixed sets of types (like AST nodes)"
+          ]
+        }
+      ]
+    }
+  ]
+}

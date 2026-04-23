@@ -11,7 +11,7 @@
     "lucide-react": "^0.507.0",
     "prismjs": "^1.30.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.2.5",
     "react-router-dom": "^7.5.1",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.2.0",

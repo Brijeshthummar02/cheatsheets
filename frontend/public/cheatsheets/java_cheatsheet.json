@@ -1872,6 +1872,332 @@
           ]
         }
       ]
+    },
+    {
+      "id": "cheat-reference-card",
+      "title": "Cheat Reference Card",
+      "concepts": [
+        {
+          "name": "All Operators at a Glance",
+          "explanation": "Every Java operator category in one compact view. Use this as a quick lookup when writing expressions, conditions, or bitwise logic.",
+          "code": "// ARITHMETIC\n+  -  *  /  %  ++  --\n\n// ASSIGNMENT\n=   +=  -=  *=  /=  %=\n&=  |=  ^=  <<=  >>=  >>>=\n\n// COMPARISON (returns boolean)\n==  !=  >  <  >=  <=\n\n// LOGICAL\n&&   ||   !    // short-circuit\n&    |    ^    // non-short-circuit\n\n// BITWISE\n&  |  ^  ~  <<  >>  >>>\n\n// TERNARY\ncondition ? valueIfTrue : valueIfFalse\n\n// INSTANCEOF (type check)\nobj instanceof ClassName\nobj instanceof ClassName c  // pattern (Java 16+)\n\n// SPREAD / VARARGS (method param)\nvoid method(int... nums)",
+          "keyPoints": [
+            "% (modulo): gives remainder — 10 % 3 = 1",
+            ">>> is UNSIGNED right shift (fills with 0), >> is signed (fills with sign bit)",
+            "^ is XOR (exclusive OR): true when operands differ",
+            "~ is bitwise NOT (flips all bits)",
+            "Short-circuit: && stops at first false, || stops at first true",
+            "i++ returns old value; ++i returns new value",
+            "instanceof pattern match (Java 16+): eliminates explicit cast",
+            "Operator precedence: ++ -- > * / % > + - > << >> > < > == != > & > ^ > | > && > || > ?:"
+          ]
+        },
+        {
+          "name": "All Access Modifiers & Non-Access Modifiers",
+          "explanation": "Complete modifier reference — what each keyword means and where it can be applied. Know these cold for code design and interviews.",
+          "code": "// ACCESS MODIFIERS\npublic    → accessible everywhere\nprotected → same package + subclasses\n(default) → same package only\nprivate   → same class only\n\n// NON-ACCESS MODIFIERS\nstatic    → belongs to class, not instance\nfinal     → can't reassign / override / subclass\nabstract  → must be implemented by subclass\nsynchronized → one thread at a time\nvolatile  → always read from main memory\ntransient → skip during serialization\nnative    → implemented in native code (C/C++)\nstrictfp  → strict IEEE 754 float precision\n\n// WHERE THEY APPLY\nClass   : public, abstract, final, strictfp\nField   : all access + static, final, volatile, transient\nMethod  : all access + static, final, abstract, synchronized, native\nLocal   : final only",
+          "keyPoints": [
+            "A class can be public or package-private (default) only — never private or protected",
+            "final field: must be initialized in declaration or constructor",
+            "static final = constant (UPPER_SNAKE_CASE naming)",
+            "abstract method has no body; class with abstract method must be abstract",
+            "volatile prevents caching of variable in CPU registers — ensures visibility",
+            "transient skips field during ObjectOutputStream serialization",
+            "synchronized method locks on 'this'; synchronized static method locks on Class object",
+            "Interview: Can abstract class have constructor? Yes — called via super() from child"
+          ]
+        },
+        {
+          "name": "All Java Keywords Quick Reference",
+          "explanation": "Every Java reserved keyword categorized by purpose. These cannot be used as identifiers.",
+          "code": "// DATA TYPES (8 primitives)\nbyte  short  int  long\nfloat  double  boolean  char\n\n// OOP\nclass  interface  enum  record  extends\nimplements  abstract  new  this  super\ninstanceof\n\n// ACCESS & MODIFIERS\npublic  private  protected  static\nfinal  abstract  synchronized  volatile\ntransient  native  strictfp  sealed  permits\n\n// CONTROL FLOW\nif  else  switch  case  default\nfor  while  do  break  continue  return\n\n// EXCEPTION\ntry  catch  finally  throw  throws\nassert\n\n// PACKAGES & MODULES\npackage  import\n\n// MEMORY\nnull  void\n\n// UNUSED (reserved)\ngoto  const\n\n// CONTEXT-SENSITIVE (not reserved but special)\nvar  yield  record  sealed  permits  when",
+          "keyPoints": [
+            "Java has 52 reserved keywords — none can be used as variable/method/class names",
+            "goto and const are reserved but not used",
+            "var (Java 10+): local variable type inference — not a keyword, context-sensitive",
+            "yield (Java 14+): returns value from switch expression",
+            "record (Java 16+): concise immutable data class",
+            "sealed (Java 17+): restricts which classes can extend/implement",
+            "permits used with sealed: lists allowed subclasses",
+            "when (Java 21+): guard clause in pattern matching switch"
+          ]
+        },
+        {
+          "name": "Type System Quick Reference",
+          "explanation": "Primitive types, their sizes, ranges, and wrapper classes. Autoboxing/unboxing reference. Default values for fields.",
+          "code": "// TYPE       SIZE    RANGE                    WRAPPER\nbyte          1 byte  -128 to 127              Byte\nshort         2 byte  -32768 to 32767          Short\nint           4 byte  -2^31 to 2^31-1          Integer\nlong          8 byte  -2^63 to 2^63-1          Long\nfloat         4 byte  ~±3.4e38 (7 sig digits)  Float\ndouble        8 byte  ~±1.8e308 (15 digits)    Double\nboolean       1 bit   true / false             Boolean\nchar          2 byte  '\\u0000' to '\\uFFFF'     Character\n\n// DEFAULT VALUES (fields only, not locals)\nint/byte/short/long  → 0\nfloat/double         → 0.0\nboolean              → false\nchar                 → '\\u0000'\nObject references    → null\n\n// AUTOBOXING (auto-convert)\nInteger i = 42;          // int → Integer (box)\nint x = i;               // Integer → int (unbox)\nList<Integer> list = new ArrayList<>();\nlist.add(10);            // autoboxed\n\n// LITERAL SUFFIXES\nlong   l = 100L;\nfloat  f = 3.14f;\ndouble d = 3.14;  // default\nhex      = 0xFF;\nbinary   = 0b1010;\noctal    = 017;\nunderscore = 1_000_000;",
+          "keyPoints": [
+            "int is the default integer type; double is the default decimal type",
+            "Integer cache: -128 to 127 are cached — use .equals() not == for Integer comparison",
+            "float has ~7 significant digits; double has ~15 — always prefer double for precision",
+            "char is an unsigned 16-bit integer; can do char arithmetic",
+            "Autoboxing has overhead — avoid in tight loops (prefer primitives for performance)",
+            "null is valid for any reference type but causes NullPointerException when dereferenced",
+            "Interview: What is Integer cache? JVM caches Integer -128 to 127 for memory efficiency",
+            "Widening order: byte → short → int → long → float → double"
+          ]
+        },
+        {
+          "name": "Exception Hierarchy Quick Reference",
+          "explanation": "The complete Java exception hierarchy — know what to catch, what to declare, and what you can't recover from.",
+          "code": "Throwable\n├── Error (don't catch these!)\n│   ├── OutOfMemoryError\n│   ├── StackOverflowError\n│   ├── AssertionError\n│   └── VirtualMachineError\n│\n└── Exception\n    ├── CHECKED (must catch or declare 'throws')\n    │   ├── IOException\n    │   │   ├── FileNotFoundException\n    │   │   └── EOFException\n    │   ├── SQLException\n    │   ├── ClassNotFoundException\n    │   └── InterruptedException\n    │\n    └── RuntimeException (UNCHECKED — optional catch)\n        ├── NullPointerException\n        ├── ArrayIndexOutOfBoundsException\n        ├── ClassCastException\n        ├── IllegalArgumentException\n        ├── IllegalStateException\n        ├── ArithmeticException\n        ├── NumberFormatException\n        ├── UnsupportedOperationException\n        └── ConcurrentModificationException",
+          "keyPoints": [
+            "Checked exceptions: compiler forces you to handle (try-catch) or declare (throws)",
+            "Unchecked (RuntimeException): optional to catch, usually indicate programming bugs",
+            "Errors: JVM-level problems — should NOT be caught in most cases",
+            "Multi-catch: catch (IOException | SQLException e) — clean, since Java 7",
+            "try-with-resources: auto-closes AutoCloseable — since Java 7",
+            "Exception chaining: throw new RuntimeException(\"msg\", originalException)",
+            "Finally always runs except: System.exit(), JVM crash, or infinite loop",
+            "Interview: Difference between Error and Exception? Error = JVM problem (unrecoverable)"
+          ]
+        },
+        {
+          "name": "Collections Complexity Cheat Sheet",
+          "explanation": "Time complexity of all major collection operations at a glance. Essential for DSA interviews and choosing the right data structure.",
+          "code": "// LIST\nArrayList   get O(1)  add O(1)*  remove O(n)  search O(n)\nLinkedList  get O(n)  add O(1)   remove O(1)  search O(n)\n\n// SET\nHashSet     add O(1)  contains O(1)  No order\nLinkedHashSet add O(1) contains O(1)  Insertion order\nTreeSet     add O(logn) contains O(logn) Sorted\n\n// MAP\nHashMap     get O(1)  put O(1)    No order\nLinkedHashMap get O(1) put O(1)   Insertion order\nTreeMap     get O(logn) put O(logn) Sorted by key\n\n// QUEUE / STACK\nArrayDeque  push O(1)  pop O(1)   peek O(1)\nPriorityQueue offer O(logn) poll O(logn) peek O(1)\nStack       push O(1)  pop O(1)   peek O(1)\n\n// * ArrayList add: O(1) amortized (O(n) when resize needed)",
+          "keyPoints": [
+            "ArrayList: best for indexed access; LinkedList: best for frequent add/remove at head/tail",
+            "HashSet/HashMap: O(1) average but O(n) worst case (hash collision)",
+            "TreeSet/TreeMap: always O(log n) — backed by Red-Black tree (self-balancing BST)",
+            "PriorityQueue is a min-heap — smallest element at head (use Comparator for max-heap)",
+            "ArrayDeque is the preferred Stack and Queue implementation (faster than Stack/LinkedList)",
+            "ConcurrentHashMap: thread-safe HashMap with segment locking — O(1) average",
+            "Collections.unmodifiableList() wraps list — throws UnsupportedOperationException on write",
+            "Interview: Which Map maintains insertion order? LinkedHashMap"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quick-syntax-reference",
+      "title": "Java Quick Syntax Reference",
+      "concepts": [
+        {
+          "name": "String — All Essential Methods",
+          "explanation": "Every important String method with signature and example. Strings are immutable — all methods return a new String.",
+          "code": "String s = \"  Hello, Java World!  \";\n\n// LENGTH & CHARS\ns.length()                    // 22\ns.charAt(2)                   // 'H'\ns.indexOf('J')                // 8\ns.lastIndexOf('o')            // 15\ns.isEmpty()                   // false\ns.isBlank()                   // false (Java 11+)\n\n// COMPARISON\ns.equals(\"other\")             // false\ns.equalsIgnoreCase(\"HELLO\")   // false\ns.compareTo(\"another\")        // +/- int\ns.startsWith(\"  Hello\")       // true\ns.endsWith(\"!  \")             // true\ns.contains(\"Java\")            // true\n\n// EXTRACTION\ns.substring(2)                // \"Hello, Java World!  \"\ns.substring(2, 7)             // \"Hello\"\ns.trim()                      // \"Hello, Java World!\"\ns.strip()                     // \"Hello, Java World!\" (Unicode-aware)\ns.stripLeading()              // Java 11+\ns.stripTrailing()             // Java 11+\n\n// TRANSFORM\ns.toUpperCase()               // \"  HELLO, JAVA WORLD!  \"\ns.toLowerCase()               // \"  hello, java world!  \"\ns.replace('l', 'L')           // replaces all 'l'\ns.replace(\"Java\", \"Python\")   // replaces first match\ns.replaceAll(\"[aeiou]\", \"*\") // regex replace\ns.replaceFirst(\"\\\\s+\", \"-\")  // regex, first only\n\n// SPLIT & JOIN\ns.split(\",\")                  // [\"  Hello\", \" Java World!  \"]\ns.split(\",\", 2)               // limit splits\nString.join(\"-\", \"a\",\"b\",\"c\") // \"a-b-c\"\nString.join(\",\", list)        // join from collection\n\n// FORMAT\nString.format(\"Name: %s Age: %d\", \"Raj\", 25)\nformatted = \"Price: %.2f\".formatted(99.5); // Java 15+\n\n// CHECK\nCharacter.isDigit('5')        // true\nCharacter.isLetter('A')       // true\nCharacter.isWhitespace(' ')   // true\nCharacter.toUpperCase('a')    // 'A'\n\n// CONVERT\nString.valueOf(42)            // \"42\"\nInteger.parseInt(\"42\")        // 42\nDouble.parseDouble(\"3.14\")    // 3.14\n\"hello\".toCharArray()         // char[]\n\n// REPEAT & LINES (Java 11+)\n\"ab\".repeat(3)                // \"ababab\"\n\"line1\\nline2\".lines()        // Stream<String>\n\"  \".isBlank()                // true",
+          "keyPoints": [
+            "All String methods return NEW String — original is unchanged (immutable)",
+            "indexOf returns -1 if not found",
+            "substring(start, end): start is inclusive, end is exclusive",
+            "trim() removes ASCII whitespace; strip() removes Unicode whitespace (Java 11+)",
+            "split() uses regex — escape special chars: split(\"\\\\.\")",
+            "String.format() format specifiers: %s=String, %d=int, %f=float, %n=newline, %b=boolean",
+            "compareTo: returns 0 if equal, negative if less, positive if greater (lexicographic)",
+            "Interview: Why is String immutable? Security, string pool, thread-safety, hashcode caching"
+          ]
+        },
+        {
+          "name": "StringBuilder & StringBuffer — Methods",
+          "explanation": "Mutable string builders. StringBuilder is non-thread-safe (faster); StringBuffer is thread-safe (slower). Use StringBuilder unless shared across threads.",
+          "code": "StringBuilder sb = new StringBuilder();\nStringBuilder sb2 = new StringBuilder(\"Hello\");\nStringBuilder sb3 = new StringBuilder(64); // capacity\n\n// APPEND (returns this — chainable)\nsb.append(\"Java\");          // \"Java\"\nsb.append(' ').append(2025); // \"Java 2025\"\nsb.append(true);            // appends \"true\"\nsb.append(3.14);            // appends \"3.14\"\n\n// INSERT\nsb.insert(4, \" is Cool\");   // insert at index\n\n// DELETE\nsb.delete(0, 4);            // delete from 0 to 3\nsb.deleteCharAt(0);         // delete single char\n\n// REPLACE\nsb.replace(0, 4, \"Hi\");     // replace range\n\n// SEARCH\nsb.indexOf(\"Cool\");         // int index\nsb.lastIndexOf(\"a\");        // int index\n\n// EXTRACT\nsb.charAt(0);               // char\nsb.substring(2);            // String\nsb.substring(2, 6);         // String\n\n// MODIFY\nsb.reverse();               // reverse in-place\nsb.setCharAt(0, 'j');       // set char at index\n\n// INFO\nsb.length();                // current length\nsb.capacity();              // current capacity\nsb.toString();              // convert to String",
+          "keyPoints": [
+            "StringBuilder is ~3-5x faster than String concatenation in loops — use it!",
+            "Initial capacity is 16; doubles when full (amortized O(1) append)",
+            "Chaining: sb.append(\"a\").append(\"b\").reverse() — all methods return 'this'",
+            "StringBuffer has same API but all methods are synchronized (thread-safe)",
+            "delete(start, end): end is exclusive (same as substring)",
+            "sb.toString() is required to get the final String value",
+            "Interview: String vs StringBuilder vs StringBuffer? String immutable, SB mutable fast, StringBuffer mutable thread-safe",
+            "Compiler converts String + String + String into StringBuilder internally (except in loops)"
+          ]
+        },
+        {
+          "name": "Math Class — All Essential Methods",
+          "explanation": "java.lang.Math is a utility class with static methods for mathematical operations. Automatically imported.",
+          "code": "// BASIC\nMath.abs(-5)          // 5      (absolute value)\nMath.max(3, 7)        // 7\nMath.min(3, 7)        // 3\nMath.signum(-4.0)     // -1.0   (sign of number)\n\n// ROUNDING\nMath.ceil(3.2)        // 4.0    (round up)\nMath.floor(3.9)       // 3.0    (round down)\nMath.round(3.5)       // 4      (round half-up)\nMath.rint(3.5)        // 4.0    (round to nearest even)\n\n// POWER & ROOTS\nMath.pow(2, 10)       // 1024.0 (2^10)\nMath.sqrt(16)         // 4.0\nMath.cbrt(27)         // 3.0    (cube root)\nMath.hypot(3, 4)      // 5.0    (√(x²+y²))\n\n// LOGARITHM & EXP\nMath.log(Math.E)      // 1.0    (natural log)\nMath.log10(1000)      // 3.0\nMath.exp(1)           // 2.718... (e^x)\n\n// TRIG (radians)\nMath.sin(Math.PI/2)   // 1.0\nMath.cos(0)           // 1.0\nMath.tan(Math.PI/4)   // 1.0\nMath.toRadians(180)   // Math.PI\nMath.toDegrees(Math.PI) // 180.0\n\n// CONSTANTS\nMath.PI               // 3.141592653589793\nMath.E                // 2.718281828459045\nInteger.MAX_VALUE     // 2147483647\nInteger.MIN_VALUE     // -2147483648\nLong.MAX_VALUE        // 9223372036854775807\nDouble.MAX_VALUE      // ~1.8e308\nDouble.MIN_VALUE      // ~4.9e-324 (smallest positive)\nDouble.POSITIVE_INFINITY\nDouble.NEGATIVE_INFINITY\nDouble.NaN            // Not a Number\n\n// RANDOM (0.0 inclusive to 1.0 exclusive)\nMath.random()         // random double\n// Better: use java.util.Random\nRandom rng = new Random();\nrng.nextInt(100)      // 0 to 99\nrng.nextDouble()      // 0.0 to 1.0\nrng.nextBoolean()\nrng.nextLong()",
+          "keyPoints": [
+            "All Math methods are static — call as Math.abs(), never create Math object",
+            "Math.round(x): returns long for double, int for float — result is (long)(Math.floor(x+0.5))",
+            "Math.random() returns [0.0, 1.0) — multiply and cast: (int)(Math.random() * n) for 0..n-1",
+            "NaN: Double.isNaN(x) to check — NaN != NaN is TRUE (weird but correct)",
+            "Infinity: 1.0/0.0 = POSITIVE_INFINITY, -1.0/0.0 = NEGATIVE_INFINITY (no exception for double)",
+            "Integer division by zero throws ArithmeticException; double division does NOT",
+            "Interview: Math.round(2.5) vs Math.round(-2.5)? Returns 3 and -2 (half-up rounding)"
+          ]
+        },
+        {
+          "name": "Arrays Class — All Essential Methods",
+          "explanation": "java.util.Arrays provides utility methods for array manipulation. All methods are static.",
+          "code": "import java.util.Arrays;\n\nint[] a = {5, 2, 8, 1, 9, 3};\n\n// SORT\nArrays.sort(a);                       // [1,2,3,5,8,9] in-place\nArrays.sort(a, 2, 5);                 // sort subarray [2,5)\nArrays.parallelSort(a);               // parallel for large arrays\n\n// SORT OBJECTS WITH COMPARATOR\nString[] words = {\"banana\", \"apple\", \"cherry\"};\nArrays.sort(words, String::compareTo);          // natural\nArrays.sort(words, Comparator.reverseOrder());  // reverse\nArrays.sort(words, (x, y) -> x.length() - y.length()); // by length\n\n// SEARCH (array must be sorted first!)\nint idx = Arrays.binarySearch(a, 5);  // index of 5\n// Returns: index if found, -(insertion point)-1 if not\n\n// COPY\nint[] copy = Arrays.copyOf(a, a.length);      // full copy\nint[] part = Arrays.copyOfRange(a, 1, 4);     // [2,5)\nint[] longer = Arrays.copyOf(a, 10);          // pads with 0\n\n// FILL\nint[] zeros = new int[5];\nArrays.fill(zeros, 7);                // [7,7,7,7,7]\nArrays.fill(zeros, 1, 4, 99);        // fill [1,4)\n\n// COMPARE\nboolean eq = Arrays.equals(a, copy);           // true\nboolean deq = Arrays.deepEquals(matrix1, matrix2); // 2D arrays\nint cmp = Arrays.compare(a, copy);             // 0 if equal\n\n// TO STRING\nSystem.out.println(Arrays.toString(a));        // [1, 2, 3, 5, 8, 9]\nSystem.out.println(Arrays.deepToString(matrix)); // nested\n\n// STREAM & LIST\nArrays.stream(a).sum();              // IntStream\nArrays.stream(a).filter(x -> x > 3).toArray();\nList<String> list = Arrays.asList(words);  // fixed-size List\n\n// MISMATCH\nint pos = Arrays.mismatch(a, copy);   // -1 if identical, else index",
+          "keyPoints": [
+            "Arrays.sort uses Dual-Pivot Quicksort for primitives (O(n log n) average)",
+            "Arrays.sort for Objects uses TimSort (stable, O(n log n))",
+            "binarySearch REQUIRES a sorted array — undefined behavior on unsorted",
+            "Arrays.asList() returns a fixed-size list (add/remove throws UnsupportedOperationException)",
+            "For a fully mutable list: new ArrayList<>(Arrays.asList(arr))",
+            "Arrays.copyOfRange(arr, from, to): from is inclusive, to is exclusive",
+            "Arrays.parallelSort(): uses ForkJoinPool — faster for large arrays (>8192 elements)",
+            "Interview: How to convert int[] to List? Use IntStream: IntStream.of(a).boxed().collect(Collectors.toList())"
+          ]
+        },
+        {
+          "name": "Collections Class — All Essential Methods",
+          "explanation": "java.util.Collections provides utility algorithms for Collection objects (not arrays). All methods are static.",
+          "code": "import java.util.Collections;\nimport java.util.List;\nimport java.util.ArrayList;\n\nList<Integer> list = new ArrayList<>(Arrays.asList(3,1,4,1,5,9,2,6));\n\n// SORT & ORDER\nCollections.sort(list);                        // natural order\nCollections.sort(list, Comparator.reverseOrder()); // reverse\nCollections.reverse(list);                     // reverse in-place\nCollections.shuffle(list);                     // random shuffle\nCollections.shuffle(list, new Random(42));      // seeded\n\n// SEARCH (list must be sorted)\nint idx = Collections.binarySearch(list, 5);   // index\n\n// EXTREMES\nint max = Collections.max(list);               // largest element\nint min = Collections.min(list);               // smallest element\nint max2 = Collections.max(list, comparator);  // with comparator\n\n// FREQUENCY & DISJOINT\nint freq = Collections.frequency(list, 1);     // count of 1 → 2\nboolean dis = Collections.disjoint(list, otherList); // no common elements?\n\n// FILL & COPY\nCollections.fill(list, 0);                     // all elements = 0\nCollections.copy(destList, srcList);           // dest must be >= src size\n\n// ROTATE & SWAP\nCollections.rotate(list, 2);                  // shift right by 2\nCollections.swap(list, 0, list.size()-1);      // swap elements\n\n// REPLACE\nCollections.replaceAll(list, 1, 99);           // replace all 1 with 99\n\n// UNMODIFIABLE WRAPPERS\nList<Integer> immutable = Collections.unmodifiableList(list);\nMap<K,V> immutable2 = Collections.unmodifiableMap(map);\nSet<T> immutable3 = Collections.unmodifiableSet(set);\n\n// SYNCHRONIZED WRAPPERS (thread-safe)\nList<T> safe = Collections.synchronizedList(list);\nMap<K,V> safeMap = Collections.synchronizedMap(map);\n\n// EMPTY & SINGLETON\nList<T> empty = Collections.emptyList();       // immutable empty\nMap<K,V> emptyMap = Collections.emptyMap();\nList<T> single = Collections.singletonList(x); // single immutable element\n\n// N COPIES\nList<String> copies = Collections.nCopies(5, \"Java\"); // [\"Java\",\"Java\",...]",
+          "keyPoints": [
+            "Collections.sort() is stable (preserves relative order of equal elements)",
+            "unmodifiable wrappers throw UnsupportedOperationException on write — not truly immutable",
+            "For truly immutable: List.of(), Set.of(), Map.of() (Java 9+) — also null-unsafe",
+            "Collections.copy(dest, src): dest list must already have >= src.size() elements",
+            "frequency() is O(n) — iterates through entire collection",
+            "disjoint() returns true if the two collections have NO elements in common",
+            "synchronizedList iterates require manual synchronized block: synchronized(list){ for(...){} }",
+            "Interview: Collections vs Collection? Collections = utility class; Collection = root interface"
+          ]
+        },
+        {
+          "name": "List, Map, Set — Creation & Essential Operations",
+          "explanation": "Modern Java (9+) factory methods and all core operations for List, Map, and Set interfaces.",
+          "code": "// LIST CREATION\nList<String> immutable = List.of(\"a\", \"b\", \"c\");  // Java 9+\nList<String> mutable   = new ArrayList<>(List.of(\"a\",\"b\",\"c\"));\nList<String> linked    = new LinkedList<>();\n\n// LIST OPERATIONS\nlist.add(\"d\");              // append\nlist.add(0, \"z\");           // insert at index\nlist.get(0);                // \"z\"\nlist.set(0, \"x\");           // replace\nlist.remove(0);             // by index\nlist.remove(\"x\");           // by value (first occurrence)\nlist.contains(\"b\");         // boolean\nlist.indexOf(\"b\");          // int (-1 if not found)\nlist.size();                // int\nlist.isEmpty();             // boolean\nlist.clear();               // empty the list\nlist.subList(1, 3);         // view of [1,3)\nlist.toArray();             // Object[]\nlist.addAll(otherList);     // bulk add\nlist.removeAll(otherList);  // bulk remove\nlist.retainAll(otherList);  // keep only common\n\n// MAP CREATION\nMap<String,Integer> immutable = Map.of(\"a\",1, \"b\",2);  // Java 9+\nMap<String,Integer> mutable = new HashMap<>();\nMap<String,Integer> ordered = new LinkedHashMap<>();\nMap<String,Integer> sorted  = new TreeMap<>();\n\n// MAP OPERATIONS\nmap.put(\"key\", 1);             // add/update\nmap.get(\"key\");                // value or null\nmap.getOrDefault(\"k\", 0);      // value or default\nmap.containsKey(\"key\");        // boolean\nmap.containsValue(1);          // boolean\nmap.remove(\"key\");             // removes entry\nmap.size();                    // int\nmap.isEmpty();                 // boolean\nmap.keySet();                  // Set<K>\nmap.values();                  // Collection<V>\nmap.entrySet();                // Set<Map.Entry<K,V>>\nmap.putIfAbsent(\"k\", 0);       // only if key absent\nmap.computeIfAbsent(\"k\", k -> new ArrayList<>());\nmap.merge(\"k\", 1, Integer::sum); // merge value\nmap.forEach((k, v) -> System.out.println(k + \"=\" + v));\n\n// SET CREATION\nSet<String> immutable = Set.of(\"a\", \"b\", \"c\");  // Java 9+\nSet<String> mutable   = new HashSet<>(Set.of(\"a\",\"b\"));\nSet<String> sorted    = new TreeSet<>();\nSet<String> ordered   = new LinkedHashSet<>();\n\n// SET OPERATIONS\nset.add(\"x\");              // true if new, false if duplicate\nset.remove(\"x\");           // boolean\nset.contains(\"x\");         // boolean\nset.size();\nset.addAll(other);         // union\nset.retainAll(other);      // intersection\nset.removeAll(other);      // difference",
+          "keyPoints": [
+            "List.of(), Set.of(), Map.of() (Java 9+): immutable, null-disallowed, unmodifiable",
+            "Map.of() is unordered; Map.ofEntries() for more than 10 entries",
+            "map.getOrDefault() avoids null check: map.getOrDefault(key, fallback)",
+            "computeIfAbsent: creates value only if key is missing — great for grouping",
+            "merge(key, value, remapping): if key absent → puts value; else → applies function to old+new",
+            "entrySet().stream() is the most flexible way to process Map entries",
+            "TreeSet/TreeMap: elements must implement Comparable OR provide Comparator",
+            "Interview: How to iterate a Map? for(Map.Entry e : map.entrySet()) or map.forEach()"
+          ]
+        },
+        {
+          "name": "Stream API — All Essential Operations",
+          "explanation": "Java 8+ Stream API for functional-style data processing. Streams are lazy, one-shot, and cannot be reused.",
+          "code": "import java.util.stream.*;\n\nList<String> items = List.of(\"Biryani\",\"Pizza\",\"Burger\",\"Pasta\",\"Idli\");\n\n// CREATE STREAMS\nitems.stream()                         // from Collection\nArrays.stream(arr)                     // from array\nStream.of(\"a\", \"b\", \"c\")              // from values\nStream.iterate(0, n -> n + 2)          // infinite: 0,2,4...\nStream.generate(Math::random)           // infinite supplier\nIntStream.range(0, 5)                  // 0,1,2,3,4\nIntStream.rangeClosed(1, 5)            // 1,2,3,4,5\n\n// INTERMEDIATE (lazy — return Stream)\n.filter(s -> s.length() > 4)          // keep matching\n.map(s -> s.toUpperCase())            // transform\n.mapToInt(String::length)             // Stream→IntStream\n.flatMap(s -> Stream.of(s.split(\"\"))  // flatten\n.distinct()                           // unique values\n.sorted()                             // natural order\n.sorted(Comparator.reverseOrder())    // custom order\n.sorted(Comparator.comparing(String::length))\n.peek(s -> System.out.println(s))     // debug (no change)\n.limit(3)                             // take first 3\n.skip(2)                              // skip first 2\n.takeWhile(s -> s.length() < 6)       // Java 9+\n.dropWhile(s -> s.length() < 6)       // Java 9+\n\n// TERMINAL (eager — triggers execution)\n.collect(Collectors.toList())         // to List\n.collect(Collectors.toSet())          // to Set\n.collect(Collectors.joining(\", \"))    // \"a, b, c\"\n.collect(Collectors.joining(\",\",\"[\",\"]\")) // \"[a,b,c]\"\n.collect(Collectors.counting())       // count\n.collect(Collectors.groupingBy(String::length))  // Map<Int,List>\n.collect(Collectors.partitioningBy(s -> s.length()>4)) // Map<Bool,List>\n.collect(Collectors.toMap(s->s, String::length)) // to Map\n.collect(Collectors.summingInt(String::length))\n.collect(Collectors.averagingInt(String::length))\n.collect(Collectors.summarizingInt(String::length)) // stats\n.forEach(System.out::println)         // iterate (terminal)\n.count()                              // long\n.findFirst()                          // Optional<T>\n.findAny()                            // Optional<T> (parallel)\n.anyMatch(s -> s.startsWith(\"B\"))    // boolean\n.allMatch(s -> s.length() > 2)        // boolean\n.noneMatch(s -> s.isEmpty())          // boolean\n.min(Comparator.naturalOrder())       // Optional<T>\n.max(Comparator.naturalOrder())       // Optional<T>\n.reduce(0, Integer::sum)              // fold to single value\n.toArray()                            // Object[]\n\n// NUMERIC STREAMS\nIntStream.of(1,2,3).sum()             // 6\nIntStream.of(1,2,3).average()         // OptionalDouble\nIntStream.of(1,2,3).min()             // OptionalInt\nIntStream.of(1,2,3).max()             // OptionalInt\nIntStream.of(1,2,3).boxed()           // Stream<Integer>",
+          "keyPoints": [
+            "Streams are LAZY: intermediate ops don't run until a terminal op is called",
+            "Streams are ONE-SHOT: cannot be reused after a terminal op — create new stream",
+            "map() transforms each element; flatMap() transforms and flattens one level",
+            "Collectors.groupingBy() returns Map<K, List<V>> — perfect for grouping",
+            "reduce(identity, accumulator): identity is the starting value (0 for sum, 1 for product)",
+            "Parallel streams: list.parallelStream() — uses ForkJoinPool, not always faster",
+            "Optional: check .isPresent() or use .orElse(default) before calling .get()",
+            "Interview: Intermediate vs Terminal operations? Intermediate return Stream (lazy); Terminal return result (eager)"
+          ]
+        },
+        {
+          "name": "Optional — Methods & Patterns",
+          "explanation": "Java 8+ Optional<T> wraps a potentially-null value. Eliminates explicit null checks and NullPointerExceptions when used properly.",
+          "code": "import java.util.Optional;\n\n// CREATION\nOptional<String> present = Optional.of(\"Java\");     // non-null only\nOptional<String> maybe   = Optional.ofNullable(str); // null OK\nOptional<String> empty   = Optional.empty();\n\n// CHECK\npresent.isPresent()           // true\npresent.isEmpty()             // false (Java 11+)\n\n// GET (dangerous — throws if empty)\npresent.get()                 // \"Java\" (NoSuchElementException if empty)\n\n// SAFE UNWRAP\npresent.orElse(\"default\")     // value or default\npresent.orElseGet(() -> expensiveDefault()) // lazy default\npresent.orElseThrow()         // throw NoSuchElementException (Java 10+)\npresent.orElseThrow(() -> new RuntimeException(\"Missing!\"))\n\n// TRANSFORM (all return Optional)\npresent.map(String::toUpperCase)         // Optional<\"JAVA\">\npresent.flatMap(s -> Optional.of(s+\"!\")) // avoid Optional<Optional>\npresent.filter(s -> s.length() > 3)      // Optional.empty if false\n\n// CONSUME\npresent.ifPresent(System.out::println);  // only if present\npresent.ifPresentOrElse(                  // Java 9+\n    s -> System.out.println(s),\n    () -> System.out.println(\"empty\")\n);\n\n// CHAINING (Java 9+)\npresent.or(() -> Optional.of(\"fallback\")); // another Optional if empty\n\n// STREAM (Java 9+)\npresent.stream()  // Stream with 0 or 1 elements\n\n// COMMON PATTERN: Chain from nullable call\nOptional.ofNullable(user)\n    .map(User::getAddress)\n    .map(Address::getCity)\n    .orElse(\"Unknown City\");",
+          "keyPoints": [
+            "Never use Optional.get() without isPresent() — prefer orElse/orElseGet/orElseThrow",
+            "Optional.of() throws NullPointerException if value is null — use ofNullable for uncertain values",
+            "map() vs flatMap(): use flatMap when the mapping function itself returns Optional",
+            "Don't use Optional as a field type or method parameter — only as return type",
+            "orElseGet() is lazy (uses Supplier) — prefer over orElse for expensive defaults",
+            "Optional.stream() enables using optionals in stream pipelines (Java 9+)",
+            "filter() returns Optional.empty() if predicate is false, otherwise same Optional",
+            "Interview: When to use Optional? As return type of methods that might not return a value"
+          ]
+        },
+        {
+          "name": "Lambda & Functional Interfaces — Quick Reference",
+          "explanation": "Functional interface signatures, lambda syntax, and method references. Core of Java's functional programming style.",
+          "code": "// LAMBDA SYNTAX\n() -> expression                    // no params, expression body\nx -> x * 2                         // one param (no parens needed)\n(x, y) -> x + y                    // two params\n(int x, int y) -> x + y            // typed params\nx -> { int r = x * 2; return r; }  // block body needs return\n\n// CORE FUNCTIONAL INTERFACES (java.util.function)\nSupplier<T>       get()                // () -> T  (no input, produces output)\nConsumer<T>       accept(T)            // T -> void  (consumes, no output)\nBiConsumer<T,U>   accept(T,U)          // T,U -> void\nFunction<T,R>     apply(T)             // T -> R  (transform)\nBiFunction<T,U,R> apply(T,U)           // T,U -> R\nPredicate<T>      test(T)              // T -> boolean\nBiPredicate<T,U>  test(T,U)            // T,U -> boolean\nUnaryOperator<T>  apply(T)             // T -> T  (same type)\nBinaryOperator<T> apply(T,T)           // T,T -> T\n\n// PRIMITIVE SPECIALIZATIONS (avoid boxing overhead)\nIntSupplier       getAsInt()           // () -> int\nIntConsumer       accept(int)          // int -> void\nIntFunction<R>    apply(int)           // int -> R\nIntPredicate      test(int)            // int -> boolean\nIntUnaryOperator  applyAsInt(int)      // int -> int\nIntBinaryOperator applyAsInt(int,int)  // int,int -> int\n// Also: Long*, Double* variants\n\n// METHOD REFERENCES (4 types)\nClassName::staticMethod                // Function<T,R>  e.g. Integer::parseInt\ninstance::instanceMethod               // Supplier/Consumer  e.g. System.out::println\nClassName::instanceMethod              // Function<T,R>  e.g. String::toUpperCase\nClassName::new                         // Supplier/Function  e.g. ArrayList::new\n\n// PREDICATE COMBINATORS\nPredicate<String> p1 = s -> s.length() > 3;\nPredicate<String> p2 = s -> s.startsWith(\"J\");\np1.and(p2)          // both must be true\np1.or(p2)           // at least one true\np1.negate()         // logical NOT\n\n// FUNCTION COMPOSITION\nFunction<Integer,Integer> times2 = x -> x * 2;\nFunction<Integer,Integer> plus3  = x -> x + 3;\ntimes2.andThen(plus3)  // times2 first, then plus3\ntimes2.compose(plus3)  // plus3 first, then times2\n\n// DEFINE CUSTOM FUNCTIONAL INTERFACE\n@FunctionalInterface\ninterface Validator<T> {\n    boolean validate(T value);\n}",
+          "keyPoints": [
+            "@FunctionalInterface: exactly one abstract method — enables lambda assignment",
+            "Lambdas can capture effectively final variables from enclosing scope",
+            "Method reference is shorthand for lambda when lambda just calls a method",
+            "Predicate.not(Predicate) (Java 11+): Predicate.not(String::isBlank)",
+            "Consumer.andThen(after): chain consumers — c1.andThen(c2) runs c1 then c2",
+            "BiFunction<T,U,R>: most generic — takes two inputs, returns one output",
+            "Primitive functional interfaces (IntFunction, etc.) avoid autoboxing overhead",
+            "Interview: What makes an interface functional? Exactly one abstract method (can have default/static methods)"
+          ]
+        },
+        {
+          "name": "Comparable & Comparator — Sorting Reference",
+          "explanation": "Two ways to define ordering in Java. Comparable is for natural order; Comparator is for custom/external ordering.",
+          "code": "// COMPARABLE (natural ordering — in the class)\nclass Product implements Comparable<Product> {\n    String name;\n    double price;\n\n    @Override\n    public int compareTo(Product other) {\n        return Double.compare(this.price, other.price); // ascending\n        // return other.price.compareTo(this.price);    // descending\n    }\n}\n// Usage: Collections.sort(products) or products.sort(null)\n\n// COMPARATOR (external/custom ordering)\nComparator<Product> byName   = Comparator.comparing(Product::getName);\nComparator<Product> byPrice  = Comparator.comparingDouble(Product::getPrice);\nComparator<Product> reversed = byPrice.reversed();\nComparator<Product> chained  = byPrice.thenComparing(byName); // secondary sort\nComparator<Product> nullLast = Comparator.nullsLast(byName);\nComparator<Product> nullFirst = Comparator.nullsFirst(byPrice);\n\n// SORT WITH COMPARATOR\nproducts.sort(byPrice);                           // List.sort()\nCollections.sort(products, byName);               // Collections.sort()\nproducts.sort(Comparator.comparing(Product::getName).reversed());\n\n// COMPARATOR FROM LAMBDA\nproducts.sort((a, b) -> a.getName().compareTo(b.getName()));\nproducts.sort((a, b) -> Double.compare(a.getPrice(), b.getPrice()));\n\n// ARRAYS SORT WITH COMPARATOR (objects only, not primitives)\nString[] arr = {\"banana\", \"apple\", \"cherry\"};\nArrays.sort(arr, Comparator.comparingInt(String::length));\n\n// COMPARATOR RULES\n// compareTo/compare: return negative if a < b, 0 if a == b, positive if a > b\n// Use Integer.compare(a, b) or Double.compare(a, b) — avoids overflow!\n// NEVER use: a - b (can overflow for large integers)",
+          "keyPoints": [
+            "Comparable: natural order (one fixed order per class) — used by sort/TreeSet/TreeMap by default",
+            "Comparator: external order (multiple possible orders) — passed to sort/TreeSet/TreeMap",
+            "Comparator.comparing() takes a key extractor (Function) — cleanest way to sort by field",
+            "thenComparing(): secondary sort when primary values are equal",
+            "NEVER use subtraction (a - b) for int comparison — use Integer.compare(a, b) to avoid overflow",
+            "Comparator.reversed() inverts the ordering without rewriting logic",
+            "TreeMap/TreeSet store entries in compareTo/compare order — maintains sorted structure",
+            "Interview: Comparable vs Comparator? Comparable = class defines own order; Comparator = external ordering"
+          ]
+        },
+        {
+          "name": "Generics — Syntax & Wildcards",
+          "explanation": "Generics provide type safety without casting. Wildcards (? extends T, ? super T) enable flexible APIs.",
+          "code": "// GENERIC CLASS\nclass Box<T> {\n    private T value;\n    Box(T value) { this.value = value; }\n    T get() { return value; }\n}\nBox<String> strBox = new Box<>(\"Hello\");\nBox<Integer> intBox = new Box<>(42);\n\n// GENERIC METHOD\n<T extends Comparable<T>> T max(T a, T b) {\n    return a.compareTo(b) >= 0 ? a : b;\n}\n\n// BOUNDED TYPE PARAMETERS\n<T extends Number>     // T must be Number or subclass\n<T extends Comparable<T> & Serializable> // multiple bounds\n\n// WILDCARDS\nList<?>              // unknown type (read-only mostly)\nList<? extends Number>  // Number or subclass (producer) — UPPER BOUND\nList<? super Integer>   // Integer or superclass (consumer) — LOWER BOUND\n\n// PECS RULE: Producer Extends, Consumer Super\nvoid readFrom(List<? extends Number> list) {\n    Number n = list.get(0);  // OK to read as Number\n    // list.add(1);           // ERROR: can't add\n}\nvoid writeTo(List<? super Integer> list) {\n    list.add(42);             // OK to add Integer\n    // Integer n = list.get(0); // ERROR: returns Object only\n}\n\n// TYPE ERASURE (happens at runtime)\n// List<String> and List<Integer> are same type at runtime\nList<String> a = new ArrayList<>();\nList<Integer> b = new ArrayList<>();\na.getClass() == b.getClass(); // true!\n\n// GENERIC INTERFACE\ninterface Converter<F, T> {\n    T convert(F from);\n}\nConverter<String, Integer> c = Integer::parseInt;",
+          "keyPoints": [
+            "Type erasure: generic type info removed at runtime — only exists at compile time",
+            "Cannot create generic arrays: new T[10] is illegal",
+            "Cannot use primitives as type params: List<int> is illegal — use List<Integer>",
+            "PECS: Producer Extends (read from), Consumer Super (write to)",
+            "? extends T: you can read as T, but cannot add (except null)",
+            "? super T: you can add T (or subtype), but reads return Object",
+            "Unbounded wildcard List<?>: use when you don't care about type at all",
+            "Interview: What is type erasure? JVM removes generic type info at runtime for backward compatibility"
+          ]
+        },
+        {
+          "name": "Multithreading — Essential Syntax & Methods",
+          "explanation": "Core threading APIs: Thread creation, Runnable, synchronization, and java.util.concurrent essentials.",
+          "code": "// CREATE THREADS\n// 1. Extend Thread\nclass MyThread extends Thread {\n    public void run() { System.out.println(\"Running\"); }\n}\nnew MyThread().start();  // always call start(), not run()!\n\n// 2. Implement Runnable (preferred)\nRunnable task = () -> System.out.println(\"Task!\");\nThread t = new Thread(task);\nt.start();\n\n// 3. ExecutorService (preferred for production)\nExecutorService exec = Executors.newFixedThreadPool(4);\nexec.submit(() -> doWork());          // submit Runnable\nFuture<Integer> f = exec.submit(() -> 42); // submit Callable\nexec.shutdown();                      // graceful shutdown\nexec.shutdownNow();                   // force shutdown\n\n// THREAD METHODS\nThread t = Thread.currentThread();\nt.getName();             // thread name\nt.getId();               // thread id\nt.isAlive();             // boolean\nt.isDaemon();            // daemon thread?\nt.getPriority();         // 1-10 (default 5)\nt.join();                // wait for this thread to finish\nt.join(1000L);           // wait max 1 second\nThread.sleep(500L);      // sleep current thread (throws InterruptedException)\nThread.yield();          // hint to scheduler to pause\nt.interrupt();           // set interrupt flag\nThread.interrupted();    // check and clear flag\n\n// SYNCHRONIZATION\nsynchronized(lockObject) { /* critical section */ }\npublic synchronized void method() { /* synchronized on 'this' */ }\n\n// CONCURRENT UTILITIES\nReentrantLock lock = new ReentrantLock();\nlock.lock();\ntry { /* critical */ } finally { lock.unlock(); }\n\nCountDownLatch latch = new CountDownLatch(3);\nlatch.countDown();       // decrement (from worker)\nlatch.await();           // block until 0 (from main)\n\nCyclicBarrier barrier = new CyclicBarrier(3, () -> System.out.println(\"All ready!\"));\nbarrier.await();         // wait at barrier point\n\nSemaphore sem = new Semaphore(2);  // 2 permits\nsem.acquire();           // wait for permit\nsem.release();           // release permit\n\n// CONCURRENT COLLECTIONS\nConcurrentHashMap<K,V> map = new ConcurrentHashMap<>();\nCopyOnWriteArrayList<T> list = new CopyOnWriteArrayList<>();\nBlockingQueue<T> queue = new LinkedBlockingQueue<>();\nqueue.put(item);         // block if full\nqueue.take();            // block if empty",
+          "keyPoints": [
+            "ALWAYS call thread.start() — calling run() directly executes in current thread, not new thread",
+            "Prefer ExecutorService over raw Thread — manages thread pools and lifecycle",
+            "synchronized method locks on 'this'; synchronized static method locks on Class object",
+            "Thread.sleep() throws checked InterruptedException — must handle",
+            "join() makes calling thread wait until the target thread completes",
+            "volatile ensures visibility across threads but NOT atomicity",
+            "AtomicInteger, AtomicLong, AtomicReference for lock-free thread-safe operations",
+            "Interview: Difference between synchronized and volatile? synchronized ensures atomicity + visibility; volatile only visibility"
+          ]
+        },
+        {
+          "name": "File I/O — Modern NIO.2 Quick Reference",
+          "explanation": "Modern Java file operations using java.nio.file.Files and Path API (Java 7+). Prefer these over legacy File class.",
+          "code": "import java.nio.file.*;\nimport java.io.*;\nimport java.util.List;\n\nPath path = Path.of(\"data/file.txt\");   // Java 11+\nPath path2 = Paths.get(\"data\", \"file.txt\"); // Java 7+\n\n// READ\nString content = Files.readString(path);               // Java 11+\nbyte[] bytes = Files.readAllBytes(path);\nList<String> lines = Files.readAllLines(path);         // UTF-8\nStream<String> stream = Files.lines(path);             // lazy\nStream<String> stream2 = Files.lines(path, StandardCharsets.UTF_8);\n\n// WRITE\nFiles.writeString(path, \"Hello!\");                     // Java 11+\nFiles.write(path, bytes);\nFiles.write(path, lines);\nFiles.writeString(path, \"Append!\", StandardOpenOption.APPEND);\n\n// PATH OPERATIONS\npath.getFileName()              // file.txt\npath.getParent()                // data\npath.getRoot()                  // / or C:\\\npath.isAbsolute()               // boolean\npath.resolve(\"sub/file.txt\")    // combine paths\npath.relativize(other)          // relative between two paths\npath.toAbsolutePath()           // full path\npath.normalize()                // resolve . and ..\npath.toFile()                   // legacy File\n\n// CHECK\nFiles.exists(path)              // boolean\nFiles.notExists(path)           // boolean\nFiles.isDirectory(path)         // boolean\nFiles.isRegularFile(path)       // boolean\nFiles.isReadable(path)          // boolean\nFiles.size(path)                // bytes\nFiles.getLastModifiedTime(path) // FileTime\n\n// CREATE / DELETE\nFiles.createFile(path)              // create file (fails if exists)\nFiles.createDirectories(path)       // create dirs (no fail if exists)\nFiles.delete(path)                  // delete (throws if not exists)\nFiles.deleteIfExists(path)          // safe delete\nFiles.copy(src, dest)               // copy file\nFiles.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);\nFiles.move(src, dest, StandardCopyOption.ATOMIC_MOVE);\n\n// LIST DIRECTORY\nFiles.list(dir)                     // Stream<Path> (non-recursive)\nFiles.walk(dir)                     // Stream<Path> (recursive)\nFiles.walk(dir, 2)                  // max depth 2\nFiles.find(dir, 3, (p, attr) -> p.toString().endsWith(\".txt\"))\n\n// TRY-WITH-RESOURCES (auto-close)\ntry (BufferedReader br = Files.newBufferedReader(path);\n     BufferedWriter bw = Files.newBufferedWriter(dest)) {\n    String line;\n    while ((line = br.readLine()) != null) {\n        bw.write(line);\n        bw.newLine();\n    }\n}",
+          "keyPoints": [
+            "Files.readString()/writeString() (Java 11+): simplest way to read/write text files",
+            "Files.lines(): returns lazy Stream — must close with try-with-resources",
+            "Path.of() (Java 11+) vs Paths.get() (Java 7+): prefer Path.of()",
+            "Always use try-with-resources for streams and I/O — ensures close() is called",
+            "StandardOpenOption: APPEND, CREATE, CREATE_NEW, TRUNCATE_EXISTING, READ, WRITE",
+            "Files.walk() is recursive — call .close() or use try-with-resources to avoid resource leak",
+            "Prefer Files.deleteIfExists() over Files.delete() to avoid NoSuchFileException",
+            "Interview: NIO.2 vs legacy File? Files/Path has better error handling, symlink support, and is more complete"
+          ]
+        },
+        {
+          "name": "Date & Time API — java.time Quick Reference",
+          "explanation": "Java 8+ Date-Time API. Immutable and thread-safe. Replaces java.util.Date and Calendar entirely.",
+          "code": "import java.time.*;\nimport java.time.format.*;\nimport java.time.temporal.*;\n\n// KEY CLASSES\nLocalDate       // date only (no time, no timezone)\nLocalTime       // time only (no date, no timezone)\nLocalDateTime   // date + time (no timezone)\nZonedDateTime   // date + time + timezone\nInstant         // machine timestamp (epoch ms)\nDuration        // time-based amount (hours, minutes, seconds)\nPeriod          // date-based amount (years, months, days)\nZoneId          // timezone identifier\n\n// LOCAL DATE\nLocalDate today = LocalDate.now();\nLocalDate date  = LocalDate.of(2025, Month.JUNE, 14);\nLocalDate date2 = LocalDate.parse(\"2025-06-14\");\ndate.getYear();              // 2025\ndate.getMonth();             // JUNE\ndate.getMonthValue();        // 6\ndate.getDayOfMonth();        // 14\ndate.getDayOfWeek();         // SATURDAY\ndate.isLeapYear();           // boolean\ndate.plusDays(7);            // returns new LocalDate\ndate.minusMonths(2);\ndate.withYear(2026);         // replace year\ndate.isBefore(today);\ndate.isAfter(today);\ndate.isEqual(today);\n\n// LOCAL TIME\nLocalTime now  = LocalTime.now();\nLocalTime time = LocalTime.of(14, 30, 0);  // 14:30:00\nLocalTime t2   = LocalTime.parse(\"14:30:00\");\ntime.getHour();   time.getMinute();   time.getSecond();\ntime.plusHours(2).minusMinutes(30);\n\n// LOCAL DATE-TIME\nLocalDateTime dt = LocalDateTime.now();\nLocalDateTime dt2 = LocalDateTime.of(date, time);\ndt.toLocalDate();   dt.toLocalTime();\n\n// ZONED DATE-TIME\nZoneId zone = ZoneId.of(\"Asia/Kolkata\");\nZonedDateTime zdt = ZonedDateTime.now(zone);\nZonedDateTime.of(dt, zone);\n\n// INSTANT (machine time)\nInstant now2 = Instant.now();\nInstant.ofEpochMilli(1000L);\nnow2.toEpochMilli();\n\n// DURATION & PERIOD\nDuration d = Duration.between(time1, time2);\nd.toHours();  d.toMinutes();  d.getSeconds();\n\nPeriod p = Period.between(date1, date2);\np.getYears();  p.getMonths();  p.getDays();\n\n// FORMAT & PARSE\nDateTimeFormatter fmt = DateTimeFormatter.ofPattern(\"dd/MM/yyyy HH:mm\");\nString str = dt.format(fmt);              // \"14/06/2025 14:30\"\nLocalDateTime parsed = LocalDateTime.parse(str, fmt);\n\n// COMMON PATTERNS\n// dd=day, MM=month, yyyy=year, HH=24h, hh=12h, mm=min, ss=sec\n// E=weekday, MMMM=full month name, z=timezone",
+          "keyPoints": [
+            "ALL java.time classes are IMMUTABLE — plus/minus/with always return new instance",
+            "LocalDate, LocalTime, LocalDateTime have no timezone — use ZonedDateTime for timezone-aware",
+            "Instant is for machine timestamps (microseconds since epoch) — use for logging/DB timestamps",
+            "Duration.between(start, end) for time gaps; Period.between(startDate, endDate) for date gaps",
+            "DateTimeFormatter.ISO_LOCAL_DATE = yyyy-MM-dd; ISO_LOCAL_DATE_TIME = yyyy-MM-ddTHH:mm:ss",
+            "Never use java.util.Date or Calendar in new code — use java.time instead",
+            "ChronoUnit.DAYS.between(date1, date2): convenient for computing difference in specific units",
+            "Interview: Why new Date-Time API? Old Date/Calendar was mutable, poorly designed, and not thread-safe"
+          ]
+        },
+        {
+          "name": "Integer, Long, Double — Wrapper Class Methods",
+          "explanation": "Essential static and instance methods of the numeric wrapper classes for parsing, converting, and operating on numbers.",
+          "code": "// INTEGER\nInteger.parseInt(\"42\")          // int: parse String\nInteger.parseInt(\"FF\", 16)      // int: parse hex → 255\nInteger.valueOf(42)             // Integer: boxing\nInteger.toString(42)            // \"42\"\nInteger.toBinaryString(10)      // \"1010\"\nInteger.toHexString(255)        // \"ff\"\nInteger.toOctalString(8)        // \"10\"\nInteger.MAX_VALUE               // 2147483647\nInteger.MIN_VALUE               // -2147483648\nInteger.compare(a, b)           // -1, 0, or 1\nInteger.max(a, b)               // larger of two\nInteger.min(a, b)               // smaller\nInteger.sum(a, b)               // a + b (for method refs)\nInteger.bitCount(7)             // 3 (number of 1-bits)\nInteger.reverse(n)              // reverse bits\nInteger.highestOneBit(n)        // highest set bit\nInteger.numberOfLeadingZeros(n)\nInteger.numberOfTrailingZeros(n)\n\n// LONG\nLong.parseLong(\"12345678900\")   // long\nLong.MAX_VALUE                  // 9223372036854775807\nLong.compare(a, b)\nLong.toBinaryString(100L)\n\n// DOUBLE\nDouble.parseDouble(\"3.14\")      // double\nDouble.isNaN(x)                 // true if NaN\nDouble.isInfinite(x)            // true if ±Infinity\nDouble.compare(a, b)            // -1, 0, 1 (handles NaN safely)\nDouble.MAX_VALUE\nDouble.MIN_VALUE                // smallest positive double (~4.9e-324)\n\n// CHARACTER\nCharacter.isDigit('5')          // true\nCharacter.isLetter('A')         // true\nCharacter.isLetterOrDigit('3')  // true\nCharacter.isWhitespace(' ')     // true\nCharacter.isUpperCase('A')      // true\nCharacter.isLowerCase('a')      // true\nCharacter.toUpperCase('a')      // 'A'\nCharacter.toLowerCase('A')      // 'a'\nCharacter.getNumericValue('5')  // 5\nCharacter.getNumericValue('A')  // 10 (hex)\n\n// BOOLEAN\nBoolean.parseBoolean(\"true\")    // true\nBoolean.toString(true)          // \"true\"",
+          "keyPoints": [
+            "Integer.parseInt() vs Integer.valueOf(): parseInt returns int (primitive); valueOf returns Integer (object)",
+            "Always use Integer.compare(a, b) for int comparison in Comparator — avoids subtraction overflow",
+            "Integer cache: -128 to 127 cached — Integer.valueOf(127) == Integer.valueOf(127) is TRUE",
+            "Double.compare() handles NaN correctly; direct == and < do not",
+            "Character methods work on char primitives — very useful in string processing/DSA",
+            "Integer.bitCount(n): counts set bits — commonly used in bit manipulation problems",
+            "toBinaryString/toHexString: no sign extension for negative values (uses unsigned representation)",
+            "Interview: Integer.parseInt vs Integer.valueOf? parseInt returns primitive, valueOf returns Integer object"
+          ]
+        }
+      ]
     }
   ]
 }

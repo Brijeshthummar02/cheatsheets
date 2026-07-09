@@ -7,7 +7,7 @@ Thank you for contributing to Cheatsheets.
 1. Install Node.js 18+.
 2. Install dependencies:
 
-```bash
+```bash   e
 cd frontend
 npm install
 ```

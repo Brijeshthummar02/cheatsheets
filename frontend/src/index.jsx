@@ -13,10 +13,6 @@ root.render(
 // Register service worker for caching and offline support
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/serviceWorker.js')
-      .then(() => {
-      })
-      .catch(() => {
-      });
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}serviceWorker.js`).catch(() => {});
   });
 }

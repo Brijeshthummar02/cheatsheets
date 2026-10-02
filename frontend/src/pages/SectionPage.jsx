@@ -1,420 +1,242 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { BookOpenText, ChevronLeft, ChevronRight, Menu, Search, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import Header from '../components/Header';
-import { useLanguage } from '../context/LanguageContext';
+import ChapterBar from '../components/ChapterBar';
+import ChapterSheet from '../components/ChapterSheet';
+import ConceptCard from '../components/ConceptCard';
 import NavigationSidebar from '../components/NavigationSidebar';
-import SearchDialog from '../components/SearchDialog';
-import VirtualizedConceptList from '../components/VirtualizedConceptList';
+import ReaderBottomBar from '../components/ReaderBottomBar';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
-import { apiClient, endpoints, getErrorMessage } from '../lib/api';
+import { useReaderCopy } from '../components/readerCopy';
+import { useApiResource } from '../components/useApiResource';
+import { useLanguage } from '../context/LanguageContext';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { endpoints, getErrorMessage } from '../lib/api';
+import { getTopic } from '../lib/topics';
+import '../styles/reader.css';
 
-const metadataCache = new Map();
-const sectionCache = new Map();
+const ChapterSkeleton = ({ title, label }) => (
+  <div className="space-y-5">
+    <h1 className="sr-only">{title}</h1>
+    <p role="status" className="sr-only">
+      {label}
+    </p>
+    {/* Fades in after 150ms: a chapter that loads faster than that never flashes a skeleton. */}
+    <div aria-hidden="true" className="animate-fadeIn space-y-5 opacity-0 [animation-delay:150ms]">
+      <Skeleton className="h-36 w-full rounded-2xl" />
+      {[0, 1, 2].map((key) => (
+        <Skeleton key={key} className="h-56 w-full rounded-2xl" />
+      ))}
+    </div>
+  </div>
+);
 
-const SECTION_THEME = {
-  java: {
-    color: '#2C687B',
-    label: 'Java Flow',
-  },
-  springboot: {
-    color: '#72BAA9',
-    label: 'Spring Boot Flow',
-  },
-  dsa: {
-    color: '#6E1A37',
-    label: 'DSA Flow',
-  },
-  git: {
-    color: '#AE2448',
-    label: 'Git Flow',
-  },
+/** Error / empty state, rendered inside the page chrome so Header and navigation stay available. */
+const StatusCard = ({ title, message, onRetry }) => {
+  const t = useReaderCopy();
+
+  return (
+    <div className="surface-card p-6 text-center sm:p-10" role="alert">
+      <h1 className="font-heading text-2xl font-bold text-foreground">{title}</h1>
+      <p className="mx-auto mt-2 max-w-prose text-muted-foreground">{message}</p>
+      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+        {onRetry && <Button onClick={onRetry}>{t.retry}</Button>}
+        <Button asChild variant="outline">
+          <Link to="/">{t.goHome}</Link>
+        </Button>
+      </div>
+    </div>
+  );
 };
 
-const SectionPage = memo(({ type }) => {
+const ChapterHeader = ({ topic, section, index, total }) => {
+  const t = useReaderCopy();
+  const concepts = section.concepts?.length ?? 0;
+
+  return (
+    <div className="reading-shell space-y-3 p-4 sm:p-6">
+      <p className="eyebrow" style={{ color: topic.ink }}>
+        {t.chapter} {index + 1} · {topic.flowLabel}
+      </p>
+      <h1 className="font-heading text-2xl font-semibold leading-tight text-foreground sm:text-3xl">{section.title}</h1>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+        <span>{t.conceptCount(concepts)}</span>
+        <span className="chapter-pill" style={{ background: `${topic.color}1F`, color: topic.ink }}>
+          {t.position(index + 1, total)}
+        </span>
+      </div>
+      <div className="h-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+        <div className="h-full rounded-full" style={{ width: `${((index + 1) / total) * 100}%`, background: topic.color }} />
+      </div>
+    </div>
+  );
+};
+
+const StepLink = ({ to, label, title, align }) => {
+  const right = align === 'right';
+  const Icon = right ? ChevronRight : ChevronLeft;
+
+  return (
+    <Link to={to} className={`surface-card hover-float focus-ring block min-h-tap p-4 ${right ? 'text-right' : ''}`}>
+      <p className="eyebrow">{label}</p>
+      <span className={`mt-1 flex items-center gap-2 font-semibold text-foreground ${right ? 'flex-row-reverse' : ''}`}>
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="min-w-0">{title}</span>
+      </span>
+    </Link>
+  );
+};
+
+const SectionPage = ({ type }) => {
   const { sectionId } = useParams();
   const navigate = useNavigate();
-  const { language, isHinglish } = useLanguage();
+  const { isHinglish, setLanguage } = useLanguage();
+  const t = useReaderCopy();
+  const topic = getTopic(type);
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const [chaptersOpen, setChaptersOpen] = useState(false);
+  const openerRef = useRef(null);
+  const openChapters = () => {
+    openerRef.current = document.activeElement;
+    setChaptersOpen(true);
+  };
 
-  const [metadata, setMetadata] = useState(null);
-  const [sectionData, setSectionData] = useState(null);
-  const [loadingMeta, setLoadingMeta] = useState(true);
-  const [loadingSection, setLoadingSection] = useState(true);
-  const [error, setError] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const langQuery = isHinglish ? '?lang=hi' : '';
+  const meta = useApiResource(endpoints.cheatsheetSections(type) + langQuery);
+  const sections = meta.data?.sections;
+  const hasSection = (list) => Boolean(sectionId) && Boolean(list?.some((section) => section.id === sectionId));
+  const inLanguage = hasSection(sections);
 
-  const langParam = isHinglish ? '?lang=hi' : '';
+  // Hinglish covers fewer chapters than English. Keep the reader's place by showing the English chapter.
+  const lookupEnglish = isHinglish && Boolean(sections) && Boolean(sectionId) && !inLanguage;
+  const englishMeta = useApiResource(lookupEnglish ? endpoints.cheatsheetSections(type) : null);
+  const englishFallback = lookupEnglish && hasSection(englishMeta.data?.sections);
 
-  const themeMeta = useMemo(() => SECTION_THEME[type] || SECTION_THEME.java, [type]);
+  const navSections = englishFallback ? englishMeta.data.sections : sections;
+  const chapterUrl = sectionId && (inLanguage || englishFallback)
+    ? endpoints.cheatsheetSection(type, sectionId) + (inLanguage ? langQuery : '')
+    : null;
+  const chapter = useApiResource(chapterUrl);
+  const section = chapter.data?.section;
 
-  const fetchMetadata = useCallback(async () => {
-    const cacheKey = `meta_${type}_${language}`;
-
-    if (metadataCache.has(cacheKey)) {
-      const cachedData = metadataCache.get(cacheKey);
-      setMetadata(cachedData);
-      setLoadingMeta(false);
-      return cachedData;
-    }
-
-    try {
-      const response = await apiClient.get(endpoints.cheatsheetSections(type) + langParam);
-      metadataCache.set(cacheKey, response.data);
-      setMetadata(response.data);
-      setLoadingMeta(false);
-      return response.data;
-    } catch (err) {
-      const message = getErrorMessage(err);
-      setError(message);
-      setLoadingMeta(false);
-      toast.error(message);
-      return null;
-    }
-  }, [type, language, langParam]);
-
-  const fetchSection = useCallback(
-    async (targetSectionId) => {
-      const cacheKey = `section_${type}_${targetSectionId}_${language}`;
-
-      if (sectionCache.has(cacheKey)) {
-        setSectionData(sectionCache.get(cacheKey));
-        setLoadingSection(false);
-        return;
-      }
-
-      try {
-        setLoadingSection(true);
-        const response = await apiClient.get(endpoints.cheatsheetSection(type, targetSectionId) + langParam);
-        sectionCache.set(cacheKey, response.data);
-        setSectionData(response.data);
-        setLoadingSection(false);
-      } catch (err) {
-        const message = getErrorMessage(err);
-        setError(message);
-        setLoadingSection(false);
-        toast.error(message);
-      }
-    },
-    [type, language, langParam],
-  );
-
+  // Unknown chapter (or bare /topic): go to chapter 1, and say so when the user asked for something specific.
+  const missing = Boolean(sections?.length) && !inLanguage && (!sectionId || !isHinglish || (englishMeta.data && !englishFallback));
+  const firstId = sections?.[0]?.id;
   useEffect(() => {
-    setLoadingMeta(true);
-    setError(null);
-    fetchMetadata();
-  }, [fetchMetadata]);
+    if (!missing) return;
+    if (sectionId) toast(t.redirected, { id: 'chapter-redirect' });
+    navigate(`/${type}/${firstId}`, { replace: true });
+  }, [missing, sectionId, type, firstId, navigate, t]);
 
-  useEffect(() => {
-    if (!metadata?.sections || metadata.sections.length === 0) {
-      return;
-    }
+  useDocumentTitle(section ? `${section.title} · ${topic.shortTitle}` : topic.title);
 
-    if (!sectionId) {
-      navigate(`/${type}/${metadata.sections[0].id}`, { replace: true });
-      return;
-    }
+  const failed = [meta, englishMeta, chapter].filter((request) => request.error);
+  const retry = () => failed.forEach((request) => request.retry());
 
-    const sectionExists = metadata.sections.some((section) => section.id === sectionId);
+  const index = navSections ? navSections.findIndex((item) => item.id === sectionId) : -1;
+  const total = navSections?.length ?? 0;
+  const prev = index > 0 ? navSections[index - 1] : null;
+  const next = index >= 0 && index < total - 1 ? navSections[index + 1] : null;
+  const navReady = index >= 0;
+  const ready = navReady && Boolean(section);
+  const concepts = section?.concepts ?? [];
 
-    if (!sectionExists) {
-      navigate(`/${type}/${metadata.sections[0].id}`, { replace: true });
-      return;
-    }
+  let body;
+  if (failed.length > 0) {
+    body = <StatusCard title={t.loadFailed} message={getErrorMessage(failed[0].error)} onRetry={retry} />;
+  } else if (sections && sections.length === 0) {
+    body = <StatusCard title={t.noChapters} message={t.noChaptersHint} />;
+  } else if (!ready) {
+    body = <ChapterSkeleton title={topic.title} label={t.loading} />;
+  } else {
+    body = (
+      <>
+        <ChapterHeader topic={topic} section={section} index={index} total={total} />
 
-    fetchSection(sectionId);
-  }, [metadata, sectionId, type, navigate, fetchSection]);
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        setSearchOpen(true);
-      }
-
-      if (event.key === 'Escape') {
-        setSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const currentIndex = useMemo(() => {
-    if (!metadata?.sections || !sectionId) {
-      return -1;
-    }
-
-    return metadata.sections.findIndex((section) => section.id === sectionId);
-  }, [metadata, sectionId]);
-
-  const prevSection = useMemo(() => {
-    if (!metadata?.sections || currentIndex <= 0) {
-      return null;
-    }
-
-    return metadata.sections[currentIndex - 1];
-  }, [metadata, currentIndex]);
-
-  const nextSection = useMemo(() => {
-    if (!metadata?.sections || currentIndex < 0 || currentIndex >= metadata.sections.length - 1) {
-      return null;
-    }
-
-    return metadata.sections[currentIndex + 1];
-  }, [metadata, currentIndex]);
-
-  const handleSearchSelect = useCallback(
-    (result) => {
-      if (result.cheatsheet !== type) {
-        navigate(`/${result.cheatsheet}/${result.section_id}`);
-      } else {
-        navigate(`/${type}/${result.section_id}`);
-      }
-
-      setSearchOpen(false);
-    },
-    [type, navigate],
-  );
-
-  if (loadingMeta) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-10">
-        <Skeleton className="mb-6 h-10 w-64" />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
-          <div className="space-y-3">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <Skeleton key={index} className="h-11 w-full rounded-xl" />
-            ))}
-          </div>
-          <div className="space-y-5">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-52 w-full rounded-2xl" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="surface-card w-full max-w-lg p-8 text-center">
-          <h2 className="font-heading text-2xl font-bold text-foreground">
-            {isHinglish ? 'Cheatsheet load nahi hui' : 'Unable to load cheatsheet'}
-          </h2>
-          <p className="mt-2 text-sm text-foreground/70">{error}</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Button onClick={() => window.location.reload()} className="rounded-xl">
-              {isHinglish ? 'Retry karo' : 'Retry'}
-            </Button>
-            <Button onClick={() => navigate('/')} variant="outline" className="rounded-xl">
-              {isHinglish ? 'Home jao' : 'Go Home'}
+        {englishFallback && (
+          <div className="flex flex-col gap-3 rounded-2xl border border-info/40 bg-info/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-start gap-2.5 text-sm leading-6 text-foreground">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+              {t.fallbackNotice}
+            </p>
+            <Button size="sm" variant="outline" className="shrink-0" onClick={() => setLanguage('en')}>
+              {t.switchToEnglish}
             </Button>
           </div>
-        </div>
-      </div>
-    );
-  }
+        )}
 
-  if (!metadata) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="surface-card w-full max-w-lg p-8 text-center">
-          <h2 className="font-heading text-2xl font-bold text-foreground">
-            {isHinglish ? 'Cheatsheet nahi mili' : 'Cheatsheet not found'}
-          </h2>
-          <Button onClick={() => navigate('/')} className="mt-5 rounded-xl">
-            {isHinglish ? 'Home jao' : 'Go Home'}
-          </Button>
-        </div>
-      </div>
+        {concepts.length === 0 ? (
+          <div className="surface-card p-6 text-center text-muted-foreground sm:p-10">{t.empty}</div>
+        ) : (
+          <div className="space-y-5 sm:space-y-6">
+            {concepts.map((concept, i) => (
+              <ConceptCard key={`${sectionId}-${i}`} concept={concept} index={i} type={type} />
+            ))}
+          </div>
+        )}
+
+        <nav aria-label={t.endNavLabel} className="grid gap-3 sm:grid-cols-2">
+          {prev ? (
+            <StepLink to={`/${type}/${prev.id}`} label={t.prevChapter} title={prev.title} align="left" />
+          ) : (
+            <p className="surface-card p-4 text-sm text-muted-foreground">{t.firstChapter}</p>
+          )}
+          {next ? (
+            <StepLink to={`/${type}/${next.id}`} label={t.nextChapter} title={next.title} align="right" />
+          ) : (
+            <p className="surface-card p-4 text-sm text-muted-foreground sm:text-right">{t.flowComplete}</p>
+          )}
+        </nav>
+      </>
     );
   }
 
   return (
-    <div className="relative min-h-screen pb-10">
-      <Header 
-        heightClass="h-[72px] items-center" 
-        title={metadata.title} 
-        subtitle={themeMeta.label}
-        autoHideOnScroll={true}
-      >
-        <Button
-          data-testid="search-btn"
-          variant="outline"
-          onClick={() => setSearchOpen(true)}
-          className="hidden h-10 rounded-xl border-border/70 bg-card/70 px-4 text-xs font-semibold md:inline-flex"
-        >
-          <Search className="h-4 w-4" />
-          {isHinglish ? 'Search' : 'Search'}
-          <span className="ml-1 text-[10px] text-foreground/55">Ctrl+K</span>
-        </Button>
+    <div className="relative">
+      <Header title={topic.title} autoHideOnScroll />
 
-        <Button
-          data-testid="mobile-search-btn"
-          variant="outline"
-          size="icon"
-          onClick={() => setSearchOpen(true)}
-          className="h-10 w-10 rounded-xl border-border/70 bg-card/70 md:hidden"
-        >
-          <Search className="h-4 w-4" />
-        </Button>
+      {!isDesktop && navReady && (
+        <ChapterBar type={type} index={index} total={total} title={navSections[index].title} onOpen={openChapters} />
+      )}
 
-        <Button
-          data-testid="mobile-menu-btn"
-          variant="outline"
-          size="icon"
-          onClick={() => setSidebarOpen((open) => !open)}
-          className="h-10 w-10 rounded-xl border-border/70 bg-card/70 md:hidden"
-        >
-          {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </Button>
-      </Header>
-
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-8">
-        <button
-          type="button"
-          className={`fixed inset-0 z-30 bg-[#30364F]/28 transition-opacity duration-200 md:hidden ${
-            sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
-          onClick={() => setSidebarOpen(false)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              setSidebarOpen(false);
-            }
-          }}
-          tabIndex={sidebarOpen ? 0 : -1}
-          aria-label="Close navigation menu"
-          aria-hidden={!sidebarOpen}
-        />
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[290px_1fr]">
-          <aside
-            className={`fixed bottom-0 left-0 top-[72px] z-40 w-[86%] max-w-[320px] overflow-y-auto bg-background p-4 transition-transform duration-200 md:static md:z-0 md:w-auto md:max-w-none md:overflow-visible md:translate-x-0 md:bg-transparent md:p-0 ${
-              sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-            }`}
-          >
-            <div className="surface-card h-full p-3 md:h-auto md:p-4">
-              <NavigationSidebar
-                sections={metadata.sections || []}
-                activeSection={sectionId}
-                cheatsheetType={type}
-                themeColor={themeMeta.color}
-                onNavigate={() => setSidebarOpen(false)}
-              />
-            </div>
-          </aside>
-
-          <main id="main-content" role="main" className="space-y-6">
-            {loadingSection ? (
-              <div className="space-y-5">
-                <Skeleton className="h-12 w-72 rounded-xl" />
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-56 w-full rounded-2xl" />
-                ))}
-              </div>
-            ) : sectionData?.section ? (
-              <>
-                <section className="reading-shell p-5 sm:p-7">
-                  <div className="mb-7 flex flex-col gap-4 border-b border-border/65 pb-5 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="space-y-2">
-                      <span className="chapter-pill" style={{ background: `${themeMeta.color}15`, color: themeMeta.color }}>
-                        <BookOpenText className="h-3.5 w-3.5" />
-                        {isHinglish ? 'Current Chapter' : 'Current Chapter'}
-                      </span>
-
-                      <h2 className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
-                        {sectionData.section.title}
-                      </h2>
-
-                      <p className="text-sm text-foreground/68">
-                        {isHinglish
-                          ? `${sectionData.section.concepts?.length || 0} concepts in this chapter.`
-                          : `${sectionData.section.concepts?.length || 0} concepts in this chapter.`}
-                      </p>
-                    </div>
-
-                    <div
-                      className="inline-flex max-w-max items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold"
-                      style={{
-                        borderColor: `${themeMeta.color}35`,
-                        color: themeMeta.color,
-                        background: `${themeMeta.color}10`,
-                      }}
-                    >
-                      <span>{currentIndex + 1}</span>
-                      <span>/</span>
-                      <span>{metadata.sections.length}</span>
-                    </div>
-                  </div>
-
-                  <VirtualizedConceptList
-                    concepts={sectionData.section.concepts || []}
-                    themeColor={themeMeta.color}
-                    type={type}
-                  />
-                </section>
-
-                <nav className="grid grid-cols-1 gap-3 md:grid-cols-2" aria-label="Section navigation">
-                  {prevSection ? (
-                    <Link
-                      to={`/${type}/${prevSection.id}`}
-                      className="surface-card focus-ring group block p-4 transition-all duration-200 hover:border-border"
-                    >
-                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-foreground/55">
-                        {isHinglish ? 'Previous Chapter' : 'Previous Chapter'}
-                      </p>
-                      <div className="flex items-center gap-2 text-foreground/82 group-hover:text-foreground">
-                        <ChevronLeft className="h-4 w-4" />
-                        <span className="text-sm font-medium">{prevSection.title}</span>
-                      </div>
-                    </Link>
-                  ) : (
-                    <div className="surface-card p-4 text-xs text-foreground/50">
-                      {isHinglish ? 'This is the first chapter.' : 'This is the first chapter.'}
-                    </div>
-                  )}
-
-                  {nextSection ? (
-                    <Link
-                      to={`/${type}/${nextSection.id}`}
-                      className="surface-card focus-ring group block p-4 text-right transition-all duration-200 hover:border-border"
-                    >
-                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-foreground/55">
-                        {isHinglish ? 'Next Chapter' : 'Next Chapter'}
-                      </p>
-                      <div className="flex items-center justify-end gap-2 text-foreground/82 group-hover:text-foreground">
-                        <span className="text-sm font-medium">{nextSection.title}</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </div>
-                    </Link>
-                  ) : (
-                    <div className="surface-card p-4 text-right text-xs text-foreground/50">
-                      {isHinglish ? 'You completed this flow.' : 'You completed this flow.'}
-                    </div>
-                  )}
-                </nav>
-              </>
+      <div className="page-container py-5 sm:py-6 lg:py-8">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">
+          {isDesktop &&
+            (navSections ? (
+              <aside aria-label={t.sidebarLabel} className="sticky-sidebar surface-card no-print p-2">
+                <NavigationSidebar sections={navSections} activeSection={sectionId} cheatsheetType={type} />
+              </aside>
             ) : (
-              <div className="surface-card p-8 text-center">
-                <p className="text-sm text-foreground/65">{isHinglish ? 'Section nahi mili' : 'Section not found'}</p>
+              <div aria-hidden="true" className="surface-card h-96 p-3">
+                <Skeleton className="h-full w-full rounded-xl" />
               </div>
-            )}
+            ))}
+
+          <main id="main-content" tabIndex={-1} className="min-w-0 space-y-5 outline-hidden sm:space-y-6">
+            {body}
           </main>
         </div>
       </div>
 
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} onSelectResult={handleSearchSelect} />
+      {!isDesktop && navReady && (
+        <>
+          <ReaderBottomBar type={type} prev={prev} next={next} onOpenChapters={openChapters} />
+          <ChapterSheet
+            open={chaptersOpen}
+            onOpenChange={setChaptersOpen}
+            sections={navSections}
+            activeSection={sectionId}
+            type={type}
+            openerRef={openerRef}
+          />
+        </>
+      )}
     </div>
   );
-});
-
-SectionPage.displayName = 'SectionPage';
+};
 
 export default SectionPage;

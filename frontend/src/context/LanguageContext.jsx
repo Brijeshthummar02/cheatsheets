@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 const LanguageContext = createContext(undefined);
 
@@ -7,41 +7,44 @@ export const LANGUAGES = {
   HINGLISH: 'hi',
 };
 
-export function LanguageProvider({ children }) {
-  // Initialize from localStorage or default to English
-  const [language, setLanguage] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('cheatsheet-language');
-      return saved || LANGUAGES.ENGLISH;
-    }
-    return LANGUAGES.ENGLISH;
-  });
+const STORAGE_KEY = 'cheatsheet-language';
 
-  // Persist language preference to localStorage
+const readStoredLanguage = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved === LANGUAGES.HINGLISH ? LANGUAGES.HINGLISH : LANGUAGES.ENGLISH;
+  } catch {
+    return LANGUAGES.ENGLISH;
+  }
+};
+
+export function LanguageProvider({ children }) {
+  const [language, setLanguage] = useState(readStoredLanguage);
+
   useEffect(() => {
-    localStorage.setItem('cheatsheet-language', language);
+    try {
+      localStorage.setItem(STORAGE_KEY, language);
+    } catch {
+      // Storage is unavailable (private mode); the choice simply won't persist.
+    }
+    document.documentElement.lang = language === LANGUAGES.HINGLISH ? 'hi-Latn' : 'en';
   }, [language]);
 
-  const toggleLanguage = () => {
-    setLanguage(prev => 
-      prev === LANGUAGES.ENGLISH ? LANGUAGES.HINGLISH : LANGUAGES.ENGLISH
-    );
-  };
+  const toggleLanguage = useCallback(() => {
+    setLanguage((prev) => (prev === LANGUAGES.ENGLISH ? LANGUAGES.HINGLISH : LANGUAGES.ENGLISH));
+  }, []);
 
-  const isHinglish = language === LANGUAGES.HINGLISH;
-
-  const value = {
-    language,
-    setLanguage,
-    toggleLanguage,
-    isHinglish,
-  };
-
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
+  const value = useMemo(
+    () => ({
+      language,
+      setLanguage,
+      toggleLanguage,
+      isHinglish: language === LANGUAGES.HINGLISH,
+    }),
+    [language, toggleLanguage],
   );
+
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {

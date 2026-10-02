@@ -1,14 +1,13 @@
 /**
- * Client-side data layer — no backend required.
- * Cheatsheet JSON files are served as static Vercel assets from /cheatsheets/.
- * This replaces the previous Render/FastAPI backend entirely, eliminating cold-start delays.
+ * Client-side data layer — there is no backend.
+ * Cheatsheet JSON files are static assets served from <base>/cheatsheets/ (GitHub Pages sub-path aware),
+ * fetched once per session and cached in memory.
+ *
+ * `apiClient.get()` keeps an axios-like shape ({ data, status }) so call sites read like a normal HTTP client.
  */
+import { assetUrl } from '@/lib/utils';
 
-// Kept for backward compatibility (nothing calls these in practice now)
-export const BACKEND_URL = '';
-export const API_BASE_URL = '/api';
-
-// Topic → base filename (mirrors the Python VALID_TOPICS dict)
+// Topic -> base filename.
 const VALID_TOPICS = {
     java: 'java_cheatsheet',
     springboot: 'springboot_cheatsheet',
@@ -16,8 +15,11 @@ const VALID_TOPICS = {
     git: 'git_cheatsheet',
 };
 
-// In-memory cache so each file is only fetched once per session
-const cheatsheetCache = {};
+const MAX_SEARCH_RESULTS = 20;
+
+// In-memory cache of in-flight/finished loads (promises), so each file is fetched once per session
+// and concurrent callers (pre-warm + search) share the same request.
+const cheatsheetCache = new Map();
 
 function makeError(status, detail) {
     const err = new Error(detail);
@@ -31,57 +33,104 @@ function getTopicFilename(topic, lang) {
     return lang === 'hi' ? `${base}_hi.json` : `${base}.json`;
 }
 
-async function fetchCheatsheetData(filename) {
-    if (cheatsheetCache[filename]) return cheatsheetCache[filename];
-
-    const res = await fetch(`/cheatsheets/${filename}`);
+async function loadCheatsheetFile(filename) {
+    const res = await fetch(assetUrl(`cheatsheets/${filename}`));
     const contentType = res.headers.get('content-type') || '';
 
-    // If the file doesn't exist, the SPA rewrite returns index.html (not JSON).
-    // Fall back to the English version for topics that have no hi translation.
+    // A missing file may come back as the host's HTML 404 page (status 200 on some hosts) — treat both
+    // as "not there". Topics without a Hinglish translation silently fall back to English.
     if (!res.ok || !contentType.includes('json')) {
         if (filename.endsWith('_hi.json')) {
-            const fallback = filename.replace('_hi.json', '.json');
-            return fetchCheatsheetData(fallback);
+            return fetchCheatsheetData(filename.replace('_hi.json', '.json'));
         }
-        throw makeError(res.status || 404, `Cheatsheet file not found: ${filename}`);
+        throw makeError(res.ok ? 404 : res.status, `Cheatsheet file not found: ${filename}`);
     }
 
-    const data = await res.json();
-    cheatsheetCache[filename] = data;
-    return data;
+    try {
+        return await res.json();
+    } catch {
+        // The server answered but the body wasn't valid JSON — surface it as a server-side problem.
+        throw makeError(502, `Cheatsheet file is not valid JSON: ${filename}`);
+    }
+}
+
+function fetchCheatsheetData(filename) {
+    if (!cheatsheetCache.has(filename)) {
+        const pending = loadCheatsheetFile(filename).catch((err) => {
+            // Never cache a failure, so a retry (e.g. after coming back online) really re-fetches.
+            cheatsheetCache.delete(filename);
+            throw err;
+        });
+        cheatsheetCache.set(filename, pending);
+    }
+    return cheatsheetCache.get(filename);
+}
+
+/** Lower rank = better match. Concept name beats section title beats body text. */
+function rankConcept(name, sectionTitle, body, query) {
+    const nameIdx = name.indexOf(query);
+    if (nameIdx === 0) return 0; // name starts with the query
+    if (nameIdx > 0) {
+        const startsWord = /[^a-z0-9]/.test(name[nameIdx - 1]);
+        return startsWord ? 1 : 2; // word-prefix, then plain substring
+    }
+    if (sectionTitle.includes(query)) return 3;
+    if (body.includes(query)) return 4;
+    return -1;
 }
 
 async function searchCheatsheets(q, lang) {
     if (!q || q.trim().length < 2) return [];
     const query = q.toLowerCase().trim();
-    const results = [];
+    const hits = [];
+    let failure = null;
+    let loaded = 0;
 
-    for (const cheatsheetName of Object.keys(VALID_TOPICS)) {
-        try {
-            const filename = getTopicFilename(cheatsheetName, lang);
-            const data = await fetchCheatsheetData(filename);
-            for (const section of data.sections || []) {
-                for (const concept of section.concepts || []) {
-                    const keyPoints = (concept.keyPoints || []).join(' ');
-                    const searchable = `${concept.name} ${concept.explanation} ${concept.code} ${keyPoints}`.toLowerCase();
-                    if (searchable.includes(query)) {
-                        results.push({
-                            cheatsheet: cheatsheetName,
-                            section_id: section.id || '',
-                            section_title: section.title || '',
-                            concept_name: concept.name || '',
-                            explanation: concept.explanation || '',
-                            code: concept.code || '',
-                        });
-                    }
-                }
+    const topics = await Promise.all(
+        Object.keys(VALID_TOPICS).map(async (cheatsheetName) => {
+            try {
+                const data = await fetchCheatsheetData(getTopicFilename(cheatsheetName, lang));
+                loaded += 1;
+                return { cheatsheetName, data };
+            } catch (e) {
+                failure = failure || e;
+                return null;
             }
-        } catch (e) {
-            console.error('[API-local] search error for', cheatsheetName, e);
+        }),
+    );
+
+    // Every file failed: that's an error (offline, host down), not "no results".
+    if (!loaded && failure) throw failure;
+
+    for (const topic of topics) {
+        if (!topic) continue;
+        for (const section of topic.data.sections || []) {
+            const sectionTitle = (section.title || '').toLowerCase();
+            for (const concept of section.concepts || []) {
+                const name = (concept.name || '').toLowerCase();
+                const body = `${concept.explanation || ''} ${(concept.keyPoints || []).join(' ')} ${concept.code || ''}`.toLowerCase();
+                const rank = rankConcept(name, sectionTitle, body, query);
+                if (rank < 0) continue;
+                hits.push({
+                    rank,
+                    order: hits.length, // keeps the sort stable (topic, section, concept order)
+                    result: {
+                        cheatsheet: topic.cheatsheetName,
+                        section_id: section.id || '',
+                        section_title: section.title || '',
+                        concept_name: concept.name || '',
+                        explanation: concept.explanation || '',
+                        code: concept.code || '',
+                    },
+                });
+            }
         }
     }
-    return results.slice(0, 20);
+
+    return hits
+        .sort((a, b) => a.rank - b.rank || a.order - b.order)
+        .slice(0, MAX_SEARCH_RESULTS)
+        .map((hit) => hit.result);
 }
 
 /**
@@ -95,7 +144,7 @@ async function dispatchRequest(url, params = {}) {
     const lang = params.lang || null;
 
     if (!parts.length) {
-        return { data: { message: 'Java & Spring Boot Cheatsheet API' }, status: 200 };
+        return { data: { message: 'Cheatsheets' }, status: 200 };
     }
 
     if (parts[0] !== 'cheatsheets') throw makeError(404, 'Not found');
@@ -140,7 +189,7 @@ async function dispatchRequest(url, params = {}) {
 
 /**
  * Axios-compatible client backed entirely by local static JSON files.
- * Supports apiClient.get(url) and apiClient.get(url, { params }) — same call sites, no changes needed.
+ * Supports apiClient.get(url) and apiClient.get(url, { params }).
  */
 export const apiClient = {
     async get(url, options = {}) {
@@ -150,42 +199,41 @@ export const apiClient = {
             ...Object.fromEntries(new URLSearchParams(qs || '')),
             ...(options?.params || {}),
         };
-
-        if (import.meta.env.DEV) {
-            console.log(`[API-local] GET ${url}`, params);
-        }
-
         return dispatchRequest(path, params);
-    },
-    // No-op interceptors — kept so any code that calls .interceptors.*.use() doesn't break
-    interceptors: {
-        request: { use: () => {} },
-        response: { use: () => {} },
     },
 };
 
 /**
- * Parse API error into user-friendly message
+ * Classify an error so callers can pick (and translate) a message:
+ * 'offline' | 'not-found' | 'server' | 'unknown'.
  */
-export const getErrorMessage = (error) => {
-    if (error.response) {
-        switch (error.response.status) {
-            case 404:
-                return 'Resource not found.';
-            case 500:
-                return 'Server error. Please try again later.';
-            case 503:
-                return 'Service unavailable. Please try again later.';
-            default:
-                return error.response.data?.detail || error.message || 'An error occurred.';
-        }
-    }
+export const getErrorKind = (error) => {
+    const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    const message = String(error?.message || '');
+    // fetch() rejects with a TypeError when the network is unreachable ("Failed to fetch",
+    // "NetworkError when attempting to fetch resource", "Load failed" on Safari).
+    const networkFailure =
+        !error?.response && error instanceof TypeError && /fetch|network|load failed/i.test(message);
+    if (offline || networkFailure) return 'offline';
 
-    return error.message || 'An unexpected error occurred.';
+    const status = error?.response?.status;
+    if (status === 404) return 'not-found';
+    if (status >= 500) return 'server';
+    return 'unknown';
 };
 
-// Always "healthy" — there's no remote server to check
-export const checkBackendHealth = async () => true;
+const ERROR_MESSAGES = {
+    offline: 'You appear to be offline. Check your connection and try again.',
+    'not-found': "We couldn't find that cheatsheet.",
+    server: 'Something went wrong on our side. Please try again.',
+    unknown: "Something didn't work as expected. Please try again.",
+};
+
+/**
+ * Turn any thrown error into a short, friendly, English sentence. Never exposes raw technical text.
+ * (Callers that have a language context may translate via getErrorKind.)
+ */
+export const getErrorMessage = (error) => ERROR_MESSAGES[getErrorKind(error)];
 
 export const endpoints = {
     root: '/',

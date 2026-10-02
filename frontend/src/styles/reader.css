@@ -1,0 +1,128 @@
+/* Chapter reader (SectionPage, ConceptCard, CodeBlock, NavigationSidebar). Imported by pages/SectionPage.jsx. */
+
+/* The chapter header block. Static — it must never shift under the pointer while reading. */
+.reading-shell {
+    border-radius: 1.25rem;
+    border: 1px solid hsl(var(--border) / 0.72);
+    background: linear-gradient(180deg, #fffefe 0%, #fffaf8 52%, #fff7f4 100%);
+    box-shadow: var(--shadow-card);
+}
+
+/*
+ * Native lazy rendering: off-screen cards skip layout/paint but stay in the DOM, so Ctrl+F, anchors and
+ * screen readers still find them (an IntersectionObserver placeholder scheme can't do that).
+ * `auto` in contain-intrinsic-size remembers a card's real height once it has rendered.
+ * html already pads anchor scrolling by the header; below lg the sticky chapter bar needs its height on top.
+ */
+.concept-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 520px;
+    scroll-margin-top: 3.25rem;
+}
+
+@media (min-width: 1024px) {
+    .concept-card {
+        scroll-margin-top: 0;
+    }
+}
+
+/*
+ * Chapter bar (below lg) sits under the header. The header slides away on scroll-down on phones and
+ * sets `data-hidden` while hidden — follow it up so no empty gap is left at the top.
+ */
+.chapter-bar {
+    top: var(--header-offset);
+    transition: top 0.2s ease;
+}
+
+html:has(header[data-hidden='true']) .chapter-bar {
+    top: 0;
+    padding-top: env(safe-area-inset-top);
+}
+
+/* Desktop chapter list: sticks under the header and scrolls on its own, so every chapter stays reachable. */
+.sticky-sidebar {
+    position: sticky;
+    align-self: start;
+    top: calc(var(--header-offset) + 1rem);
+    /* 2rem page padding above + 1rem breathing room below, so the bottom edge is never flush at scrollY 0. */
+    max-height: calc(100vh - var(--header-offset) - 3rem);
+    max-height: calc(100dvh - var(--header-offset) - 3rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+/* Code blocks */
+pre[class*='language-'] {
+    margin: 0;
+    border-radius: 0.95rem;
+    border: 1px solid hsl(var(--border) / 0.7);
+    background: hsl(var(--code-bg));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.44);
+}
+
+pre[class*='language-']:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+}
+
+code[class*='language-'] {
+    line-height: 1.62;
+    text-shadow: none;
+}
+
+/* Syntax colours: prism's default theme is under 4.5:1 on the cream code background; these are AA. */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: #566474;
+}
+
+.token.punctuation {
+    color: #4a5568;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+    color: #960050;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: #3a6600;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+    color: #7a4f1d;
+    background: none;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+    color: #005f8a;
+}
+
+.token.function,
+.token.class-name {
+    color: #b0233f;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+    color: #85530a;
+}

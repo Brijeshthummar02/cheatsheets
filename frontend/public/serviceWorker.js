@@ -4,13 +4,18 @@
 const CACHE_NAME = 'cheatsheet-cache-v1';
 const API_CACHE = 'cheatsheet-api-cache-v1';
 
+// The worker file sits at the deploy root, so resolving against it works on any
+// base path (e.g. "/cheatsheets/" on GitHub Pages, "/" on a custom domain).
+const BASE = new URL('./', self.location).pathname;
+
 // Assets to cache immediately
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/java',
-  '/springboot',
-  '/dsa',
+  BASE,
+  `${BASE}index.html`,
+  `${BASE}java/`,
+  `${BASE}springboot/`,
+  `${BASE}dsa/`,
+  `${BASE}git/`,
 ];
 
 // Install event - cache static assets
@@ -29,7 +34,9 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== API_CACHE) {
+          // github.io origins are shared by every project site, so only touch our own caches.
+          const isOurs = cacheName.startsWith('cheatsheet-');
+          if (isOurs && cacheName !== CACHE_NAME && cacheName !== API_CACHE) {
             return caches.delete(cacheName);
           }
         })

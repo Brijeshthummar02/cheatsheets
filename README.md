@@ -14,7 +14,7 @@ Cheatsheets is a story-driven learning app for developers.
 - Language support: English + Hinglish toggle
 - Search: Fast concept search across all topics
 - Data model: Static JSON assets served from frontend public files
-- Runtime: Frontend-only Vite app (no backend required)
+- Runtime: Frontend-only Vite app (no backend required); needs Node 22.12+ (CI uses Node 24 LTS)
 
 ## Quick Start
 
@@ -32,6 +32,16 @@ App runs on <http://localhost:3000> by default.
 cd frontend
 npm run build
 ```
+
+## Deployment (GitHub Pages)
+
+The site is deployed to GitHub Pages by `.github/workflows/deploy-pages.yml` on every push to `main`.
+
+- Live URL: <https://brijeshthummar02.github.io/cheatsheets/>
+- The workflow builds with `VITE_BASE_PATH=/<repo-name>/`; locally the base path defaults to `/`.
+- To preview the Pages build locally (PowerShell): `$env:VITE_BASE_PATH='/cheatsheets/'; npm run build; npm run preview`, then open <http://localhost:4173/cheatsheets/>.
+- After the build, `vite-plugin-static-routes.js` copies `index.html` to every route (and `404.html`) because GitHub Pages cannot rewrite URLs for a single-page app.
+- Moving to a custom domain later: add a `CNAME` file in `frontend/public/`, and set `VITE_BASE_PATH: /` in the workflow.
 
 ## Open Source
 

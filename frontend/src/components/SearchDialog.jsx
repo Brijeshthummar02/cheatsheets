@@ -79,7 +79,7 @@ function SearchPanel({ onOpenChange, onSelectResult }) {
 
   const viewport = useVisibleViewport(true);
 
-  // Pre-warm: fetch all four topics while the browser is idle so the first search is instant.
+  // Pre-warm: fetch every topic while the browser is idle so the first search is instant.
   useEffect(() => {
     const params = isHinglish ? { lang: 'hi' } : {};
     const warm = () =>
@@ -195,7 +195,7 @@ function SearchPanel({ onOpenChange, onSelectResult }) {
         title: 'Cheatsheets mein dhoondho',
         placeholder: 'Concepts, commands dhoondho...',
         clear: 'Search saaf karo',
-        hint: 'Java, Spring Boot, DSA aur Git ke concepts, annotations aur commands dhoondho.',
+        hint: 'Java, Spring Boot, DSA, Git aur DevOps ke concepts, annotations aur commands dhoondho.',
         recent: 'Haal ki searches',
         clearRecent: 'Saaf karo',
         suggestions: 'Ye try karo',
@@ -212,7 +212,7 @@ function SearchPanel({ onOpenChange, onSelectResult }) {
         title: 'Search cheatsheets',
         placeholder: 'Search concepts, commands...',
         clear: 'Clear search',
-        hint: 'Find concepts, annotations and commands across Java, Spring Boot, DSA and Git.',
+        hint: 'Find concepts, annotations and commands across Java, Spring Boot, DSA, Git and DevOps.',
         recent: 'Recent searches',
         clearRecent: 'Clear',
         suggestions: 'Try searching for',

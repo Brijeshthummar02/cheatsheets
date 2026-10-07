@@ -8,6 +8,7 @@ This file contains active issue ideas you can copy into GitHub Issues.
 - Added PR template and issue templates.
 - Added frontend CI and lint checks in CI.
 - Added README CI badge and open source docs baseline.
+- Added the DevOps cheatsheet (`devops_cheatsheet.json`): Linux, networking, Docker, Kubernetes, CI/CD, IaC, cloud, observability, DevSecOps, and an interview Q&A block. It covers Docker and Kubernetes fundamentals (issues 1 and 2 below remain open for dedicated deep-dive sheets and Hinglish translations).
 
 ## Active Backlog
 

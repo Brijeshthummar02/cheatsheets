@@ -1,7 +1,7 @@
-import { Binary, Code2, GitBranch, Layers3 } from 'lucide-react';
+import { Binary, Code2, Container, GitBranch, Layers3 } from 'lucide-react';
 
 /**
- * Single source of truth for the four cheatsheet topics.
+ * Single source of truth for the cheatsheet topics.
  *
  * `color` is the brand tone — use it for decoration only (tints, borders, dots, glows).
  * `ink`   is the same hue darkened to pass WCAG AA (>= 4.5:1) against the cream surfaces —
@@ -53,6 +53,17 @@ export const TOPICS = {
     color: '#AE2448',
     ink: '#AE2448',
     icon: GitBranch,
+    language: 'bash',
+  },
+  devops: {
+    id: 'devops',
+    path: '/devops',
+    title: 'DevOps Playbook',
+    shortTitle: 'DevOps',
+    flowLabel: 'DevOps Flow',
+    color: '#D97706',
+    ink: '#A8480B',
+    icon: Container,
     language: 'bash',
   },
 };

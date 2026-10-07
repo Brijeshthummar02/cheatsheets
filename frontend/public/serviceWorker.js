@@ -16,6 +16,7 @@ const STATIC_ASSETS = [
   `${BASE}springboot/`,
   `${BASE}dsa/`,
   `${BASE}git/`,
+  `${BASE}devops/`,
 ];
 
 // Install event - cache static assets

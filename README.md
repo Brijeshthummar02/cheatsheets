@@ -10,7 +10,7 @@ A developer starts with noise: scattered tabs, half-remembered syntax, and inter
 
 Cheatsheets is a story-driven learning app for developers.
 
-- Topics: Java, Spring Boot, DSA, and Git
+- Topics: Java, Spring Boot, DSA, Git, and DevOps (containers, Kubernetes, CI/CD, IaC, cloud, observability, plus interview Q&A)
 - Language support: English + Hinglish toggle
 - Search: Fast concept search across all topics
 - Data model: Static JSON assets served from frontend public files

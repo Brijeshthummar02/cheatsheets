@@ -13,6 +13,7 @@ const VALID_TOPICS = {
     springboot: 'springboot_cheatsheet',
     dsa: 'dsa_cheatsheet',
     git: 'git_cheatsheet',
+    devops: 'devops_cheatsheet',
 };
 
 const MAX_SEARCH_RESULTS = 20;

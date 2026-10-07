@@ -47,13 +47,22 @@ const TOPIC_COPY = {
       { en: 'Debug and recover safely', hi: 'Debug aur recover safely' },
     ],
   },
+  devops: {
+    summary: 'Ship and run software end to end: containers, Kubernetes, CI/CD, cloud, and interview prep.',
+    summaryHi: 'Containers, Kubernetes, CI/CD, cloud aur interview prep ke saath software end to end ship aur run karo.',
+    points: [
+      { en: 'Docker, Kubernetes, and Helm', hi: 'Docker, Kubernetes, aur Helm' },
+      { en: 'CI/CD, Terraform, and GitOps', hi: 'CI/CD, Terraform, aur GitOps' },
+      { en: 'Monitoring, SRE, and interview Q&A', hi: 'Monitoring, SRE, aur interview Q&A' },
+    ],
+  },
 };
 
 const STEPS = [
   {
     title: 'Pick a Domain',
-    description: 'Java, Spring, DSA, or Git.',
-    descriptionHi: 'Java, Spring, DSA ya Git.',
+    description: 'Java, Spring, DSA, Git, or DevOps.',
+    descriptionHi: 'Java, Spring, DSA, Git ya DevOps.',
   },
   {
     title: 'Read in Sequence',
@@ -253,7 +262,7 @@ const HomePage = memo(() => {
             <p className="text-sm text-muted-foreground sm:text-base">All paths are designed as narrative flows.</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
             {topics.map((topic, index) => (
               <JourneyCard
                 key={topic.id}

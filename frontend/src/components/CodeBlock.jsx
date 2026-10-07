@@ -6,18 +6,43 @@ import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-properties';
 import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-docker';
+import 'prismjs/components/prism-hcl';
+import 'prismjs/components/prism-nginx';
 import { Button } from './ui/button';
 import { useReaderCopy } from './readerCopy';
 
 const COMMENT_LINE = /^(\/\/|#|\/\*|\*|<!--)/;
 const COPIED_MS = 1800;
 
+// DevOps snippets mix shell with config formats. A snippet is only treated as one of these formats when
+// every unindented, non-comment line looks like it; a single shell command line keeps it as bash.
+const FORMATS = [
+  ['yaml', /^([\w.-]+:(\s|$)|---|\.\.\.|- )/],
+  ['docker', /^(FROM|ARG|RUN|CMD|ENTRYPOINT|COPY|ADD|ENV|WORKDIR|USER|EXPOSE|HEALTHCHECK|LABEL|VOLUME|SHELL|STOPSIGNAL|ONBUILD)\s/],
+  ['hcl', /^(\}|[a-z_]+(\s+"[^"]*")*\s*\{.*|[a-z_]+\s+=\s.*)$/],
+  ['nginx', /^(\}|[a-z_]+.*\{|[a-z_]+\s[^;]*;)$/],
+];
+const FORMAT_START = {
+  hcl: /^(terraform|provider|resource|variable|module|data|output|locals)\b/,
+  nginx: /^(server|http|upstream|events|stream|map|limit_req_zone|proxy_cache_path|log_format)\b/,
+};
+
+function detectShellFormat(code) {
+  const lines = code.split('\n').filter((line) => line.trim() && !/^\s/.test(line) && !COMMENT_LINE.test(line));
+  if (lines.length === 0) return null;
+  const match = FORMATS.find(([name, pattern]) => lines.every((line) => pattern.test(line)) && (!FORMAT_START[name] || FORMAT_START[name].test(lines[0])));
+  return match?.[0] ?? null;
+}
+
 /**
- * Picks the Prism grammar. Topics declare a base language (bash for Git, java otherwise); Spring Boot
- * also ships pom.xml / application.properties / yaml snippets, which are recognised by their first
- * real line. A snippet that opens with `#` comments but isn't config is shell (mvn, docker, ...).
+ * Picks the Prism grammar. Topics declare a base language (bash for Git and DevOps, java otherwise);
+ * Spring Boot also ships pom.xml / application.properties / yaml snippets, which are recognised by their
+ * first real line. A snippet that opens with `#` comments but isn't config is shell (mvn, docker, ...).
+ * Shell topics also pick up pure YAML / Dockerfile / HCL / nginx snippets (see FORMATS).
  */
 export function detectLanguage(code, baseLanguage) {
+  if (baseLanguage === 'bash') return detectShellFormat(code) ?? 'bash';
   if (baseLanguage !== 'java') return baseLanguage;
 
   const lines = code.split('\n').map((line) => line.trim()).filter(Boolean);
